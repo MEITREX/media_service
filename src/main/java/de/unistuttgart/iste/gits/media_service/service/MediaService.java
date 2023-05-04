@@ -22,10 +22,22 @@ public class MediaService {
     }
 
     public List<MediaRecordDTO> getAllMediaRecords() {
-        return mediaRecordRepository.findAll().stream().map(this::convertEntityToDTO).toList();
+        return mediaRecordRepository.findAll().stream().map(this::convertEntityToDto).toList();
     }
 
-    public MediaRecordDTO convertEntityToDTO(MediaRecordEntity entity) {
+    public MediaRecordDTO createMediaRecord(String mediaName, MediaTypeDTO mediaType) {
+        MediaRecordEntity entity = new MediaRecordEntity(
+                UUID.randomUUID(),
+                mediaName,
+                modelMapper.map(mediaType, MediaRecordEntity.MediaType.class)
+        );
+
+        mediaRecordRepository.save(entity);
+
+        return convertEntityToDto(entity);
+    }
+
+    public MediaRecordDTO convertEntityToDto(MediaRecordEntity entity) {
         return modelMapper.map(entity, MediaRecordDTO.class);
     }
 }
