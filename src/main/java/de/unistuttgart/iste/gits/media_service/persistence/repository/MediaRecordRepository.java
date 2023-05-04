@@ -1,0 +1,14 @@
+package de.unistuttgart.iste.gits.media_service.persistence.repository;
+
+import de.unistuttgart.iste.gits.media_service.persistence.dao.MediaRecordEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface MediaRecordRepository extends JpaRepository<MediaRecordEntity, Long> {
+
+    Optional<MediaRecordEntity> findByName(String name);
+
+}

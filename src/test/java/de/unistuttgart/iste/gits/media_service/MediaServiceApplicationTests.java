@@ -1,10 +1,10 @@
-package de.unistuttgart.iste.gits.template;
+package de.unistuttgart.iste.gits.media_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TemplateForMicroservicesApplicationTests {
+class MediaServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.template.exception;
+package de.unistuttgart.iste.gits.media_service.exception;
 
 import graphql.ErrorType;
 import graphql.GraphQLError;

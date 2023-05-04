@@ -28,7 +28,7 @@ This package should contain any classes that are used to configure the applicati
 
 This package contains the GraphQL controllers (and other types of controllers if needed). The GraphQL controllers are annotated with the `@Controller` annotation. Controllers contain no business logic, but only delegate the requests to the service layer. They handle the "technical stuff" of the request.
 
-More information can be found in the [Controller package](src/main/java/de/unistuttgart/iste/gits/template/controller/package-info.java).
+More information can be found in the [Controller package](src/main/java/de/unistuttgart/iste/gits/media_service/controller/package-info.java).
 
 ### Dapr package
 
@@ -50,19 +50,19 @@ The DTOs are used to transfer data between the GraphQL controller and the servic
 
 This package is used for exception handling. Note that with GraphQL, the exceptions are not thrown directly, but are wrapped in a `GraphQLException`, which is different that from the usual Spring Boot approach.
 
-More information can be found in the [Exception package](src/main/java/de/unistuttgart/iste/gits/template/exception/package-info.java).
+More information can be found in the [Exception package](src/main/java/de/unistuttgart/iste/gits/media_service/exception/package-info.java).
 
 ### Persistence package
 
 This package contains all classes that are used to persist data in the database. This includes the DAOs (data access objects) and the repositories.
 
-More information can be found in the [Dao package](src/main/java/de/unistuttgart/iste/gits/template/persistence/dao/package-info.java) and the [Repository package](src/main/java/de/unistuttgart/iste/gits/template/persistence/repository/package-info.java).
+More information can be found in the [Dao package](src/main/java/de/unistuttgart/iste/gits/media_service/persistence/dao/package-info.java) and the [Repository package](src/main/java/de/unistuttgart/iste/gits/media_service/persistence/repository/package-info.java).
 
 ### Service package
 
 This package contains all classes that are used to handle the business logic of the microservice. Services are annotated with the `@Service` annotation. Services contain only business logic and delegate the data access to the persistence layer (repositories). 
 
-More information can be found in the [Service package](src/main/java/de/unistuttgart/iste/gits/template/service/package-info.java).
+More information can be found in the [Service package](src/main/java/de/unistuttgart/iste/gits/media_service/service/package-info.java).
 
 ## Getting Started
 

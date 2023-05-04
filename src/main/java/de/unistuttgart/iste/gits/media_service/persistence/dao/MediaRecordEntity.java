@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.template.persistence.dao;
+package de.unistuttgart.iste.gits.media_service.persistence.dao;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -11,27 +11,33 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.Instant;
+import java.util.UUID;
 
-@Entity(name = "Template")
+@Entity(name = "MediaRecord")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TemplateEntity {
+public class MediaRecordEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID mediaId;
 
     @Column(nullable = false, length = 255)
     @NotNull(message = "Name must not be null")
     @Length(min = 1, max = 255, message = "Name must be between 1 and 255 characters")
     private String name;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Past(message = "createdAt must be in the past")
-    private Instant createdAt;
+    @Enumerated(EnumType.ORDINAL)
+    private MediaType mediaType;
 
-    @Email(message = "Email must be valid")
-    private String email;
+    public enum MediaType {
+        AUDIO,
+        VIDEO,
+        IMAGE,
+        PRESENTATION,
+        DOCUMENT,
+        URL
+    }
 }
