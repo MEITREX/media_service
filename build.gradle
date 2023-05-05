@@ -15,7 +15,7 @@ graphqlCodegen {
 	// https://github.com/kobylynskyi/graphql-java-codegen/blob/main/docs/codegen-options.md
 	outputDir = new File("$buildDir/generated")
 	packageName = "de.unistuttgart.iste.gits.media_service.dto"
-	modelNameSuffix = "DTO"
+	modelNameSuffix = "Dto"
 	generatedAnnotation = "jakarta.annotation.Generated"
 	modelValidationAnnotation = "jakarta.validation.constraints.NotNull"
 	generateApis = false // set to false as the generator does not support spring boot graphQL
