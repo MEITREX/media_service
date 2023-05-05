@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.gits.media_service.controller;
 
-import de.unistuttgart.iste.gits.media_service.dto.MediaRecordDTO;
-import de.unistuttgart.iste.gits.media_service.dto.MediaTypeDTO;
+import de.unistuttgart.iste.gits.media_service.dto.MediaRecordDto;
+import de.unistuttgart.iste.gits.media_service.dto.MediaTypeDto;
 import de.unistuttgart.iste.gits.media_service.service.MediaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -22,14 +22,14 @@ public class MediaController {
     }
 
     @QueryMapping
-    public List<MediaRecordDTO> media() {
+    public List<MediaRecordDto> media() {
         log.debug("media() requested.");
 
         return mediaService.getAllMediaRecords();
     }
 
     @MutationMapping
-    public MediaRecordDTO createMediaRecord(@Argument String mediaName, @Argument MediaTypeDTO mediaType) {
+    public MediaRecordDto createMediaRecord(@Argument String mediaName, @Argument MediaTypeDto mediaType) {
         return mediaService.createMediaRecord(mediaName, mediaType);
     }
 }

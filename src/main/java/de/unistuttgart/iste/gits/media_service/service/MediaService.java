@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.gits.media_service.service;
 
-import de.unistuttgart.iste.gits.media_service.dto.MediaRecordDTO;
-import de.unistuttgart.iste.gits.media_service.dto.MediaTypeDTO;
+import de.unistuttgart.iste.gits.media_service.dto.MediaRecordDto;
+import de.unistuttgart.iste.gits.media_service.dto.MediaTypeDto;
 import de.unistuttgart.iste.gits.media_service.persistence.dao.MediaRecordEntity;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordRepository;
 import org.modelmapper.ModelMapper;
@@ -21,11 +21,11 @@ public class MediaService {
         this.modelMapper = modelMapper;
     }
 
-    public List<MediaRecordDTO> getAllMediaRecords() {
+    public List<MediaRecordDto> getAllMediaRecords() {
         return mediaRecordRepository.findAll().stream().map(this::convertEntityToDto).toList();
     }
 
-    public MediaRecordDTO createMediaRecord(String mediaName, MediaTypeDTO mediaType) {
+    public MediaRecordDto createMediaRecord(String mediaName, MediaTypeDto mediaType) {
         MediaRecordEntity entity = new MediaRecordEntity(
                 UUID.randomUUID(),
                 mediaName,
@@ -37,7 +37,7 @@ public class MediaService {
         return convertEntityToDto(entity);
     }
 
-    public MediaRecordDTO convertEntityToDto(MediaRecordEntity entity) {
-        return modelMapper.map(entity, MediaRecordDTO.class);
+    public MediaRecordDto convertEntityToDto(MediaRecordEntity entity) {
+        return modelMapper.map(entity, MediaRecordDto.class);
     }
 }
