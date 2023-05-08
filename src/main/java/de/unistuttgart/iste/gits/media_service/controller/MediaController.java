@@ -30,7 +30,7 @@ public class MediaController {
     }
 
     @QueryMapping
-    public List<MediaRecordDto> mediaRecordsById(List<UUID> ids) {
+    public List<MediaRecordDto> mediaRecordsById(@Argument List<UUID> ids) {
         return mediaService.getMediaRecordsById(ids);
     }
 
