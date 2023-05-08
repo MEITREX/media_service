@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.template.config;
+package de.unistuttgart.iste.gits.media_service.config;
 
 import graphql.scalars.ExtendedScalars;
 import graphql.validation.rules.OnValidationErrorStrategy;
