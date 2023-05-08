@@ -13,22 +13,26 @@ This package structure is based on multiple sources of best practices in Spring 
   - *persistence*
     - *dao*
     - *repository*
+    - *mapper*
   - *service*
+  - *util* (optional, if needed)
+  - *validation*
 
 Detailed description of the packages:
 
 ### Root package
 
-This should be named after the microservice itself. This is the root package for the microservice. It contains the `Application.java` file, which is the entry point for the microservice. Usually, this is the only class in this package.
+This should be named after the microservice itself. This is the root package for the microservice. It contains the `Application.java` file (or of similar name), which is the entry point for the microservice. Usually, this is the only class in this package.
 
 ### Config package
 This package should contain any classes that are used to configure the application. This includes [Sprint Boot configuration classes](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Configuration.html) but might also contain anything else related to configuration the microservice.
+The classes that are in this package should not be deleted in the actual microservice as they provide useful functionality.
 
 ### Controller package
 
 This package contains the GraphQL controllers (and other types of controllers if needed). The GraphQL controllers are annotated with the `@Controller` annotation. Controllers contain no business logic, but only delegate the requests to the service layer. They handle the "technical stuff" of the request.
 
-More information can be found in the [Controller package](src/main/java/de/unistuttgart/iste/gits/media_service/controller/package-info.java).
+More information can be found in the [Controller package](src/main/java/de/unistuttgart/iste/gits/template/controller/package-info.java).
 
 ### Dapr package
 
@@ -50,19 +54,26 @@ The DTOs are used to transfer data between the GraphQL controller and the servic
 
 This package is used for exception handling. Note that with GraphQL, the exceptions are not thrown directly, but are wrapped in a `GraphQLException`, which is different that from the usual Spring Boot approach.
 
-More information can be found in the [Exception package](src/main/java/de/unistuttgart/iste/gits/media_service/exception/package-info.java).
+More information can be found in the [Exception package](src/main/java/de/unistuttgart/iste/gits/template/exception/package-info.java).
 
 ### Persistence package
 
-This package contains all classes that are used to persist data in the database. This includes the DAOs (data access objects) and the repositories.
+This package contains all classes that are used to persist data in the database. This includes the DAOs (data access objects), the mapping logic between entities and DTOs, as well as the repositories.
 
-More information can be found in the [Dao package](src/main/java/de/unistuttgart/iste/gits/media_service/persistence/dao/package-info.java) and the [Repository package](src/main/java/de/unistuttgart/iste/gits/media_service/persistence/repository/package-info.java).
+More information can be found in the [Dao package](src/main/java/de/unistuttgart/iste/gits/template/persistence/dao/package-info.java) and the [Repository package](src/main/java/de/unistuttgart/iste/gits/template/persistence/repository/package-info.java).
 
 ### Service package
 
 This package contains all classes that are used to handle the business logic of the microservice. Services are annotated with the `@Service` annotation. Services contain only business logic and delegate the data access to the persistence layer (repositories). 
 
-More information can be found in the [Service package](src/main/java/de/unistuttgart/iste/gits/media_service/service/package-info.java).
+More information can be found in the [Service package](src/main/java/de/unistuttgart/iste/gits/template/service/package-info.java).
+
+### Validation package
+
+This package should contain the *class-level* validation logic, i.e. the validation logic that is not directly related to a specific field, e.g. validation if an end date is after a start date.
+
+Field-level validation logic should not be placed in this package, but in the graphql schema, via directives. 
+If these directives are not sufficient, the validation logic can also be placed in this package.
 
 ## Getting Started
 
@@ -70,22 +81,34 @@ More information can be found in the [Service package](src/main/java/de/unistutt
 
 After cloning the repository, you need to do the following steps:
 - [ ] Setup the gradle files correctly. This means
-  - [x] Change the project name in the `settings.gradle` file
-  - [x] Change the package name in the `build.gradle` file (there is a TODO comment)
+  - [ ] Change the project name in the `settings.gradle` file
+  - [ ] Change the package name in the `build.gradle` file (there is a TODO comment)
   - [ ] Add/Remove dependencies in the `build.gradle` file
-- [x] Rename the package in the `src/main/java` folder to the a more suitable name (should be the same as the package name in the `build.gradle` file)
+- [ ] Rename the package in the `src/main/java` folder to  a more suitable name (should be the same as the package name in the `build.gradle` file)
 - [ ] Remove the package-info.java files in the `src/main/java` folder (or update with the microservice specific information)
 - [ ] Update the application.properties file in the `src/main/resources` folder (check the TODOS in the file)
+- [ ] Change the ports and name of the database in the docker-compose.yml (see wiki on how to)
 - [ ] Define the GraphQL schema in the `src/main/resources/schema.graphqls` file
 - [ ] Create a new database
 <!-- TODO there probably more TODOs -->
+
+### Pull new changes from this template
+
+If this template changes and you want to pull the changes to the actual microservice, you can run the following commands:
+```bash
+git remote add template https://github.com/IT-REX-Platform/template-microservice # only necessary once
+git fetch --all
+git checkout [branch] # replace [branch] with the branch name you want the changes to be merged into (preferably not main)
+git merge template/main --allow-unrelated-histories
+# you will probably need to commit afterwars
+```
 
 ### Guides
 The following guides illustrate how to use some features concretely:
 
 * [Building a GraphQL service](https://spring.io/guides/gs/graphql-server/)
 * [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
-* [Validation](https://spring.io/guides/gs/validating-form-input/)
+* [Validation with GraphQL directives](https://github.com/graphql-java/graphql-java-extended-validation/blob/master/README.md)
 * [Error handling](https://www.baeldung.com/spring-graphql-error-handling)
 
 ### Reference Documentation

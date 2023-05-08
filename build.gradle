@@ -19,6 +19,14 @@ graphqlCodegen {
 	generatedAnnotation = "jakarta.annotation.Generated"
 	modelValidationAnnotation = "jakarta.validation.constraints.NotNull"
 	generateApis = false // set to false as the generator does not support spring boot graphQL
+	customTypesMapping = [
+			"DateTime" : "java.time.OffsetDateTime",
+			"Date"     : "java.time.LocalDate",
+			"Time"     : "java.time.OffsetTime",
+			"LocalTime": "java.time.LocalTime",
+			"UUID"     : "java.util.UUID",
+			"Url"      : "java.net.URL",
+	]
 }
 
 // Automatically generate GraphQL code on project build:
@@ -44,6 +52,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.modelmapper:modelmapper:3.+'
 	implementation("io.minio:minio:8.5.2")
+	implementation 'com.graphql-java:graphql-java-extended-scalars:20.0'
+	implementation 'com.graphql-java:graphql-java-extended-validation:20.0'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
