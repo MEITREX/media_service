@@ -5,9 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface MediaRecordRepository extends JpaRepository<MediaRecordEntity, Long> {
+public interface MediaRecordRepository extends JpaRepository<MediaRecordEntity, UUID> {
 
     Optional<MediaRecordEntity> findByName(String name);
 
