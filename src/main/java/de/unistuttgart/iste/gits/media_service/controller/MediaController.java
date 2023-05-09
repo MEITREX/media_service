@@ -14,6 +14,9 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Implements the graphql endpoints of the service.
+ */
 @Slf4j
 @Controller
 public class MediaController {
