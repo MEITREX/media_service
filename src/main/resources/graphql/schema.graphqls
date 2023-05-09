@@ -27,13 +27,13 @@ type MediaRecord {
 }
 
 input CreateMediaRecordInput {
-  name: String!
+  name: String! @NotBlank @Size(max: 255)
   type: MediaType!
 }
 
 input UpdateMediaRecordInput {
   id: UUID!
-  name: String!
+  name: String! @NotBlank @Size(max: 255)
   type: MediaType!
 }
 
