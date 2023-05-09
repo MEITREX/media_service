@@ -1,4 +1,17 @@
+version: "3.8"
 services:
+  minio:
+    image: minio/minio:latest
+    restart: always
+    environment:
+      MINIO_ROOT_USER: "minioadmin"
+      MINIO_ROOT_PASSWORD: "minioadmin"
+    volumes:
+      - miniodata:/data
+    ports:
+      - "3090:3090"
+      - "3091:3091"
+    command: server /miniodata --console-address :3091
   database:
     image: postgres:alpine
     restart: always
@@ -22,13 +35,15 @@ services:
       - 3000
       - 3001
     ports:
-      - 3000:3000
-      - 3001:3001
+      - "3000:3000"
+      - "3001:3001"
     depends_on:
       - database
+      - minio
     links:
       - database
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/mediadatabase
 volumes:
   mediadata:
+  miniodata:
