@@ -37,6 +37,23 @@ input UpdateMediaRecordInput {
   type: MediaType!
 }
 
+type Storage_DownloadUrl {
+  url: String
+}
+
+type Storage_UploadUrl {
+  url: String
+}
+
+input InputStorage_CreateBucket {
+  bucketId: String!
+}
+
+input InputStorage_CreateUrl {
+  bucketId: String!
+  fileName: String!
+}
+
 enum MediaType {
   VIDEO
   AUDIO
@@ -49,10 +66,15 @@ enum MediaType {
 type Query {
   mediaRecordsById(ids: [UUID!]!): [MediaRecord!]!
   mediaRecords: [MediaRecord!]!
+  Storage_query(dummy: Boolean): Boolean
 }
 
 type Mutation {
   createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
   deleteMediaRecord(id: UUID!): UUID!
+  Storage_createUploadUrl(input: InputStorage_CreateUrl): Storage_UploadUrl
+  Storage_createDownloadUrl(input: InputStorage_CreateUrl): Storage_DownloadUrl
+  Storage_createBucket(input: InputStorage_CreateBucket): Boolean
 }
+
