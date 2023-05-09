@@ -5,15 +5,11 @@ import graphql.validation.rules.OnValidationErrorStrategy;
 import graphql.validation.rules.ValidationRules;
 import graphql.validation.schemawiring.ValidationSchemaWiring;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.graphql.execution.RuntimeWiringConfigurer;
+import org.springframework.context.annotation.Configuration;
 
-/**
- * This class sets up the validation rules for the GraphQL schema and the scalar types.
- */
 @Configuration
 public class GraphQlScalarsAndValidationConfiguration {
-
     @Bean
     public RuntimeWiringConfigurer runtimeWiringConfigurer() {
 

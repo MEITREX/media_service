@@ -4,25 +4,55 @@
 # this can be done in a separate files as long as they are in this folder and
 # end with .graphqls
 
-enum MediaType {
-  AUDIO,
-  VIDEO,
-  IMAGE,
-  PRESENTATION,
-  DOCUMENT,
-  URL
+interface Content {
+  id: UUID!
+  name: String!
+  rewardPoints: Int!
+  workedOn: Boolean!
+}
+
+type MediaContent implements Content {
+  id: UUID!
+  name: String!
+  rewardPoints: Int!
+  workedOn: Boolean!
+
+  media: MediaRecord!
 }
 
 type MediaRecord {
-  mediaId: ID!
-  mediaName: String!
-  mediaType: MediaType!
+  id: UUID!
+  name: String!
+  type: MediaType!
+}
+
+input CreateMediaRecordInput {
+  name: String! @NotBlank @Size(max: 255)
+  type: MediaType!
+}
+
+input UpdateMediaRecordInput {
+  id: UUID!
+  name: String! @NotBlank @Size(max: 255)
+  type: MediaType!
+}
+
+enum MediaType {
+  VIDEO
+  AUDIO
+  IMAGE
+  PRESENTATION
+  DOCUMENT
+  URL
 }
 
 type Query {
-  media: [MediaRecord!]!
+  mediaRecordsById(ids: [UUID!]!): [MediaRecord!]!
+  mediaRecords: [MediaRecord!]!
 }
 
 type Mutation {
-  createMediaRecord(mediaName: String!, mediaType: MediaType!) : MediaRecord!
+  createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
+  updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
+  deleteMediaRecord(id: UUID!): UUID!
 }

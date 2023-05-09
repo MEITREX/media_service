@@ -25,25 +25,25 @@ services:
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=mediadatabase
+      - POSTGRES_DB=media_service
   app:
     build: .
     restart: always
     network_mode: bridge
-    container_name: mediaservice
+    container_name: media_service
     expose:
       - 3000
       - 3001
     ports:
-      - "3000:3000"
-      - "3001:3001"
+      - 3000:3000
+      - 3001:3001
     depends_on:
       - database
       - minio
     links:
       - database
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/mediadatabase
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/media_service
 volumes:
   mediadata:
   miniodata:

@@ -22,7 +22,7 @@ public class MediaRecordEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID mediaId;
+    private UUID id;
 
     @Column(nullable = false, length = 255)
     @NotNull(message = "Name must not be null")
@@ -30,7 +30,7 @@ public class MediaRecordEntity {
     private String name;
 
     @Enumerated(EnumType.ORDINAL)
-    private MediaType mediaType;
+    private MediaType type;
 
     public enum MediaType {
         AUDIO,
