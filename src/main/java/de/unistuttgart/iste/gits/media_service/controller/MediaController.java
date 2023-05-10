@@ -1,15 +1,13 @@
 package de.unistuttgart.iste.gits.media_service.controller;
 
-import de.unistuttgart.iste.gits.media_service.dto.CreateMediaRecordInputDto;
-import de.unistuttgart.iste.gits.media_service.dto.MediaRecordDto;
-import de.unistuttgart.iste.gits.media_service.dto.MediaTypeDto;
-import de.unistuttgart.iste.gits.media_service.dto.UpdateMediaRecordInputDto;
+import de.unistuttgart.iste.gits.media_service.dto.*;
 import de.unistuttgart.iste.gits.media_service.service.MediaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 import java.util.UUID;
@@ -50,5 +48,18 @@ public class MediaController {
     @MutationMapping
     public MediaRecordDto updateMediaRecord(@Argument UpdateMediaRecordInputDto input) {
         return mediaService.updateMediaRecord(input);
+    }
+
+    @MutationMapping
+    public Storage_UploadUrlDto Storage_createUploadUrl(@Argument InputStorage_CreateUrlDto input) {
+        return mediaService.createUploadUrl(input);
+    }
+    @MutationMapping
+    public Storage_DownloadUrlDto Storage_createDownloadUrl(@Argument InputStorage_CreateUrlDto input) {
+        return mediaService.creatDownloadUrl(input);
+    }
+    @MutationMapping
+    public boolean Storage_createBucket(@Argument InputStorage_CreateBucketDto input) {
+        return mediaService.createBucket(input);
     }
 }
