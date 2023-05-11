@@ -126,6 +126,12 @@ public class MediaService {
 
     return modelMapper.map(updatedRecord, MediaRecordDto.class);
   }
+
+  /**
+   *  Creates an URL for uploading a file to the minIO Server.
+   * @param input DTO which contains the bucket id to which to upload as well as the name of the file which should be uploaded.
+   * @return Returns the created uploadURL.
+   */
   @SneakyThrows
   public Storage_UploadUrlDto createUploadUrl(InputStorage_CreateUrlDto input) {
     String url = minioClient.getPresignedObjectUrl(
@@ -139,6 +145,11 @@ public class MediaService {
     uploadUrlDto.setUrl(url);
     return uploadUrlDto;
   }
+  /**
+   * Creates an URL for downloading a file from the MinIO Server.
+   * @param input DTO which contains the bucket id from which to download as well as the name of the file which should be downloaded.
+   * @return Returns the created downloadURL..
+   */
   @SneakyThrows
   public Storage_DownloadUrlDto creatDownloadUrl(InputStorage_CreateUrlDto input) {
     String url = minioClient.getPresignedObjectUrl(
@@ -153,6 +164,11 @@ public class MediaService {
     return downloadUrlDto;
   }
 
+  /**
+   * Creates a new bucket on the MinIO Server.
+   * @param input DTO which contains the bucketID (name of the bucket) which should be created
+   * @return true, if the creation was successful, false otherwise
+   */
   @SneakyThrows
   public boolean createBucket(InputStorage_CreateBucketDto input)  {
     boolean found = minioClient.bucketExists(
