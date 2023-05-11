@@ -66,7 +66,6 @@ enum MediaType {
 type Query {
   mediaRecordsById(ids: [UUID!]!): [MediaRecord!]!
   mediaRecords: [MediaRecord!]!
-  Storage_query(dummy: Boolean): Boolean
 }
 
 type Mutation {

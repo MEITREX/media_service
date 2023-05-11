@@ -4,8 +4,10 @@ import de.unistuttgart.iste.gits.media_service.dto.*;
 import de.unistuttgart.iste.gits.media_service.persistence.dao.MediaRecordEntity;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordRepository;
 import io.minio.BucketExistsArgs;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
+import io.minio.http.Method;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
@@ -124,13 +126,31 @@ public class MediaService {
 
     return modelMapper.map(updatedRecord, MediaRecordDto.class);
   }
-
+  @SneakyThrows
   public Storage_UploadUrlDto createUploadUrl(InputStorage_CreateUrlDto input) {
-    return new Storage_UploadUrlDto();
+    String url = minioClient.getPresignedObjectUrl(
+        GetPresignedObjectUrlArgs.builder()
+            .method(Method.PUT)
+            .bucket(input.getBucketId())
+            .object(input.getFileName())
+            .build()
+    );
+    Storage_UploadUrlDto uploadUrlDto = new Storage_UploadUrlDto();
+    uploadUrlDto.setUrl(url);
+    return uploadUrlDto;
   }
-
+  @SneakyThrows
   public Storage_DownloadUrlDto creatDownloadUrl(InputStorage_CreateUrlDto input) {
-    return new Storage_DownloadUrlDto();
+    String url = minioClient.getPresignedObjectUrl(
+        GetPresignedObjectUrlArgs.builder()
+            .method(Method.GET)
+            .bucket(input.getBucketId())
+            .object(input.getFileName())
+            .build()
+    );
+    Storage_DownloadUrlDto downloadUrlDto = new Storage_DownloadUrlDto();
+    downloadUrlDto.setUrl(url);
+    return downloadUrlDto;
   }
 
   @SneakyThrows
