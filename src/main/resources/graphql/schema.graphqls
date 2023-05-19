@@ -50,8 +50,7 @@ input CreateBucketInput {
 }
 
 input CreateUrlInput {
-  bucketId: String!
-  fileName: String!
+  id: UUID!
 }
 
 enum MediaType {

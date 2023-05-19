@@ -50,15 +50,15 @@ public class MediaController {
     }
 
     @MutationMapping
-    public UploadUrlDto Storage_createUploadUrl(@Argument CreateUrlInputDto input) {
+    public UploadUrlDto createStorageUploadUrl(@Argument CreateUrlInputDto input) {
         return mediaService.createUploadUrl(input);
     }
     @MutationMapping
-    public DownloadUrlDto Storage_createDownloadUrl(@Argument CreateUrlInputDto input) {
+    public DownloadUrlDto createStorageDownloadUrl(@Argument CreateUrlInputDto input) {
         return mediaService.createDownloadUrl(input);
     }
     @MutationMapping
-    public boolean Storage_createBucket(@Argument CreateBucketInputDto input) {
+    public boolean createStorageBucket(@Argument CreateBucketInputDto input) {
         return mediaService.createBucket(input);
     }
 }

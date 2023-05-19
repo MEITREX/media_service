@@ -131,7 +131,22 @@ public class MediaService {
      */
     @SneakyThrows
     public UploadUrlDto createUploadUrl(CreateUrlInputDto input) {
-        String url = minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().method(Method.PUT).bucket(input.getBucketId()).object(input.getFileName()).build());
+        if (!repository.existsById(input.getId())) {
+            throw new EntityNotFoundException("Media record with id " + input.getId() + " not found.");
+        }
+
+        Optional<MediaRecordEntity> entity = repository.findById(input.getId());
+        String filename = null;
+        String bucketId = null;
+
+        if (entity.isPresent()) {
+            filename = entity.get().getName();
+            bucketId = entity.get().getType().toString().toLowerCase();
+        }
+        // Ensures that the Bucket exists or creates a new one otherwise.
+        createBucket(CreateBucketInputDto.builder().setBucketId(bucketId).build());
+
+        String url = minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().method(Method.PUT).bucket(bucketId).object(filename).build());
         UploadUrlDto uploadUrlDto = new UploadUrlDto();
         uploadUrlDto.setUrl(url);
         return uploadUrlDto;
@@ -145,7 +160,20 @@ public class MediaService {
      */
     @SneakyThrows
     public DownloadUrlDto createDownloadUrl(CreateUrlInputDto input) {
-        String url = minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().method(Method.GET).bucket(input.getBucketId()).object(input.getFileName()).build());
+        if (!repository.existsById(input.getId())) {
+            throw new EntityNotFoundException("Media record with id " + input.getId() + " not found.");
+        }
+
+        Optional<MediaRecordEntity> entity = repository.findById(input.getId());
+        String filename = null;
+        String bucketId = null;
+
+        if (entity.isPresent()) {
+            filename = entity.get().getName();
+            bucketId = entity.get().getType().toString().toLowerCase();
+        }
+
+        String url = minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().method(Method.GET).bucket(bucketId).object(filename).build());
         DownloadUrlDto downloadUrlDto = new DownloadUrlDto();
         downloadUrlDto.setUrl(url);
         return downloadUrlDto;
@@ -159,12 +187,13 @@ public class MediaService {
      */
     @SneakyThrows
     public boolean createBucket(CreateBucketInputDto input) {
-        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(input.getBucketId()).build());
+        String bucketId = input.getBucketId().toLowerCase();
+        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketId).build());
         if (!found) {
-            minioClient.makeBucket(MakeBucketArgs.builder().bucket(input.getBucketId()).build());
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketId).build());
             return true;
         } else {
-            System.out.println("Bucket " + input.getBucketId() + " already exists!");
+            System.out.println("Bucket " + bucketId + " already exists!");
             return false;
         }
 
