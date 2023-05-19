@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.media_service.persistence.dao;
+package de.unistuttgart.iste.gits.media_service.dapr.dao;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

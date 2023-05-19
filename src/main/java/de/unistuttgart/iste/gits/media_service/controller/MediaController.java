@@ -7,7 +7,6 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,15 +50,15 @@ public class MediaController {
     }
 
     @MutationMapping
-    public Storage_UploadUrlDto Storage_createUploadUrl(@Argument InputStorage_CreateUrlDto input) {
+    public UploadUrlDto Storage_createUploadUrl(@Argument CreateUrlInputDto input) {
         return mediaService.createUploadUrl(input);
     }
     @MutationMapping
-    public Storage_DownloadUrlDto Storage_createDownloadUrl(@Argument InputStorage_CreateUrlDto input) {
-        return mediaService.creatDownloadUrl(input);
+    public DownloadUrlDto Storage_createDownloadUrl(@Argument CreateUrlInputDto input) {
+        return mediaService.createDownloadUrl(input);
     }
     @MutationMapping
-    public boolean Storage_createBucket(@Argument InputStorage_CreateBucketDto input) {
+    public boolean Storage_createBucket(@Argument CreateBucketInputDto input) {
         return mediaService.createBucket(input);
     }
 }

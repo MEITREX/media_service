@@ -37,19 +37,19 @@ input UpdateMediaRecordInput {
   type: MediaType!
 }
 
-type Storage_DownloadUrl {
+type DownloadUrl {
   url: String
 }
 
-type Storage_UploadUrl {
+type UploadUrl {
   url: String
 }
 
-input InputStorage_CreateBucket {
+input CreateBucketInput {
   bucketId: String!
 }
 
-input InputStorage_CreateUrl {
+input CreateUrlInput {
   bucketId: String!
   fileName: String!
 }
@@ -72,8 +72,8 @@ type Mutation {
   createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
   deleteMediaRecord(id: UUID!): UUID!
-  Storage_createUploadUrl(input: InputStorage_CreateUrl): Storage_UploadUrl
-  Storage_createDownloadUrl(input: InputStorage_CreateUrl): Storage_DownloadUrl
-  Storage_createBucket(input: InputStorage_CreateBucket): Boolean
+  createStorageUploadUrl(input: CreateUrlInput): UploadUrl
+  createStorageDownloadUrl(input: CreateUrlInput): DownloadUrl
+  createStorageBucket(input: CreateBucketInput): Boolean
 }
 
