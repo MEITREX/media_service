@@ -49,10 +49,13 @@ public class MediaController {
         return mediaService.updateMediaRecord(input);
     }
 
+    // Doesn't work in containers right now
     @MutationMapping
     public UploadUrlDto createStorageUploadUrl(@Argument CreateUrlInputDto input) {
         return mediaService.createUploadUrl(input);
     }
+
+    // Doesn't work in containers right now
     @MutationMapping
     public DownloadUrlDto createStorageDownloadUrl(@Argument CreateUrlInputDto input) {
         return mediaService.createDownloadUrl(input);

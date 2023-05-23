@@ -57,9 +57,6 @@ services:
     depends_on:
       - database
       - minio
-    links:
-      - database
-      - minio
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/media_service
       MINIO_URL: http://minio:9000

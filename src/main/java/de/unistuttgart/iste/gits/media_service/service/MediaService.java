@@ -3,20 +3,14 @@ package de.unistuttgart.iste.gits.media_service.service;
 import de.unistuttgart.iste.gits.media_service.dto.*;
 import de.unistuttgart.iste.gits.media_service.dapr.dao.MediaRecordEntity;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordRepository;
-import io.minio.BucketExistsArgs;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
+import io.minio.*;
 import io.minio.http.Method;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.SneakyThrows;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -124,59 +118,77 @@ public class MediaService {
     }
 
     /**
-     * Creates an URL for uploading a file to the minIO Server.
+     * Creates a URL for uploading a file to the minIO Server.
      *
      * @param input DTO which contains the bucket id to which to upload as well as the name of the file which should be uploaded.
      * @return Returns the created uploadURL.
      */
     @SneakyThrows
     public UploadUrlDto createUploadUrl(CreateUrlInputDto input) {
-        if (!repository.existsById(input.getId())) {
-            throw new EntityNotFoundException("Media record with id " + input.getId() + " not found.");
+        Map<String, String> variables = createMinIOVariables(input);
+        String bucketId = variables.get("bucketId");
+        String filename = variables.get("filename");
+
+        // Ensures that the Bucket exists or creates a new one otherwise. Weirdly this only works if at least one bucket already exists.
+        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketId).build());
+        if (!found) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketId).build());
         }
 
-        Optional<MediaRecordEntity> entity = repository.findById(input.getId());
-        String filename = null;
-        String bucketId = null;
+        String url = minioClient.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs
+                        .builder()
+                        .method(Method.PUT)
+                        .bucket(bucketId)
+                        .object(filename)
+                        .build());
 
-        if (entity.isPresent()) {
-            filename = entity.get().getName();
-            bucketId = entity.get().getType().toString().toLowerCase();
-        }
-        // Ensures that the Bucket exists or creates a new one otherwise.
-        createBucket(CreateBucketInputDto.builder().setBucketId(bucketId).build());
-
-        String url = minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().method(Method.PUT).bucket(bucketId).object(filename).build());
         UploadUrlDto uploadUrlDto = new UploadUrlDto();
         uploadUrlDto.setUrl(url);
         return uploadUrlDto;
     }
 
     /**
-     * Creates an URL for downloading a file from the MinIO Server.
+     * Creates a URL for downloading a file from the MinIO Server.
      *
      * @param input DTO which contains the bucket id from which to download as well as the name of the file which should be downloaded.
      * @return Returns the created downloadURL..
      */
     @SneakyThrows
     public DownloadUrlDto createDownloadUrl(CreateUrlInputDto input) {
+        Map<String, String> variables = createMinIOVariables(input);
+        String bucketId = variables.get("bucketId");
+        String filename = variables.get("filename");
+
+
+        String url = minioClient.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                        .method(Method.GET)
+                        .bucket(variables.get(bucketId))
+                        .object(variables.get(filename))
+                        .build());
+        DownloadUrlDto downloadUrlDto = new DownloadUrlDto();
+        downloadUrlDto.setUrl(url);
+        return downloadUrlDto;
+    }
+
+    private Map<String, String> createMinIOVariables(CreateUrlInputDto input) {
+        Map<String, String> variables = new HashMap<>();
+
         if (!repository.existsById(input.getId())) {
             throw new EntityNotFoundException("Media record with id " + input.getId() + " not found.");
         }
 
         Optional<MediaRecordEntity> entity = repository.findById(input.getId());
-        String filename = null;
-        String bucketId = null;
 
         if (entity.isPresent()) {
-            filename = entity.get().getName();
-            bucketId = entity.get().getType().toString().toLowerCase();
+            String filename = entity.get().getName();
+            variables.put("filename", filename);
+            String bucketId = entity.get().getType().toString().toLowerCase();
+            variables.put("bucketId", bucketId);
         }
 
-        String url = minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().method(Method.GET).bucket(bucketId).object(filename).build());
-        DownloadUrlDto downloadUrlDto = new DownloadUrlDto();
-        downloadUrlDto.setUrl(url);
-        return downloadUrlDto;
+        return variables;
     }
 
     /**
