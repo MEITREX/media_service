@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -141,6 +142,7 @@ public class MediaService {
                         .method(Method.PUT)
                         .bucket(bucketId)
                         .object(filename)
+                        .expiry(15, TimeUnit.MINUTES)
                         .build());
 
         UploadUrlDto uploadUrlDto = new UploadUrlDto();
@@ -166,6 +168,7 @@ public class MediaService {
                         .method(Method.GET)
                         .bucket(variables.get(bucketId))
                         .object(variables.get(filename))
+                        .expiry(15, TimeUnit.MINUTES)
                         .build());
         DownloadUrlDto downloadUrlDto = new DownloadUrlDto();
         downloadUrlDto.setUrl(url);
@@ -182,7 +185,7 @@ public class MediaService {
         Optional<MediaRecordEntity> entity = repository.findById(input.getId());
 
         if (entity.isPresent()) {
-            String filename = entity.get().getName();
+            String filename = entity.get().getId().toString();
             variables.put("filename", filename);
             String bucketId = entity.get().getType().toString().toLowerCase();
             variables.put("bucketId", bucketId);
