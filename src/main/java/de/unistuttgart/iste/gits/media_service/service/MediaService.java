@@ -1,16 +1,31 @@
 package de.unistuttgart.iste.gits.media_service.service;
 
-import de.unistuttgart.iste.gits.media_service.dto.*;
 import de.unistuttgart.iste.gits.media_service.dapr.dao.MediaRecordEntity;
+import de.unistuttgart.iste.gits.media_service.dto.CreateBucketInputDto;
+import de.unistuttgart.iste.gits.media_service.dto.CreateMediaRecordInputDto;
+import de.unistuttgart.iste.gits.media_service.dto.CreateUrlInputDto;
+import de.unistuttgart.iste.gits.media_service.dto.DownloadUrlDto;
+import de.unistuttgart.iste.gits.media_service.dto.MediaRecordDto;
+import de.unistuttgart.iste.gits.media_service.dto.UpdateMediaRecordInputDto;
+import de.unistuttgart.iste.gits.media_service.dto.UploadUrlDto;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordRepository;
-import io.minio.*;
+import io.minio.BucketExistsArgs;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MakeBucketArgs;
+import io.minio.MinioClient;
 import io.minio.http.Method;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -18,6 +33,7 @@ import java.util.stream.Collectors;
  * Service class which provides the business logic of the media service.
  */
 @Service
+@Slf4j
 public class MediaService {
 
     private final MinioClient minioClient;
@@ -208,7 +224,7 @@ public class MediaService {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketId).build());
             return true;
         } else {
-            System.out.println("Bucket " + bucketId + " already exists!");
+            log.info("Bucket " + bucketId + " already exists!");
             return false;
         }
 
