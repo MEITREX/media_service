@@ -4,36 +4,30 @@
 # this can be done in a separate files as long as they are in this folder and
 # end with .graphqls
 
-interface Content {
-  id: UUID!
-  name: String!
-  rewardPoints: Int!
-  workedOn: Boolean!
-}
-
-type MediaContent implements Content {
-  id: UUID!
-  name: String!
-  rewardPoints: Int!
-  workedOn: Boolean!
-
-  media: MediaRecord!
-}
-
 type MediaRecord {
+  # ID of the media record
   id: UUID!
+  # Name of the media record
   name: String!
+  # Type of the media record
   type: MediaType!
+  # IDs of the MediaContents this media record is associated with
+  contentIds: [UUID!]!
 }
 
 input CreateMediaRecordInput {
+  # Name of the media record. Cannot be blank, maximum length 255 characters.
   name: String! @NotBlank @Size(max: 255)
+  # Type of the media record.
   type: MediaType!
 }
 
 input UpdateMediaRecordInput {
+  # ID of the media record which should be updated
   id: UUID!
+  # New name of the media record. Cannot be blank, maximum length 255 characters.
   name: String! @NotBlank @Size(max: 255)
+  # New type of the media record.
   type: MediaType!
 }
 
@@ -65,6 +59,7 @@ enum MediaType {
 type Query {
   mediaRecordsById(ids: [UUID!]!): [MediaRecord!]!
   mediaRecords: [MediaRecord!]!
+  mediaRecordsByContentIds(contentIds: [UUID!]!): [[UUID!]!]!
 }
 
 type Mutation {
