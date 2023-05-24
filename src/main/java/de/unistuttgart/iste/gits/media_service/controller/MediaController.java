@@ -1,9 +1,6 @@
 package de.unistuttgart.iste.gits.media_service.controller;
 
-import de.unistuttgart.iste.gits.media_service.dto.CreateMediaRecordInputDto;
-import de.unistuttgart.iste.gits.media_service.dto.MediaRecordDto;
-import de.unistuttgart.iste.gits.media_service.dto.MediaTypeDto;
-import de.unistuttgart.iste.gits.media_service.dto.UpdateMediaRecordInputDto;
+import de.unistuttgart.iste.gits.media_service.dto.*;
 import de.unistuttgart.iste.gits.media_service.service.MediaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -50,5 +47,21 @@ public class MediaController {
     @MutationMapping
     public MediaRecordDto updateMediaRecord(@Argument UpdateMediaRecordInputDto input) {
         return mediaService.updateMediaRecord(input);
+    }
+
+    // Doesn't work in containers right now
+    @MutationMapping
+    public UploadUrlDto createStorageUploadUrl(@Argument CreateUrlInputDto input) {
+        return mediaService.createUploadUrl(input);
+    }
+
+    // Doesn't work in containers right now
+    @MutationMapping
+    public DownloadUrlDto createStorageDownloadUrl(@Argument CreateUrlInputDto input) {
+        return mediaService.createDownloadUrl(input);
+    }
+    @MutationMapping
+    public boolean createStorageBucket(@Argument CreateBucketInputDto input) {
+        return mediaService.createBucket(input);
     }
 }

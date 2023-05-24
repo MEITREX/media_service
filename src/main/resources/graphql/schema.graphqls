@@ -37,6 +37,22 @@ input UpdateMediaRecordInput {
   type: MediaType!
 }
 
+type DownloadUrl {
+  url: String
+}
+
+type UploadUrl {
+  url: String
+}
+
+input CreateBucketInput {
+  bucketId: String!
+}
+
+input CreateUrlInput {
+  id: UUID!
+}
+
 enum MediaType {
   VIDEO
   AUDIO
@@ -55,4 +71,8 @@ type Mutation {
   createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
   deleteMediaRecord(id: UUID!): UUID!
+  createStorageUploadUrl(input: CreateUrlInput): UploadUrl
+  createStorageDownloadUrl(input: CreateUrlInput): DownloadUrl
+  createStorageBucket(input: CreateBucketInput): Boolean
 }
+
