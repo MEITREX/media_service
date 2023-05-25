@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.media_service.dapr.dao;
+package de.unistuttgart.iste.gits.media_service.persistence.dao;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "MediaRecord")
@@ -31,6 +32,9 @@ public class MediaRecordEntity {
 
     @Enumerated(EnumType.ORDINAL)
     private MediaType type;
+
+    @ElementCollection
+    private List<UUID> contentIds;
 
     public enum MediaType {
         AUDIO,
