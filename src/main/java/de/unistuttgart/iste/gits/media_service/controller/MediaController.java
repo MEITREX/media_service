@@ -1,6 +1,6 @@
 package de.unistuttgart.iste.gits.media_service.controller;
 
-import de.unistuttgart.iste.gits.media_service.dto.*;
+import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.media_service.service.MediaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;

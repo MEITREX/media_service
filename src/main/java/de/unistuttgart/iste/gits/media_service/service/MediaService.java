@@ -1,13 +1,13 @@
 package de.unistuttgart.iste.gits.media_service.service;
 
 import de.unistuttgart.iste.gits.media_service.dapr.dao.MediaRecordEntity;
-import de.unistuttgart.iste.gits.media_service.dto.CreateBucketInputDto;
-import de.unistuttgart.iste.gits.media_service.dto.CreateMediaRecordInputDto;
-import de.unistuttgart.iste.gits.media_service.dto.CreateUrlInputDto;
-import de.unistuttgart.iste.gits.media_service.dto.DownloadUrlDto;
-import de.unistuttgart.iste.gits.media_service.dto.MediaRecordDto;
-import de.unistuttgart.iste.gits.media_service.dto.UpdateMediaRecordInputDto;
-import de.unistuttgart.iste.gits.media_service.dto.UploadUrlDto;
+import de.unistuttgart.iste.gits.generated.dto.CreateBucketInputDto;
+import de.unistuttgart.iste.gits.generated.dto.CreateMediaRecordInputDto;
+import de.unistuttgart.iste.gits.generated.dto.CreateUrlInputDto;
+import de.unistuttgart.iste.gits.generated.dto.DownloadUrlDto;
+import de.unistuttgart.iste.gits.generated.dto.MediaRecordDto;
+import de.unistuttgart.iste.gits.generated.dto.UpdateMediaRecordInputDto;
+import de.unistuttgart.iste.gits.generated.dto.UploadUrlDto;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordRepository;
 import io.minio.BucketExistsArgs;
 import io.minio.GetPresignedObjectUrlArgs;
