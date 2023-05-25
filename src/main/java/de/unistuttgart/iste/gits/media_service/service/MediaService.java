@@ -170,7 +170,7 @@ public class MediaService {
      * Creates a URL for downloading a file from the MinIO Server.
      *
      * @param input DTO which contains the bucket id from which to download as well as the name of the file which should be downloaded.
-     * @return Returns the created downloadURL..
+     * @return Returns the created downloadURL.
      */
     @SneakyThrows
     public DownloadUrlDto createDownloadUrl(CreateUrlInputDto input) {
@@ -182,8 +182,8 @@ public class MediaService {
         String url = minioClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()
                         .method(Method.GET)
-                        .bucket(variables.get(bucketId))
-                        .object(variables.get(filename))
+                        .bucket(bucketId)
+                        .object(filename)
                         .expiry(15, TimeUnit.MINUTES)
                         .build());
         DownloadUrlDto downloadUrlDto = new DownloadUrlDto();
