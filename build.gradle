@@ -14,7 +14,7 @@ graphqlCodegen {
 	// all config options:
 	// https://github.com/kobylynskyi/graphql-java-codegen/blob/main/docs/codegen-options.md
 	outputDir = new File("$buildDir/generated")
-	packageName = "de.unistuttgart.iste.gits.media_service.dto"
+	packageName = "de.unistuttgart.iste.gits.generated.dto"
 	modelNameSuffix = "Dto"
 	generatedAnnotation = "jakarta.annotation.Generated"
 	modelValidationAnnotation = "jakarta.validation.constraints.NotNull"
@@ -27,6 +27,8 @@ graphqlCodegen {
 			"UUID"     : "java.util.UUID",
 			"Url"      : "java.net.URL",
 	]
+	generateEqualsAndHashCode = true
+	generateToString = true
 }
 
 // Automatically generate GraphQL code on project build:
