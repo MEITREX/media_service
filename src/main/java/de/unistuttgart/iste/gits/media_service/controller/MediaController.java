@@ -34,7 +34,8 @@ public class MediaController {
         return mediaService.getMediaRecordsById(ids);
     }
 
-    @QueryMapping List<List<MediaRecordDto>> mediaRecordsByContentIds(@Argument List<UUID> contentIds) {
+    @QueryMapping
+    List<List<MediaRecordDto>> mediaRecordsByContentIds(@Argument List<UUID> contentIds) {
         return mediaService.getMediaRecordsByContentIds(contentIds);
     }
 
