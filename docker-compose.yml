@@ -49,9 +49,9 @@ services:
     restart: always
     network_mode: bridge
     expose:
-      - 1033
+      - 3033
     ports:
-      - "1033:5432"
+      - "3033:5432"
     volumes:
       - mediadata:/var/lib/postgresql/testdata
     environment:
