@@ -34,6 +34,10 @@ public class MediaController {
         return mediaService.getMediaRecordsById(ids);
     }
 
+    @QueryMapping List<List<MediaRecordDto>> mediaRecordsByContentIds(@Argument List<UUID> contentIds) {
+        return mediaService.getMediaRecordsByContentIds(contentIds);
+    }
+
     @MutationMapping
     public MediaRecordDto createMediaRecord(@Argument CreateMediaRecordInputDto input) {
         return mediaService.createMediaRecord(input);
@@ -49,19 +53,13 @@ public class MediaController {
         return mediaService.updateMediaRecord(input);
     }
 
-    // Doesn't work in containers right now
     @MutationMapping
     public UploadUrlDto createStorageUploadUrl(@Argument CreateUrlInputDto input) {
         return mediaService.createUploadUrl(input);
     }
 
-    // Doesn't work in containers right now
     @MutationMapping
     public DownloadUrlDto createStorageDownloadUrl(@Argument CreateUrlInputDto input) {
         return mediaService.createDownloadUrl(input);
-    }
-    @MutationMapping
-    public boolean createStorageBucket(@Argument CreateBucketInputDto input) {
-        return mediaService.createBucket(input);
     }
 }

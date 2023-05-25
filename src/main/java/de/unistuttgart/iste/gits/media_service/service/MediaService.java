@@ -1,6 +1,6 @@
 package de.unistuttgart.iste.gits.media_service.service;
 
-import de.unistuttgart.iste.gits.media_service.dapr.dao.MediaRecordEntity;
+import de.unistuttgart.iste.gits.media_service.persistence.dao.MediaRecordEntity;
 import de.unistuttgart.iste.gits.generated.dto.CreateBucketInputDto;
 import de.unistuttgart.iste.gits.generated.dto.CreateMediaRecordInputDto;
 import de.unistuttgart.iste.gits.generated.dto.CreateUrlInputDto;
@@ -20,12 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -83,6 +78,37 @@ public class MediaService {
         }
 
         return records.stream().map(x -> modelMapper.map(x, MediaRecordDto.class)).toList();
+    }
+
+    /**
+     * Gets all media records that are associated with the passed content ids.
+     * @param contentIds The content ids to get the media records for.
+     * @return Returns a list of lists, where each sublist stores the media records that are associated with the content
+     *         id at the same index in the passed list.
+     */
+    public List<List<MediaRecordDto>> getMediaRecordsByContentIds(List<UUID> contentIds) {
+        List<MediaRecordEntity> records = repository.findMediaRecordEntitiesByContentIds(contentIds);
+
+        // create our resulting list
+        List<List<MediaRecordDto>> result = new ArrayList<>(contentIds.size());
+
+        // fill it with empty lists for each content id so that we can later fill them with
+        // the media records associated with that content id
+        for(int i = 0; i < contentIds.size(); i++) {
+            result.add(new ArrayList<>());
+        }
+
+        // loop over all the entities we got and put them in their respective lists
+        for(MediaRecordEntity entity : records) {
+            for (int i = 0; i < contentIds.size(); i++) {
+                UUID contentId = contentIds.get(i);
+                if (entity.getContentIds().contains(contentId)) {
+                    result.get(i).add(modelMapper.map(entity, MediaRecordDto.class));
+                }
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -208,25 +234,5 @@ public class MediaService {
         }
 
         return variables;
-    }
-
-    /**
-     * Creates a new bucket on the MinIO Server.
-     *
-     * @param input DTO which contains the bucketID (name of the bucket) which should be created
-     * @return true, if the creation was successful, false otherwise
-     */
-    @SneakyThrows
-    public boolean createBucket(CreateBucketInputDto input) {
-        String bucketId = input.getBucketId().toLowerCase();
-        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketId).build());
-        if (!found) {
-            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketId).build());
-            return true;
-        } else {
-            log.info("Bucket " + bucketId + " already exists!");
-            return false;
-        }
-
     }
 }
