@@ -1,18 +1,9 @@
 package de.unistuttgart.iste.gits.media_service.service;
 
+import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.media_service.persistence.dao.MediaRecordEntity;
-import de.unistuttgart.iste.gits.generated.dto.CreateBucketInputDto;
-import de.unistuttgart.iste.gits.generated.dto.CreateMediaRecordInputDto;
-import de.unistuttgart.iste.gits.generated.dto.CreateUrlInputDto;
-import de.unistuttgart.iste.gits.generated.dto.DownloadUrlDto;
-import de.unistuttgart.iste.gits.generated.dto.MediaRecordDto;
-import de.unistuttgart.iste.gits.generated.dto.UpdateMediaRecordInputDto;
-import de.unistuttgart.iste.gits.generated.dto.UploadUrlDto;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordRepository;
-import io.minio.BucketExistsArgs;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
+import io.minio.*;
 import io.minio.http.Method;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.SneakyThrows;
@@ -133,10 +124,21 @@ public class MediaService {
      * @return Returns the id of the record which was deleted.
      * @throws EntityNotFoundException Thrown when no record matching the passed id could be found.
      */
+    @SneakyThrows
     public UUID deleteMediaRecord(UUID id) {
         Optional<MediaRecordEntity> entity = repository.findById(id);
+        Map<String, String> minioVariables = createMinIOVariables(id);
+        String bucketId = minioVariables.get("bucketId");
+        String filename = minioVariables.get("filename");
 
         repository.delete(entity.orElseThrow(() -> new EntityNotFoundException("Media record with id " + id + " not found.")));
+
+        minioClient.removeObject(
+                RemoveObjectArgs
+                        .builder()
+                        .bucket(bucketId)
+                        .object(filename)
+                        .build());
 
         return id;
     }
@@ -168,7 +170,7 @@ public class MediaService {
      */
     @SneakyThrows
     public UploadUrlDto createUploadUrl(CreateUrlInputDto input) {
-        Map<String, String> variables = createMinIOVariables(input);
+        Map<String, String> variables = createMinIOVariables(input.getId());
         String bucketId = variables.get("bucketId");
         String filename = variables.get("filename");
 
@@ -200,7 +202,7 @@ public class MediaService {
      */
     @SneakyThrows
     public DownloadUrlDto createDownloadUrl(CreateUrlInputDto input) {
-        Map<String, String> variables = createMinIOVariables(input);
+        Map<String, String> variables = createMinIOVariables(input.getId());
         String bucketId = variables.get("bucketId");
         String filename = variables.get("filename");
 
@@ -217,14 +219,20 @@ public class MediaService {
         return downloadUrlDto;
     }
 
-    private Map<String, String> createMinIOVariables(CreateUrlInputDto input) {
+    /**
+     * Creates the bucketId and filename for MinIO from the media record.
+     *
+     * @param input UUID of the media record
+     * @return a map with the bucketID and filename which should be used by MinIO
+     */
+    private Map<String, String> createMinIOVariables(UUID input) {
         Map<String, String> variables = new HashMap<>();
 
-        if (!repository.existsById(input.getId())) {
-            throw new EntityNotFoundException("Media record with id " + input.getId() + " not found.");
+        if (!repository.existsById(input)) {
+            throw new EntityNotFoundException("Media record with id " + input + " not found.");
         }
 
-        Optional<MediaRecordEntity> entity = repository.findById(input.getId());
+        Optional<MediaRecordEntity> entity = repository.findById(input);
 
         if (entity.isPresent()) {
             String filename = entity.get().getId().toString();
