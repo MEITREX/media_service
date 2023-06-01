@@ -1,8 +1,5 @@
 version: '3.7'
 
-# starts 4 docker containers running minio server instances.
-# using nginx reverse proxy, load balancing, you can access
-# it through port 9000.
 services:
   minio:
     image: quay.io/minio/minio:RELEASE.2023-05-18T00-05-36Z
@@ -21,7 +18,7 @@ services:
     hostname: minio
     volumes:
       - miniodata:/data
-  nginx:
+  nginx-media:
     image: nginx:1.24-alpine
     hostname: nginx
     volumes:
@@ -31,7 +28,7 @@ services:
       - "9090:9090"
     depends_on:
       - minio
-  database:
+  database-media:
     image: postgres:alpine
     restart: always
     expose:
@@ -58,7 +55,7 @@ services:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=test_data
-  app:
+  app-media:
     build: .
     restart: always
     container_name: media_service
@@ -69,11 +66,15 @@ services:
       - 3000:3000
       - 3001:3001
     depends_on:
-      - database
+      - database-media
       - minio
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/media_service
       MINIO_URL: http://host.docker.internal:9000
+    deploy:
+      resources:
+        limits:
+          memory: 300m
 
 ## By default this config uses default local driver,
 ## For custom volumes replace with volume driver configuration.
