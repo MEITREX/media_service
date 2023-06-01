@@ -69,12 +69,8 @@ services:
       - database-media
       - minio
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/media_service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database-media:5432/media_service
       MINIO_URL: http://host.docker.internal:9000
-    deploy:
-      resources:
-        limits:
-          memory: 300m
 
 ## By default this config uses default local driver,
 ## For custom volumes replace with volume driver configuration.
