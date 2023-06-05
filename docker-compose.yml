@@ -44,13 +44,12 @@ services:
   testDb:
     image: postgres:alpine
     restart: always
-    network_mode: bridge
     expose:
       - 3033
     ports:
       - "3033:5432"
     volumes:
-      - mediadata:/var/lib/postgresql/testdata
+      - mediadata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
