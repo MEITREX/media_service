@@ -70,6 +70,10 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database-media:5432/media_service
       MINIO_URL: http://host.docker.internal:9000
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_ACCESS_SECRET: minioadmin
 
 ## By default this config uses default local driver,
 ## For custom volumes replace with volume driver configuration.
