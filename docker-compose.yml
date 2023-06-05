@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   minio:
-    image: quay.io/minio/minio:RELEASE.2023-05-18T00-05-36Z
+    image: quay.io/minio/minio:latest
     command: server --console-address ":9090" /miniodata
     expose:
       - "9000"
