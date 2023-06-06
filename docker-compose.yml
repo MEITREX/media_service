@@ -74,9 +74,34 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       MINIO_ACCESS_KEY: minioadmin
       MINIO_ACCESS_SECRET: minioadmin
+  dapr-media:
+    image: "daprio/daprd"
+    command: [
+      "./daprd",
+      "--app-id", "media_service",
+      "--app-port", "3000",
+      "--placement-host-address", "placement:50006", # Dapr's placement service can be reach via the docker DNS entry
+      "--resources-path", "./components"
+    ]
+    volumes:
+      - "./components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
+    depends_on:
+      - app-media
+    network_mode: "service:app-media"
+
+  dapr-placement:
+    image: "daprio/dapr"
+    command: [ "./placement", "--port", "50006" ]
+    ports:
+      - "50006:50006"
+
 
 ## By default this config uses default local driver,
 ## For custom volumes replace with volume driver configuration.
 volumes:
   miniodata:
   mediadata:
+networks:
+  default:
+    name: dapr-network
+    external: true
