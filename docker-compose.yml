@@ -62,8 +62,8 @@ services:
       - 3000
       - 3001
     ports:
-      - 3000:3000
-      - 3001:3001
+      - "3000:3000"
+      - "3001:3001"
     depends_on:
       - database-media
       - minio
@@ -79,8 +79,8 @@ services:
     command: [
       "./daprd",
       "--app-id", "media_service",
-      "--app-port", "3000",
-      "--placement-host-address", "placement:50006", # Dapr's placement service can be reach via the docker DNS entry
+      "--app-port", "3001",
+      "--dapr-http-port", "3000",
       "--resources-path", "./components"
     ]
     volumes:
