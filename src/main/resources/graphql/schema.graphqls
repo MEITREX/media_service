@@ -36,18 +36,17 @@ input UpdateMediaRecordInput {
 }
 
 type DownloadUrl {
+  # pre-signed Url from which the file can be downloaded
   url: String
 }
 
 type UploadUrl {
+  # pre-signed Url to which the file can be uploaded
   url: String
 }
 
-input CreateBucketInput {
-  bucketId: String!
-}
-
 input CreateUrlInput {
+  # id of the media record of the file for which a url should be generated
   id: UUID!
 }
 
