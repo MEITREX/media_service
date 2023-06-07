@@ -49,7 +49,7 @@ services:
     ports:
       - "3033:5432"
     volumes:
-      - mediadata:/var/lib/postgresql/data
+      - testdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
@@ -62,8 +62,8 @@ services:
       - 3000
       - 3001
     ports:
-      - 3000:3000
-      - 3001:3001
+      - "3000:3000"
+      - "3001:3001"
     depends_on:
       - database-media
       - minio
@@ -79,21 +79,20 @@ services:
     command: [
       "./daprd",
       "--app-id", "media_service",
-      "--app-port", "3000",
-      "--placement-host-address", "placement:50006", # Dapr's placement service can be reach via the docker DNS entry
+      "--app-port", "3001",
+      "--dapr-http-port", "3000",
       "--resources-path", "./components"
     ]
     volumes:
       - "./components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
     depends_on:
       - app-media
+      - redis
     network_mode: "service:app-media"
-
-  dapr-placement:
-    image: "daprio/dapr"
-    command: [ "./placement", "--port", "50006" ]
-    ports:
-      - "50006:50006"
+  redis:
+    image: "redis:alpine"
+    expose:
+      - "6379"
 
 
 ## By default this config uses default local driver,
@@ -101,6 +100,7 @@ services:
 volumes:
   miniodata:
   mediadata:
+  testdata:
 networks:
   default:
     name: dapr-network
