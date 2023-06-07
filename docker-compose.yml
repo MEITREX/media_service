@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   minio:
     image: quay.io/minio/minio:latest
@@ -44,6 +42,7 @@ services:
   testDb:
     image: postgres:alpine
     restart: always
+    network_mode: bridge
     expose:
       - 3033
     ports:
@@ -93,10 +92,6 @@ services:
     image: "redis:alpine"
     expose:
       - "6379"
-
-
-## By default this config uses default local driver,
-## For custom volumes replace with volume driver configuration.
 volumes:
   miniodata:
   mediadata:
