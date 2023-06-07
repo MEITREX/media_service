@@ -49,7 +49,7 @@ services:
     ports:
       - "3033:5432"
     volumes:
-      - mediadata:/var/lib/postgresql/data
+      - testdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
@@ -87,13 +87,12 @@ services:
       - "./components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
     depends_on:
       - app-media
+      - redis
     network_mode: "service:app-media"
-
-  dapr-placement:
-    image: "daprio/dapr"
-    command: [ "./placement", "--port", "50006" ]
-    ports:
-      - "50006:50006"
+  redis:
+    image: "redis:alpine"
+    expose:
+      - "6379"
 
 
 ## By default this config uses default local driver,
@@ -101,6 +100,7 @@ services:
 volumes:
   miniodata:
   mediadata:
+  testdata:
 networks:
   default:
     name: dapr-network
