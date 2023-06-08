@@ -1,8 +1,7 @@
-version: '3.7'
-
+version: "3"
 services:
   minio:
-    image: quay.io/minio/minio:RELEASE.2023-05-18T00-05-36Z
+    image: quay.io/minio/minio:latest
     command: server --console-address ":9090" /miniodata
     expose:
       - "9000"
@@ -22,7 +21,8 @@ services:
     image: nginx:1.24-alpine
     hostname: nginx
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # ../media_service is necessary because otherwise docker-compose overrides the context when merging multiple docker-compose.yml files
+      - ./../media_service/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "9000:9000"
       - "9090:9090"
@@ -44,36 +44,61 @@ services:
   testDb:
     image: postgres:alpine
     restart: always
-    network_mode: bridge
     expose:
       - 3033
     ports:
       - "3033:5432"
     volumes:
-      - mediadata:/var/lib/postgresql/testdata
+      - testdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=test_data
   app-media:
-    build: .
+    build:
+      context: ./../media_service/ # necessary because otherwise docker-compose overrides the context when merging multiple docker-compose.yml files
     restart: always
     container_name: media_service
     expose:
       - 3000
       - 3001
     ports:
-      - 3000:3000
-      - 3001:3001
+      - "3000:3000"
+      - "3001:3001"
     depends_on:
       - database-media
       - minio
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database-media:5432/media_service
       MINIO_URL: http://host.docker.internal:9000
-
-## By default this config uses default local driver,
-## For custom volumes replace with volume driver configuration.
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_ACCESS_SECRET: minioadmin
+  dapr-media:
+    image: "daprio/daprd"
+    command: [
+      "./daprd",
+      "--app-id", "media_service",
+      "--app-port", "3001",
+      "--dapr-http-port", "3000",
+      "--resources-path", "./components"
+    ]
+    volumes:
+      - "./components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
+    depends_on:
+      - app-media
+      - redis
+    network_mode: "service:app-media"
+  redis:
+    image: "redis:alpine"
+    expose:
+      - "6379"
 volumes:
   miniodata:
   mediadata:
+  testdata:
+networks:
+  default:
+    name: dapr-network
+    external: true
