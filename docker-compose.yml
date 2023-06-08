@@ -1,3 +1,4 @@
+version: "3"
 services:
   minio:
     image: quay.io/minio/minio:latest
@@ -42,7 +43,6 @@ services:
   testDb:
     image: postgres:alpine
     restart: always
-    network_mode: bridge
     expose:
       - 3033
     ports:
@@ -54,7 +54,8 @@ services:
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=test_data
   app-media:
-    build: .
+    build:
+      context: ./../media_service/ # necessary because otherwise docker-compose overrides the context when merging multiple docker-compose.yml files
     restart: always
     container_name: media_service
     expose:
