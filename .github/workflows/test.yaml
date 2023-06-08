@@ -50,5 +50,5 @@ jobs:
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: ghcr.io/it-rex-platform/media_service:main
+          tags: ghcr.io/it-rex-platform/media_service:latest
           push: true
