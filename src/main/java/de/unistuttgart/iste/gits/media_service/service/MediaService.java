@@ -42,8 +42,8 @@ public class MediaService {
     /**
      * @return Returns a list containing all saved media records.
      */
-    public List<MediaRecordDto> getAllMediaRecords() {
-        return repository.findAll().stream().map(x -> modelMapper.map(x, MediaRecordDto.class)).toList();
+    public List<MediaRecord> getAllMediaRecords() {
+        return repository.findAll().stream().map(x -> modelMapper.map(x, MediaRecord.class)).toList();
     }
 
     /**
@@ -55,7 +55,7 @@ public class MediaService {
      * @throws EntityNotFoundException Thrown when one or more passed ids do not have corresponding media records in
      *                                 the database.
      */
-    public List<MediaRecordDto> getMediaRecordsById(List<UUID> ids) {
+    public List<MediaRecord> getMediaRecordsById(List<UUID> ids) {
         List<MediaRecordEntity> records = repository.findAllById(ids).stream().toList();
 
         // if there are fewer returned records than passed ids, that means that some ids could not be found in the
@@ -68,24 +68,25 @@ public class MediaService {
             throw new EntityNotFoundException("Media record(s) with id(s) " + missingIds.stream().map(UUID::toString).collect(Collectors.joining(", ")) + " not found.");
         }
 
-        return records.stream().map(x -> modelMapper.map(x, MediaRecordDto.class)).toList();
+        return records.stream().map(x -> modelMapper.map(x, MediaRecord.class)).toList();
     }
 
     /**
      * Gets all media records that are associated with the passed content ids.
+     *
      * @param contentIds The content ids to get the media records for.
      * @return Returns a list of lists, where each sublist stores the media records that are associated with the content
-     *         id at the same index in the passed list.
+     * id at the same index in the passed list.
      */
-    public List<List<MediaRecordDto>> getMediaRecordsByContentIds(List<UUID> contentIds) {
+    public List<List<MediaRecord>> getMediaRecordsByContentIds(List<UUID> contentIds) {
         List<MediaRecordEntity> records = repository.findMediaRecordEntitiesByContentIds(contentIds);
 
         // create our resulting list
-        List<List<MediaRecordDto>> result = new ArrayList<>(contentIds.size());
+        List<List<MediaRecord>> result = new ArrayList<>(contentIds.size());
 
         // fill it with empty lists for each content id so that we can later fill them with
         // the media records associated with that content id
-        for(int i = 0; i < contentIds.size(); i++) {
+        for (int i = 0; i < contentIds.size(); i++) {
             result.add(new ArrayList<>());
         }
 
@@ -94,7 +95,7 @@ public class MediaService {
             for (int i = 0; i < contentIds.size(); i++) {
                 UUID contentId = contentIds.get(i);
                 if (entity.getContentIds().contains(contentId)) {
-                    result.get(i).add(modelMapper.map(entity, MediaRecordDto.class));
+                    result.get(i).add(modelMapper.map(entity, MediaRecord.class));
                 }
             }
         }
@@ -108,12 +109,12 @@ public class MediaService {
      * @param input Object storing the attributes the newly created media record should have.
      * @return Returns the media record which was created, with the ID generated for it.
      */
-    public MediaRecordDto createMediaRecord(CreateMediaRecordInputDto input) {
+    public MediaRecord createMediaRecord(CreateMediaRecordInput input) {
         MediaRecordEntity entity = modelMapper.map(input, MediaRecordEntity.class);
 
         repository.save(entity);
 
-        return modelMapper.map(entity, MediaRecordDto.class);
+        return modelMapper.map(entity, MediaRecord.class);
     }
 
     /**
@@ -150,7 +151,7 @@ public class MediaService {
      *              the id field of the input object.
      * @return Returns the media record with its newly updated data.
      */
-    public MediaRecordDto updateMediaRecord(UpdateMediaRecordInputDto input) {
+    public MediaRecord updateMediaRecord(UpdateMediaRecordInput input) {
         if (!repository.existsById(input.getId())) {
             throw new EntityNotFoundException("Media record with id " + input.getId() + " not found.");
         }
@@ -159,7 +160,7 @@ public class MediaService {
 
         MediaRecordEntity updatedRecord = repository.save(entity);
 
-        return modelMapper.map(updatedRecord, MediaRecordDto.class);
+        return modelMapper.map(updatedRecord, MediaRecord.class);
     }
 
     /**
@@ -169,7 +170,7 @@ public class MediaService {
      * @return Returns the created uploadURL.
      */
     @SneakyThrows
-    public UploadUrlDto createUploadUrl(CreateUrlInputDto input) {
+    public UploadUrl createUploadUrl(CreateUrlInput input) {
         Map<String, String> variables = createMinIOVariables(input.getId());
         String bucketId = variables.get("bucketId");
         String filename = variables.get("filename");
@@ -189,9 +190,7 @@ public class MediaService {
                         .expiry(15, TimeUnit.MINUTES)
                         .build());
 
-        UploadUrlDto uploadUrlDto = new UploadUrlDto();
-        uploadUrlDto.setUrl(url);
-        return uploadUrlDto;
+        return new UploadUrl(url);
     }
 
     /**
@@ -201,7 +200,7 @@ public class MediaService {
      * @return Returns the created downloadURL.
      */
     @SneakyThrows
-    public DownloadUrlDto createDownloadUrl(CreateUrlInputDto input) {
+    public DownloadUrl createDownloadUrl(CreateUrlInput input) {
         Map<String, String> variables = createMinIOVariables(input.getId());
         String bucketId = variables.get("bucketId");
         String filename = variables.get("filename");
@@ -214,9 +213,7 @@ public class MediaService {
                         .object(filename)
                         .expiry(15, TimeUnit.MINUTES)
                         .build());
-        DownloadUrlDto downloadUrlDto = new DownloadUrlDto();
-        downloadUrlDto.setUrl(url);
-        return downloadUrlDto;
+        return new DownloadUrl(url);
     }
 
     /**

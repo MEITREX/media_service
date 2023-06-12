@@ -25,22 +25,22 @@ public class MediaController {
     }
 
     @QueryMapping
-    public List<MediaRecordDto> mediaRecords() {
+    public List<MediaRecord> mediaRecords() {
         return mediaService.getAllMediaRecords();
     }
 
     @QueryMapping
-    public List<MediaRecordDto> mediaRecordsById(@Argument List<UUID> ids) {
+    public List<MediaRecord> mediaRecordsById(@Argument List<UUID> ids) {
         return mediaService.getMediaRecordsById(ids);
     }
 
     @QueryMapping
-    List<List<MediaRecordDto>> mediaRecordsByContentIds(@Argument List<UUID> contentIds) {
+    List<List<MediaRecord>> mediaRecordsByContentIds(@Argument List<UUID> contentIds) {
         return mediaService.getMediaRecordsByContentIds(contentIds);
     }
 
     @MutationMapping
-    public MediaRecordDto createMediaRecord(@Argument CreateMediaRecordInputDto input) {
+    public MediaRecord createMediaRecord(@Argument CreateMediaRecordInput input) {
         return mediaService.createMediaRecord(input);
     }
 
@@ -50,17 +50,17 @@ public class MediaController {
     }
 
     @MutationMapping
-    public MediaRecordDto updateMediaRecord(@Argument UpdateMediaRecordInputDto input) {
+    public MediaRecord updateMediaRecord(@Argument UpdateMediaRecordInput input) {
         return mediaService.updateMediaRecord(input);
     }
 
     @MutationMapping
-    public UploadUrlDto createStorageUploadUrl(@Argument CreateUrlInputDto input) {
+    public UploadUrl createStorageUploadUrl(@Argument CreateUrlInput input) {
         return mediaService.createUploadUrl(input);
     }
 
     @MutationMapping
-    public DownloadUrlDto createStorageDownloadUrl(@Argument CreateUrlInputDto input) {
+    public DownloadUrl createStorageDownloadUrl(@Argument CreateUrlInput input) {
         return mediaService.createDownloadUrl(input);
     }
 }

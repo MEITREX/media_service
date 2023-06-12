@@ -16,8 +16,8 @@ public class TemplateExceptionResolver extends DataFetcherExceptionResolverAdapt
 
     @Override
     protected GraphQLError resolveToSingleError(@NonNull Throwable ex, @NonNull DataFetchingEnvironment env) {
-        if (ex instanceof ChangeSetPersister.NotFoundException) {
-            return handleNotFoundException((ChangeSetPersister.NotFoundException) ex);
+        if (ex instanceof ChangeSetPersister.NotFoundException exception) {
+            return handleNotFoundException(exception);
         } else {
             return handleGenericException(ex);
         }
