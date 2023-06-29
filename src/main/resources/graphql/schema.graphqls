@@ -17,6 +17,24 @@ type MediaRecord {
   uploadUrl: String!
   # Temporary download url for the media record
   downloadUrl: String!
+
+  """
+  The progress data of the given user for this medium.
+  """
+  userProgressData(userId: UUID!): MediaRecordProgressData!
+}
+
+type MediaRecordProgressData {
+
+  """
+  Whether the medium has been worked on by the user.
+  """
+  workedOn: Boolean!
+  """
+  Date on which the medium was worked on by the user.
+  This is null if the medium has not been worked on by the user.
+  """
+  dateWorkedOn: DateTime
 }
 
 input CreateMediaRecordInput {
@@ -64,7 +82,16 @@ type Mutation {
   createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
   # Updates an existing media record with the given UUID
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
-    # Deletes the media record with the given UUID
+  # Deletes the media record with the given UUID
   deleteMediaRecord(id: UUID!): UUID!
+  """
+  Logs that a media has been worked on by a user.
+  See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
+
+  Possible side effects:
+  When all media records of a content have been worked on by a user,
+  a user-progress event is emitted for the content.
+  """
+  logMediaRecordWorkedOn(mediaRecordId: UUID!, userId: UUID!): MediaRecord!
 }
 

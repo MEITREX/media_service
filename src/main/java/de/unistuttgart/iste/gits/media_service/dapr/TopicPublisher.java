@@ -2,47 +2,48 @@ package de.unistuttgart.iste.gits.media_service.dapr;
 
 import de.unistuttgart.iste.gits.common.dapr.CrudOperation;
 import de.unistuttgart.iste.gits.common.dapr.ResourceUpdateDTO;
+import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.media_service.persistence.dao.MediaRecordEntity;
 import io.dapr.client.DaprClient;
-import io.dapr.client.DaprClientBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * Component that takes care of publishing messages to a dapr Topic
  */
-@Component
 @Slf4j
 public class TopicPublisher {
 
     private static final String PUBSUB_NAME = "gits";
-    private static final String TOPIC_NAME = "resource-update";
+    private static final String RESOURCE_UPDATE_TOPIC = "resource-update";
+
+    private static final String USER_PROGRESS_LOG_TOPIC = "content-progressed";
 
     private final DaprClient client;
 
-    public TopicPublisher(){
-        client = new DaprClientBuilder().build();
+    public TopicPublisher(DaprClient client) {
+        this.client = client;
     }
 
     /**
      * method used to publish dapr messages to a topic
+     *
      * @param dto message
      */
-    private void publishChanges(ResourceUpdateDTO dto){
-        log.info("publishing message");
+    private void publishChanges(ResourceUpdateDTO dto) {
+        log.debug("publishing message");
         client.publishEvent(
                 PUBSUB_NAME,
-                TOPIC_NAME,
+                RESOURCE_UPDATE_TOPIC,
                 dto).block();
     }
 
     /**
      * method to take changes done to an entity and to transmit them to the dapr topic
+     *
      * @param mediaRecordEntity changed entity
-     * @param operation type of CRUD operation performed on entity
+     * @param operation         type of CRUD operation performed on entity
      */
-    public void notifyChange(MediaRecordEntity mediaRecordEntity, CrudOperation operation){
-
+    public void notifyResourceChange(MediaRecordEntity mediaRecordEntity, CrudOperation operation) {
         ResourceUpdateDTO dto = ResourceUpdateDTO.builder()
                 .entityId(mediaRecordEntity.getId())
                 .contentIds(mediaRecordEntity.getContentIds())
@@ -50,5 +51,13 @@ public class TopicPublisher {
         publishChanges(dto);
     }
 
+    /**
+     * Publishes a message to the dapr topic that a user has worked on a content
+     *
+     * @param userProgressLogEvent event to publish
+     */
+    public void notifyUserWorkedOnContent(UserProgressLogEvent userProgressLogEvent) {
+        client.publishEvent(PUBSUB_NAME, USER_PROGRESS_LOG_TOPIC, userProgressLogEvent).block();
+    }
 
 }
