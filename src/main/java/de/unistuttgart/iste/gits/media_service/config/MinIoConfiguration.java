@@ -33,7 +33,7 @@ public class MinIoConfiguration {
     public MinioClient minioExternalClient() {
         return new MinioClient.Builder()
                 .credentials(accessKey, secretKey)
-                .endpoint(minioExternalUrl, 443)
+                .endpoint(minioExternalUrl, 443, true)
                 .region("eu-central-1")
                 .build();
     }
