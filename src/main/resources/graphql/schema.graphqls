@@ -5,17 +5,33 @@
 # end with .graphqls
 
 type MediaRecord {
-  # ID of the media record
+  """
+  ID of the media record
+  """
   id: UUID!
-  # Name of the media record
+  """
+  Name of the media record
+  """
   name: String!
-  # Type of the media record
+  """
+  User ID of the creator of the media record.
+  """
+  creatorId: UUID!
+  """
+  Type of the media record
+  """
   type: MediaType!
-  # IDs of the MediaContents this media record is associated with
+  """
+  IDs of the MediaContents this media record is associated with
+  """
   contentIds: [UUID!]!
-  # Temporary upload url for the media record
+  """
+  Temporary upload url for the media record
+  """
   uploadUrl: String!
-  # Temporary download url for the media record
+  """
+  Temporary download url for the media record
+  """
   downloadUrl: String!
 
   """
@@ -38,26 +54,42 @@ type MediaRecordProgressData {
 }
 
 input CreateMediaRecordInput {
-  # Name of the media record. Cannot be blank, maximum length 255 characters.
+  """
+  Name of the media record. Cannot be blank, maximum length 255 characters.
+  """
   name: String! @NotBlank @Size(max: 255)
-  # Type of the media record.
+  """
+  Type of the media record.
+  """
   type: MediaType!
-  # IDs of the MediaContents this media record is associated with
+  """
+  IDs of the MediaContents this media record is associated with
+  """
   contentIds: [UUID!]!
 }
 
 input UpdateMediaRecordInput {
-  # ID of the media record which should be updated
+  """
+  ID of the media record which should be updated
+  """
   id: UUID!
-  # New name of the media record. Cannot be blank, maximum length 255 characters.
+  """
+  New name of the media record. Cannot be blank, maximum length 255 characters.
+  """
   name: String! @NotBlank @Size(max: 255)
-  # New type of the media record.
+  """
+  New type of the media record.
+  """
   type: MediaType!
-  # IDs of the MediaContents this media record is associated with
+  """
+  IDs of the MediaContents this media record is associated with
+  """
   contentIds: [UUID!]!
 }
 
-# The type of the media record
+"""
+The type of the media record
+"""
 enum MediaType {
   VIDEO
   AUDIO
@@ -68,22 +100,42 @@ enum MediaType {
 }
 
 type Query {
-  # Returns the media records with the given IDs
+  """
+  Returns the media records with the given IDs
+  """
   mediaRecordsById(ids: [UUID!]!): [MediaRecord!]!
-  # Returns all media records
-  mediaRecords: [MediaRecord!]!
-  # Returns the media records associated the given content IDs as a list of lists where each sublist contains
-  # the media records associated with the content ID at the same index in the input list
+  """
+  Returns all media records of the system.
+  """
+  mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
+  """
+  Returns all media records which the current user created.
+  """
+  userMediaRecords: [MediaRecord!]!
+  """
+  Returns the media records associated the given content IDs as a list of lists where each sublist contains
+  the media records associated with the content ID at the same index in the input list
+  """
   mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
 }
 
 type Mutation {
-  # Creates a new media record
+  """
+  Creates a new media record
+  """
   createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
-  # Updates an existing media record with the given UUID
+  """
+  Updates an existing media record with the given UUID
+  """
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
-  # Deletes the media record with the given UUID
+  """
+  Deletes the media record with the given UUID
+  """
   deleteMediaRecord(id: UUID!): UUID!
+  """
+  Allows multiple media records to be linked/added to a content.
+  """
+  linkMediaRecordsWithContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   """
   Logs that a media has been worked on by the current user.
   See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
