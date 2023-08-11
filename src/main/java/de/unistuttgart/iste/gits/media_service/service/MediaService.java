@@ -76,7 +76,7 @@ public class MediaService {
      * @throws EntityNotFoundException Thrown when one or more passed ids do not have corresponding media records in
      *                                 the database.
      */
-    public List<MediaRecord> getMediaRecordsById(List<UUID> ids, boolean generateUploadUrls, boolean generateDownloadUrls) {
+    public List<MediaRecord> getMediaRecordsByIds(List<UUID> ids, boolean generateUploadUrls, boolean generateDownloadUrls) {
         List<MediaRecordEntity> records = repository.findAllById(ids).stream().toList();
 
         // if there are fewer returned records than passed ids, that means that some ids could not be found in the
@@ -92,6 +92,37 @@ public class MediaService {
 
         return fillMediaRecordsUrlsIfRequested(
                 records.stream().map(x -> modelMapper.map(x, MediaRecord.class)).toList(),
+                generateUploadUrls,
+                generateDownloadUrls
+        );
+    }
+
+    /**
+     * The same as {@link #getMediaRecordsByIds(List, boolean, boolean)}, except that it doesn't throw an exception
+     * if an entity cannot be found. Instead, it returns NULL for that entity.
+     *
+     * @return Returns a List containing the MediaRecords with the specified ids. If a media record for an id cannot
+     *         be found, returns NULL for that media record instead.
+     */
+    public List<MediaRecord> findMediaRecordsByIds(List<UUID> ids, boolean generateUploadUrls, boolean generateDownloadUrls) {
+        List<MediaRecordEntity> records = repository.findAllById(ids).stream().toList();
+
+        List<MediaRecord> result = new ArrayList<>(ids.size());
+
+        // go over all requested ids
+        for (UUID id : ids) {
+            // get the entity with the matching id or NULL if it doesn't exist
+            MediaRecordEntity entity = records.stream().filter(x -> x.getId().equals(id)).findAny().orElse(null);
+            MediaRecord mediaRecord = null;
+            // if we found an entity, convert it to a DTO
+            if(entity != null) {
+                mediaRecord = modelMapper.map(entity, MediaRecord.class);
+            }
+            result.add(mediaRecord);
+        }
+
+        return fillMediaRecordsUrlsIfRequested(
+                result,
                 generateUploadUrls,
                 generateDownloadUrls
         );

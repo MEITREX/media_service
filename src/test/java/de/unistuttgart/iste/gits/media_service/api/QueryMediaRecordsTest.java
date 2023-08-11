@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 
 import java.util.List;
+import java.util.UUID;
 
 import static de.unistuttgart.iste.gits.media_service.test_util.MediaRecordRepositoryUtil.fillRepositoryWithMediaRecords;
 
@@ -69,12 +70,12 @@ class QueryMediaRecordsTest {
     }
 
     @Test
-    void testQueryMediaRecordsById(GraphQlTester tester) {
+    void testQueryMediaRecordsByIds(GraphQlTester tester) {
         List<MediaRecordEntity> expectedMediaRecords = fillRepositoryWithMediaRecords(repository);
 
         String query = """
                 query {
-                    mediaRecordsById(ids: ["%s", "%s"]) {
+                    mediaRecordsByIds(ids: ["%s", "%s"]) {
                         id,
                         name,
                         creatorId,
@@ -86,10 +87,35 @@ class QueryMediaRecordsTest {
 
         tester.document(query)
                 .execute()
-                .path("mediaRecordsById").entityList(MediaRecord.class).hasSize(expectedMediaRecords.size())
+                .path("mediaRecordsByIds").entityList(MediaRecord.class).hasSize(expectedMediaRecords.size())
                 .contains(expectedMediaRecords.stream()
                         .map(x -> mapper.map(x, MediaRecord.class))
                         .toArray(MediaRecord[]::new));
+    }
+
+    @Test
+    void testQueryFindMediaRecordsByIds(GraphQlTester tester) {
+        List<MediaRecordEntity> expectedMediaRecords = fillRepositoryWithMediaRecords(repository);
+
+        UUID nonexistantUUID = UUID.randomUUID();
+
+        String query = """
+                query($ids: [UUID!]!) {
+                    findMediaRecordsByIds(ids: $ids) {
+                        id,
+                        name,
+                        creatorId,
+                        type,
+                        contentIds
+                    }
+                }
+                """;
+
+        tester.document(query)
+                .variable("ids", List.of(expectedMediaRecords.get(0).getId(), nonexistantUUID))
+                .execute()
+                .path("findMediaRecordsByIds").entityList(MediaRecord.class).hasSize(2)
+                .contains(mapper.map(expectedMediaRecords.get(0), MediaRecord.class), null);
     }
 
     @Test
