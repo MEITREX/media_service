@@ -8,7 +8,10 @@ import de.unistuttgart.iste.gits.generated.dto.UpdateMediaRecordInput;
 import de.unistuttgart.iste.gits.media_service.dapr.TopicPublisher;
 import de.unistuttgart.iste.gits.media_service.persistence.dao.MediaRecordEntity;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordRepository;
-import io.minio.*;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
 import io.minio.http.Method;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,8 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -115,7 +122,7 @@ public class MediaService {
             MediaRecordEntity entity = records.stream().filter(x -> x.getId().equals(id)).findAny().orElse(null);
             MediaRecord mediaRecord = null;
             // if we found an entity, convert it to a DTO
-            if(entity != null) {
+            if (entity != null) {
                 mediaRecord = modelMapper.map(entity, MediaRecord.class);
             }
             result.add(mediaRecord);
@@ -135,6 +142,7 @@ public class MediaService {
 
     /**
      * Gets all media records for which the specified user is the creator.
+     *
      * @param userId The id of the user to get the media records for.
      * @return Returns a list of the user's media records.
      */
@@ -181,6 +189,7 @@ public class MediaService {
 
         result.forEach(x -> fillMediaRecordsUrlsIfRequested(x, generateUploadUrls, generateDownloadUrls));
 
+
         return result;
     }
 
@@ -196,7 +205,8 @@ public class MediaService {
 
     /**
      * Links the media records with the passed ids to the content with the passed id.
-     * @param contentId The content id to link the media records to.
+     *
+     * @param contentId      The content id to link the media records to.
      * @param mediaRecordIds The ids of the media records to link to the content.
      * @return Returns a list of the media records that were linked to the content.
      */
@@ -214,7 +224,7 @@ public class MediaService {
                     .formatted(missingIds.stream().map(UUID::toString).collect(Collectors.joining(", "))));
         }
 
-        for(MediaRecordEntity entity : entities) {
+        for (MediaRecordEntity entity : entities) {
             entity.getContentIds().add(contentId);
             repository.save(entity);
         }
@@ -263,23 +273,20 @@ public class MediaService {
     public UUID deleteMediaRecord(UUID id) {
         requireMediaRecordExisting(id);
         MediaRecordEntity entity = repository.getReferenceById(id);
-        Map<String, String> minioVariables = createMinIOVariables(id);
+        Map<String, String> minioVariables = createMinIOVariables(entity);
         String bucketId = minioVariables.get(BUCKET_ID);
         String filename = minioVariables.get(FILENAME);
 
         repository.delete(entity);
 
 
-        boolean bucketExists = minioInternalClient.bucketExists(BucketExistsArgs.builder().bucket(bucketId).build());
-        if (bucketExists) {
-            if (isObjectExist(filename, bucketId)) {
-                minioInternalClient.removeObject(
-                        RemoveObjectArgs
-                                .builder()
-                                .bucket(bucketId)
-                                .object(filename)
-                                .build());
-            }
+        if (isObjectExist(filename, bucketId)) {
+            minioInternalClient.removeObject(
+                    RemoveObjectArgs
+                            .builder()
+                            .bucket(bucketId)
+                            .object(filename)
+                            .build());
         }
 
         //publish changes
@@ -332,53 +339,92 @@ public class MediaService {
      * @return Returns the same list (which has been modified in-place) with the media records with the now added urls.
      */
     private List<MediaRecord> fillMediaRecordsUrlsIfRequested(List<MediaRecord> mediaRecords, boolean generateUploadUrls, boolean generateDownloadUrls) {
+        List<MediaRecord> records = new ArrayList<>();
+
         for (MediaRecord mediaRecord : mediaRecords) {
-            fillMediaRecordUrlsIfRequested(mediaRecord, generateUploadUrls, generateDownloadUrls);
+            records.add(fillMediaRecordUrlsIfRequested(mediaRecord, generateUploadUrls, generateDownloadUrls));
         }
 
-        return mediaRecords;
+        return records;
     }
 
     /**
      * Helper method which adds a generated upload and/or download url to the passed media record and returns that same
      * media record.
      *
-     * @param mediaRecord         The media record to add the urls to.
+     * @param mediaRecord        The media record to add the urls to.
      * @param generateUploadUrl   If an upload url should be generated.
      * @param generateDownloadUrl If a download url should be generated
      * @return Returns the same media record that has been passed to the method.
      */
     private MediaRecord fillMediaRecordUrlsIfRequested(MediaRecord mediaRecord, boolean generateUploadUrl, boolean generateDownloadUrl) {
+
         if (generateUploadUrl) {
-            mediaRecord.setUploadUrl(createUploadUrl(mediaRecord.getId()));
+            String uploadUrl = mediaRecord.getUploadUrl();
+            if (uploadUrl == null || isExpired(uploadUrl)) {
+                mediaRecord.setUploadUrl(createUploadUrl(mediaRecord));
+            }
+
         }
 
         if (generateDownloadUrl) {
-            mediaRecord.setDownloadUrl(createDownloadUrl(mediaRecord.getId()));
+            String downloadUrl = mediaRecord.getDownloadUrl();
+            if (downloadUrl == null || isExpired(downloadUrl)) {
+                mediaRecord.setDownloadUrl(createDownloadUrl(mediaRecord));
+            }
         }
 
         return mediaRecord;
     }
 
     /**
+     * Checks if the download and upload url are expired and need to be recreated.
+     * @param url that should be checked
+     * @return true if the url is expired, false otherwise
+     */
+    private boolean isExpired(String url) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss").withZone(ZoneOffset.UTC);
+        Pattern datePattern = Pattern.compile("X-Amz-Date=([0-9]*T[0-9]*)");
+        Matcher dateMatcher = datePattern.matcher(url);
+        Pattern expiryPattern = Pattern.compile("X-Amz-Expires=([0-9]*)");
+        Matcher expiryMatcher = expiryPattern.matcher(url);
+
+        String dateString = "";
+        while (dateMatcher.find()) {
+            dateString = dateMatcher.group(1);
+
+        }
+        long expiryString = 0;
+        while (expiryMatcher.find()) {
+            expiryString = Long.parseLong(expiryMatcher.group(1));
+        }
+
+        ZonedDateTime date = ZonedDateTime.parse(dateString, formatter);
+        long expiry = expiryString;
+
+        ZonedDateTime expiration = date.plusSeconds(expiry-300);
+
+        return expiration.toInstant().isBefore((Instant.now()));
+
+    }
+
+    /**
      * Creates a URL for uploading a file to the minIO Server.
      *
-     * @param mediaRecordId UUID of the media record to generate the upload url for.
+     * @param mediaRecord UUID of the media record to generate the upload url for.
      * @return Returns the created uploadURL.
      */
     @SneakyThrows
-    private String createUploadUrl(UUID mediaRecordId) {
-        Map<String, String> variables = createMinIOVariables(mediaRecordId);
+    private String createUploadUrl(MediaRecord mediaRecord) {
+
+        requireMediaRecordExisting(mediaRecord.getId());
+
+        MediaRecordEntity entity = repository.getReferenceById(mediaRecord.getId());
+        Map<String, String> variables = createMinIOVariables(entity);
         String bucketId = variables.get(BUCKET_ID);
         String filename = variables.get(FILENAME);
 
-        // Ensures that the Bucket exists or creates a new one otherwise. Weirdly this only works if at least one bucket already exists.
-        boolean found = minioInternalClient.bucketExists(BucketExistsArgs.builder().bucket(bucketId).build());
-        if (!found) {
-            minioInternalClient.makeBucket(MakeBucketArgs.builder().bucket(bucketId).build());
-        }
-
-        return minioExternalClient.getPresignedObjectUrl(
+        String uploadUrl = minioExternalClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs
                         .builder()
                         .method(Method.PUT)
@@ -386,46 +432,50 @@ public class MediaService {
                         .object(filename)
                         .expiry(15, TimeUnit.MINUTES)
                         .build());
+        entity.setUploadUrl(uploadUrl);
+        repository.save(entity);
+        return uploadUrl;
     }
 
     /**
      * Creates a URL for downloading a file from the MinIO Server.
      *
-     * @param mediaRecordId UUID of the media record to generate the download url for.
+     * @param mediaRecord UUID of the media record to generate the download url for.
      * @return Returns the created downloadURL.
      */
     @SneakyThrows
-    private String createDownloadUrl(UUID mediaRecordId) {
-        Map<String, String> variables = createMinIOVariables(mediaRecordId);
+    private String createDownloadUrl(MediaRecord mediaRecord) {
+        requireMediaRecordExisting(mediaRecord.getId());
+
+        MediaRecordEntity entity = repository.getReferenceById(mediaRecord.getId());
+        Map<String, String> variables = createMinIOVariables(entity);
         String bucketId = variables.get(BUCKET_ID);
         String filename = variables.get(FILENAME);
 
-
-        return minioExternalClient.getPresignedObjectUrl(
+        String downloadUrl =  minioExternalClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()
                         .method(Method.GET)
                         .bucket(bucketId)
                         .object(filename)
                         .expiry(15, TimeUnit.MINUTES)
                         .build());
+        entity.setDownloadUrl(downloadUrl);
+        repository.save(entity);
+        return downloadUrl;
     }
 
     /**
      * Creates the bucketId and filename for MinIO from the media record.
      *
-     * @param input UUID of the media record
+     * @param mediaRecord UUID of the media record
      * @return a map with the bucketID and filename which should be used by MinIO
      */
-    private Map<String, String> createMinIOVariables(UUID input) {
+    private Map<String, String> createMinIOVariables(MediaRecordEntity mediaRecord) {
         Map<String, String> variables = new HashMap<>();
 
-        requireMediaRecordExisting(input);
-
-        MediaRecordEntity entity = repository.getReferenceById(input);
-
-        String filename = entity.getId().toString();
+        String filename = mediaRecord.getId().toString();
         variables.put(FILENAME, filename);
-        String bucketId = entity.getType().toString().toLowerCase();
+        String bucketId = mediaRecord.getType().toString().toLowerCase();
         variables.put(BUCKET_ID, bucketId);
 
         return variables;
@@ -435,7 +485,6 @@ public class MediaService {
         try {
 
             minioInternalClient.statObject(StatObjectArgs.builder()
-
                     .bucket(bucketname)
                     .object(name).build());
             return true;
@@ -452,17 +501,18 @@ public class MediaService {
      * function that updates all media records that contain at least one of the received content IDs.
      * All received content Ids are removed from the media records.
      * If changes are performed to an entity, a message is published to a dapr topic.
+     *
      * @param dto Event object containing a list of content IDs and a CRUD operation
      */
-    public void removeContentIds(ContentChangeEvent dto){
+    public void removeContentIds(ContentChangeEvent dto) {
 
         // check if DTO is complete
-        if (dto.getContentIds() == null  || dto.getOperation() == null){
+        if (dto.getContentIds() == null || dto.getOperation() == null) {
             throw new NullPointerException("incomplete message received: all fields of a message must be non-null");
         }
 
         //This method should only process Content Deletion Events
-        if (!dto.getOperation().equals(CrudOperation.DELETE) || dto.getContentIds().isEmpty()){
+        if (!dto.getOperation().equals(CrudOperation.DELETE) || dto.getContentIds().isEmpty()) {
             return;
         }
 
@@ -470,12 +520,12 @@ public class MediaService {
         List<MediaRecordEntity> entities = repository.findMediaRecordEntitiesByContentIds(dto.getContentIds());
 
         // apply changes to all found media records
-        for (MediaRecordEntity entity: entities) {
+        for (MediaRecordEntity entity : entities) {
 
             //is true if changes are applied
             boolean listChanged = entity.getContentIds().removeAll(dto.getContentIds());
 
-            if (listChanged){
+            if (listChanged) {
                 repository.save(entity);
                 //publish changes to dapr topic
                 topicPublisher.notifyResourceChange(entity, CrudOperation.UPDATE);
