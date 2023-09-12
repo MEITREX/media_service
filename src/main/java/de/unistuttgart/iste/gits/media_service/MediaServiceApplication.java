@@ -24,7 +24,6 @@ import java.util.List;
 public class MediaServiceApplication {
 
     public static void main(String[] args) {
-        log.info("I'm a new version.");
         SpringApplication.run(MediaServiceApplication.class, args);
     }
 
