@@ -12,9 +12,10 @@ type Mutation {
     """
     deleteMediaRecord(id: UUID!): UUID!
     """
-    Allows multiple media records to be linked/added to a content.
+    For a given MediaContent, sets the linked media records of it to the ones with the given UUIDs.
+    This means that for the content, all already linked media records are removed and replaced by the given ones.
     """
-    linkMediaRecordsWithContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+    setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
     """
     Logs that a media has been worked on by the current user.
     See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
@@ -24,4 +25,9 @@ type Mutation {
     a user-progress event is emitted for the content.
     """
     logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
+
+    """
+    Add the MediaRecords with the given UUIDS to the Course with the given UUID.
+    """
+    setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 }

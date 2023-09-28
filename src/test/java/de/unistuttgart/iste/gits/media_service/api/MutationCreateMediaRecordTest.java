@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 
 @ContextConfiguration(classes = MockMinIoClientConfiguration.class)
 @Transactional
-@TablesToDelete({"media_record_content_ids", "media_record"})
+@TablesToDelete({"media_record_content_ids","media_record_course_ids", "media_record"})
 @GraphQlApiTest
 class MutationCreateMediaRecordTest {
 
@@ -36,9 +36,9 @@ class MutationCreateMediaRecordTest {
 
     @Test
     void testCreateMediaRecord(HttpGraphQlTester tester) throws Exception {
-        UUID userId1 = UUID.randomUUID();
+        final UUID userId1 = UUID.randomUUID();
 
-        String currentUser = """
+        final String currentUser = """
                 {
                     "id": "%s",
                     "userName": "MyUserName",
@@ -51,7 +51,7 @@ class MutationCreateMediaRecordTest {
         // insert user header into tester
         tester = tester.mutate().header("CurrentUser", currentUser).build();
 
-        String query = """
+        final String query = """
                 mutation {
                     createMediaRecord(input: {
                         name: "Example Record",
@@ -69,7 +69,7 @@ class MutationCreateMediaRecordTest {
                 }
                 """;
 
-        UUID id = tester.document(query)
+        final UUID id = tester.document(query)
                 .execute()
                 .path("createMediaRecord.name").entity(String.class).isEqualTo("Example Record")
                 .path("createMediaRecord.creatorId").entity(UUID.class).isEqualTo(userId1)
@@ -81,7 +81,7 @@ class MutationCreateMediaRecordTest {
                 .path("createMediaRecord.id").entity(UUID.class).get();
 
         assertThat(repository.count(), is(1L));
-        var mediaRecord = repository.findAll().get(0);
+        final var mediaRecord = repository.findAll().get(0);
         assertThat(mediaRecord.getId(), is(id));
         assertThat(mediaRecord.getName(), is("Example Record"));
         assertThat(mediaRecord.getCreatorId(), is(userId1));
@@ -104,4 +104,5 @@ class MutationCreateMediaRecordTest {
                 .expiry(15, TimeUnit.MINUTES)
                 .build());
     }
+
 }

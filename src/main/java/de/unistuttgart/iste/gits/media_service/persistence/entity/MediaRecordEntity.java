@@ -3,7 +3,9 @@ package de.unistuttgart.iste.gits.media_service.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity(name = "MediaRecord")
 @Data
@@ -34,6 +36,9 @@ public class MediaRecordEntity {
 
     @Column(length = 500)
     private String downloadUrl;
+
+    @ElementCollection
+    private List<UUID> courseIds;
 
     @OneToMany(mappedBy = "primaryKey.mediaRecordId", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

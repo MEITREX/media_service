@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
 @ContextConfiguration(classes = MockMinIoClientConfiguration.class)
-@TablesToDelete({"media_record_content_ids", "media_record"})
+@TablesToDelete({"media_record_content_ids","media_record_course_ids", "media_record"})
 @Transactional
 @GraphQlApiTest
 class MutationUpdateMediaRecordTest {
@@ -29,15 +29,15 @@ class MutationUpdateMediaRecordTest {
     private MediaRecordRepository repository;
 
     @Test
-    void testUpdateMediaRecord(GraphQlTester tester) {
+    void testUpdateMediaRecord(final GraphQlTester tester) {
         List<MediaRecordEntity> expectedMediaRecords = fillRepositoryWithMediaRecords(repository);
 
         expectedMediaRecords = repository.saveAll(expectedMediaRecords);
 
-        UUID newContentId = UUID.randomUUID();
-        String query = """
+        final UUID newContentId = UUID.randomUUID();
+        final String query = """
                 mutation {
-                    updateMediaRecord(input: {
+                    updateMediaRecord: updateMediaRecord(input: {
                         id: "%s",
                         name: "Updated Record",
                         type: URL,
@@ -60,13 +60,14 @@ class MutationUpdateMediaRecordTest {
 
         assertThat(repository.count(), is((long)expectedMediaRecords.size()));
         // check that the other record in the repository hasn't changed
-        var actual = repository.findById(expectedMediaRecords.get(1).getId()).get();
+        final var actual = repository.findById(expectedMediaRecords.get(1).getId()).get();
         assertThat(actual, is(expectedMediaRecords.get(1)));
         // get the updated record and check that it has been updated
-        MediaRecordEntity actualUpdatedRecord = repository.findById(expectedMediaRecords.get(0).getId()).get();
+        final MediaRecordEntity actualUpdatedRecord = repository.findById(expectedMediaRecords.get(0).getId()).get();
 
         assertThat(actualUpdatedRecord.getName(), is("Updated Record"));
         assertThat(actualUpdatedRecord.getType(), is(MediaRecordEntity.MediaType.URL));
         assertThat(actualUpdatedRecord.getContentIds(), contains(newContentId));
     }
+
 }
