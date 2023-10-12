@@ -37,5 +37,5 @@ type Query {
     """
     Returns all media records which were created by the users.
     """
-    mediaRecordsForUsers(userIds: [UUID!]!): [MediaRecord!]!
+    mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
 }

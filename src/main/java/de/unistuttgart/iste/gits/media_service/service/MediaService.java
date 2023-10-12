@@ -151,19 +151,22 @@ public class MediaService {
      * @param userIds list of userIds to get the media records for.
      * @param generateUploadUrls if the uploadUrl should be generated.
      * @param generateDownloadUrls if the downloadUrl should be generated.
-     * @return a list of the users' media records
+     * @return a list of lists of media records for each user.
      */
-    public List<MediaRecord> getMediaRecordsForUsers(final List<UUID> userIds, final boolean generateUploadUrls, final boolean generateDownloadUrls) {
-        final List<MediaRecordEntity> records = new ArrayList<>();
-
+    public List<List<MediaRecord>> getMediaRecordsForUsers(final List<UUID> userIds, final boolean generateUploadUrls, final boolean generateDownloadUrls) {
+        final List<List<MediaRecord>> result = new ArrayList<>();
         for (final UUID userId: userIds) {
-            records.addAll(repository.findMediaRecordEntitiesByCreatorId(userId));
+            List<MediaRecord> userMediaRecords = repository.findMediaRecordEntitiesByCreatorId(userId).stream()
+                            .map(x -> modelMapper.map(x, MediaRecord.class)).toList();
+
+            userMediaRecords = fillMediaRecordsUrlsIfRequested(userMediaRecords,
+                    generateUploadUrls,
+                    generateDownloadUrls);
+
+            result.add(userMediaRecords);
         }
-        return fillMediaRecordsUrlsIfRequested(
-                records.stream().map(x -> modelMapper.map(x, MediaRecord.class)).toList(),
-                generateUploadUrls,
-                generateDownloadUrls
-        );
+
+        return result;
     }
 
     /**

@@ -70,8 +70,16 @@ public class MediaController {
     }
 
     @QueryMapping
-    public List<MediaRecord> mediaRecordsForUsers(final List<UUID> userIds, final DataFetchingEnvironment env) {
-        return  mediaService.getMediaRecordsForUsers(userIds, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+    public List<List<MediaRecord>> mediaRecordsForUsers(final List<UUID> userIds,
+                                                        final DataFetchingEnvironment env,
+                                                        @ContextValue final LoggedInUser currentUser) {
+        if(userIds.stream().anyMatch(x -> !x.equals(currentUser.getId()))) {
+            if(!currentUser.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER)) {
+                throw new RuntimeException("Trying to access media records of user without permission.");
+            }
+        }
+
+        return mediaService.getMediaRecordsForUsers(userIds, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
     }
 
     @QueryMapping
