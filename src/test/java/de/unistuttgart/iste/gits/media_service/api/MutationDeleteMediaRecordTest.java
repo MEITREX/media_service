@@ -1,7 +1,9 @@
 package de.unistuttgart.iste.gits.media_service.api;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
+import de.unistuttgart.iste.gits.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.gits.common.testutil.TablesToDelete;
+import de.unistuttgart.iste.gits.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.gits.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.gits.media_service.test_config.MockMinIoClientConfiguration;
@@ -14,7 +16,9 @@ import org.springframework.test.context.ContextConfiguration;
 import java.util.List;
 import java.util.UUID;
 
-import static de.unistuttgart.iste.gits.media_service.test_util.MediaRecordRepositoryUtil.fillRepositoryWithMediaRecords;
+import static de.unistuttgart.iste.gits.common.testutil.TestUsers.userWithMemberships;
+import static de.unistuttgart.iste.gits.media_service.test_util.CourseMembershipUtil.dummyCourseMembershipBuilder;
+import static de.unistuttgart.iste.gits.media_service.test_util.MediaRecordRepositoryUtil.fillRepositoryWithMediaRecordsAndCourseIds;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -28,11 +32,20 @@ class MutationDeleteMediaRecordTest {
     @Autowired
     private MediaRecordRepository repository;
 
+    private final UUID courseId1 = UUID.randomUUID();
+    private final UUID courseId2 = UUID.randomUUID();
+
+    private final LoggedInUser.CourseMembership courseMembership1 = dummyCourseMembershipBuilder(courseId1);
+    private final LoggedInUser.CourseMembership courseMembership2 = dummyCourseMembershipBuilder(courseId2);
+    @InjectCurrentUserHeader
+    private final LoggedInUser currentUser = userWithMemberships(courseMembership1, courseMembership2);
+
     @Test
     void testDeleteMediaRecord(final GraphQlTester tester) {
-        List<MediaRecordEntity> createdMediaRecords = fillRepositoryWithMediaRecords(repository);
+        List<MediaRecordEntity> createdMediaRecords = fillRepositoryWithMediaRecordsAndCourseIds(repository, courseId1, courseId2);
 
         createdMediaRecords = repository.saveAll(createdMediaRecords);
+
 
         final String query = """
                 mutation {
