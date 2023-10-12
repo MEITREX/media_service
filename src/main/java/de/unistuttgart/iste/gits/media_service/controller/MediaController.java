@@ -70,8 +70,8 @@ public class MediaController {
     }
 
     @QueryMapping
-    public List<List<MediaRecord>> mediaRecordsForUsers(final List<UUID> userIds,
-                                                        final DataFetchingEnvironment env,
+    public List<List<MediaRecord>> mediaRecordsForUsers(@Argument final List<UUID> userIds,
+                                                        @Argument final DataFetchingEnvironment env,
                                                         @ContextValue final LoggedInUser currentUser) {
         if(userIds.stream().anyMatch(x -> !x.equals(currentUser.getId()))) {
             if(!currentUser.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER)) {
