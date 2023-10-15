@@ -138,6 +138,21 @@ Returns all media records for the given CourseIds
 <td valign="top">[<a href="#uuid">UUID</a>!]!</td>
 <td></td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>mediaRecordsForUsers</strong></td>
+<td valign="top">[[<a href="#mediarecord">MediaRecord</a>!]!]!</td>
+<td>
+
+
+Returns all media records which were created by the users.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">userIds</td>
+<td valign="top">[<a href="#uuid">UUID</a>!]!</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
