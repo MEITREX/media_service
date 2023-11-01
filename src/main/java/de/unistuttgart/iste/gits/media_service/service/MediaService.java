@@ -606,7 +606,7 @@ public class MediaService {
             return false;
         } catch (final Exception e) {
             log.error("Error while checking if object exists", e);
-            return false;
+            throw new RuntimeException(e.getMessage());
         }
     }
 
