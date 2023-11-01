@@ -8,7 +8,6 @@ import de.unistuttgart.iste.gits.media_service.persistence.entity.MediaRecordEnt
 import de.unistuttgart.iste.gits.media_service.persistence.entity.MediaRecordProgressDataEntity;
 import de.unistuttgart.iste.gits.media_service.persistence.repository.MediaRecordProgressDataRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +17,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class MediaUserProgressDataService {
 
     private final MediaRecordProgressDataRepository mediaRecordProgressDataRepository;
@@ -107,7 +105,6 @@ public class MediaUserProgressDataService {
     }
 
     private void publishUserProgressEvent(final UUID userId, final UUID contentId) {
-        log.info("Publishing user progress event for user {} and content {}", userId, contentId);
         topicPublisher.notifyUserWorkedOnContent(
                 ContentProgressedEvent.builder()
                         .userId(userId)
