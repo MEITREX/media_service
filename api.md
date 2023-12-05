@@ -245,7 +245,7 @@ This means that for the content, all already linked media records are removed an
 
 
     Logs that a media has been worked on by the current user.
-    See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
+    See https://meitrex.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
 
     Possible side effects:
     When all media records of a content have been worked on by a user,
