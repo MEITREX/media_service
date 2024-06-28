@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:experimental
-FROM gradle:7.6.2-jdk17 AS build
+FROM gradle:8-jdk21 AS build
 WORKDIR /workspace/app
 
 COPY . /workspace/app
@@ -12,4 +12,4 @@ ARG DEPENDENCY=/workspace/app/build/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-ENTRYPOINT ["java","-cp","app:app/lib/*","de.unistuttgart.iste.gits.media_service.MediaServiceApplication"]
+ENTRYPOINT ["java","-cp","app:app/lib/*","de.unistuttgart.iste.meitrex.media_service.MediaServiceApplication"]
