@@ -38,7 +38,8 @@ public class MediaController {
     private final MediaUserProgressDataService mediaUserProgressDataService;
 
     @QueryMapping
-    public List<MediaRecord> mediaRecords(final DataFetchingEnvironment env, @ContextValue final LoggedInUser currentUser) {
+    public List<MediaRecord> mediaRecords(final DataFetchingEnvironment env,
+                                          @ContextValue final LoggedInUser currentUser) {
         validateUserHasGlobalPermission(currentUser, Set.of(LoggedInUser.RealmRole.SUPER_USER));
         return mediaService.getAllMediaRecords(
                 uploadUrlInSelectionSet(env),
@@ -47,15 +48,34 @@ public class MediaController {
     }
 
     @QueryMapping
-    public List<MediaRecord> mediaRecordsByIds(@Argument final List<UUID> ids, final DataFetchingEnvironment env, @ContextValue final LoggedInUser currentUser) {
-        final List<MediaRecord> mediaRecords = mediaService.getMediaRecordsByIds(ids, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+    public List<MediaRecord> mediaRecordsByIds(@Argument final List<UUID> ids,
+                                               final DataFetchingEnvironment env,
+                                               @ContextValue final LoggedInUser currentUser) {
+        final List<MediaRecord> mediaRecords =
+                mediaService.getMediaRecordsByIds(ids, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
 
         return checkAccessForMediaRecordsAndThrowException(currentUser, mediaRecords, UserRoleInCourse.STUDENT);
     }
 
     @QueryMapping
-    public List<MediaRecord> findMediaRecordsByIds(@Argument final List<UUID> ids, final DataFetchingEnvironment env, @ContextValue final LoggedInUser currentUser) {
-        final List<MediaRecord> mediaRecords = mediaService.findMediaRecordsByIds(ids, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+    public List<MediaRecord> _internal_noauth_mediaRecordsByIds(@Argument final List<UUID> ids,
+                                                                final DataFetchingEnvironment env) {
+        // ⚠️ BEFORE YOU CHANGE THIS: This query is used in the docprocai-service python graphql client.
+        // Before changing the signature of this query, you need to change the client for it to still function! ⚠️
+
+        final List<MediaRecord> mediaRecords = mediaService.getMediaRecordsByIds(ids,
+                uploadUrlInSelectionSet(env),
+                downloadUrlInSelectionSet(env));
+
+        return mediaRecords;
+    }
+
+    @QueryMapping
+    public List<MediaRecord> findMediaRecordsByIds(@Argument final List<UUID> ids,
+                                                   final DataFetchingEnvironment env,
+                                                   @ContextValue final LoggedInUser currentUser) {
+        final List<MediaRecord> mediaRecords =
+                mediaService.findMediaRecordsByIds(ids, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
 
         return checkAccessForMediaRecords(currentUser, mediaRecords, UserRoleInCourse.STUDENT);
     }
@@ -64,7 +84,9 @@ public class MediaController {
     @QueryMapping
     public List<MediaRecord> userMediaRecords(@ContextValue final LoggedInUser currentUser,
                                               final DataFetchingEnvironment env) {
-        final List<MediaRecord> mediaRecords = mediaService.getMediaRecordsForUser(currentUser.getId(), uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+        final List<MediaRecord> mediaRecords = mediaService.getMediaRecordsForUser(currentUser.getId(),
+                        uploadUrlInSelectionSet(env),
+                        downloadUrlInSelectionSet(env));
 
         return checkAccessForMediaRecordsAndThrowException(currentUser, mediaRecords, UserRoleInCourse.STUDENT);
     }
@@ -79,19 +101,28 @@ public class MediaController {
             }
         }
 
-        return mediaService.getMediaRecordsForUsers(userIds, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+        return mediaService.getMediaRecordsForUsers(userIds,
+                uploadUrlInSelectionSet(env),
+                downloadUrlInSelectionSet(env));
     }
 
     @QueryMapping
     public List<List<MediaRecord>> mediaRecordsByContentIds(@Argument final List<UUID> contentIds,
-                                                            final DataFetchingEnvironment env, @ContextValue final LoggedInUser currentUser) {
-        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsByContentIds(contentIds, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+                                                            final DataFetchingEnvironment env,
+                                                            @ContextValue final LoggedInUser currentUser) {
+        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsByContentIds(contentIds,
+                uploadUrlInSelectionSet(env),
+                downloadUrlInSelectionSet(env));
         return checkAccessForSubLists(currentUser, mediaRecordsByContentIds, UserRoleInCourse.STUDENT);
     }
 
     @QueryMapping
-    public List<List<MediaRecord>> mediaRecordsForCourses(@Argument final List<UUID> courseIds, final DataFetchingEnvironment env, @ContextValue final LoggedInUser currentUser) {
-        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsForCourses(courseIds, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+    public List<List<MediaRecord>> mediaRecordsForCourses(@Argument final List<UUID> courseIds,
+                                                          final DataFetchingEnvironment env,
+                                                          @ContextValue final LoggedInUser currentUser) {
+        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsForCourses(courseIds,
+                uploadUrlInSelectionSet(env),
+                downloadUrlInSelectionSet(env));
         return checkAccessForSubLists(currentUser, mediaRecordsByContentIds, UserRoleInCourse.STUDENT);
     }
 
@@ -134,7 +165,9 @@ public class MediaController {
                                          @Argument final UpdateMediaRecordInput input,
                                          @ContextValue final LoggedInUser currentUser,
                                          final DataFetchingEnvironment env) {
-        checkAccessForMediaRecord(currentUser, mediaService.getMediaRecordById(input.getId()), UserRoleInCourse.ADMINISTRATOR);
+        checkAccessForMediaRecord(currentUser,
+                mediaService.getMediaRecordById(input.getId()),
+                UserRoleInCourse.ADMINISTRATOR);
 
         return mediaService.updateMediaRecord(
                 courseIds,
@@ -154,8 +187,10 @@ public class MediaController {
 
     @MutationMapping
     public List<MediaRecord> setLinkedMediaRecordsForContent(@Argument final UUID contentId,
-                                                             @Argument final List<UUID> mediaRecordIds, @ContextValue final LoggedInUser currentUser) {
-        final List<MediaRecord> mediaRecords = mediaService.getMediaRecordsByIds(mediaRecordIds, false, false);
+                                                             @Argument final List<UUID> mediaRecordIds,
+                                                             @ContextValue final LoggedInUser currentUser) {
+        final List<MediaRecord> mediaRecords =
+                mediaService.getMediaRecordsByIds(mediaRecordIds, false, false);
         checkAccessForMediaRecords(currentUser, mediaRecords, UserRoleInCourse.ADMINISTRATOR);
         return mediaService.setLinkedMediaRecordsForContent(contentId, mediaRecordIds);
     }
@@ -168,7 +203,9 @@ public class MediaController {
      * @return the updated mediaRecords
      */
     @MutationMapping
-    public List<MediaRecord> setMediaRecordsForCourse(@Argument final UUID courseId, @Argument final List<UUID> mediaRecordIds, @ContextValue final LoggedInUser currentUser) {
+    public List<MediaRecord> setMediaRecordsForCourse(@Argument final UUID courseId,
+                                                      @Argument final List<UUID> mediaRecordIds,
+                                                      @ContextValue final LoggedInUser currentUser) {
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, courseId);
         return mediaService.setMediaRecordsForCourse(courseId, mediaRecordIds);
     }
@@ -203,7 +240,9 @@ public class MediaController {
      * @return A List of MediaRecords.
      */
     @NotNull
-    private static List<MediaRecord> checkAccessForMediaRecords(final LoggedInUser currentUser, final List<MediaRecord> mediaRecords, final UserRoleInCourse role) {
+    private static List<MediaRecord> checkAccessForMediaRecords(final LoggedInUser currentUser,
+                                                                final List<MediaRecord> mediaRecords,
+                                                                final UserRoleInCourse role) {
         final List<MediaRecord> filteredMediaRecords = new ArrayList<>();
         for (final MediaRecord mediaRecord : mediaRecords) {
             if (mediaRecord == null) {
@@ -222,7 +261,10 @@ public class MediaController {
         return filteredMediaRecords;
     }
 
-    private static MediaRecord getMediaRecordToAdd(final LoggedInUser currentUser, final UserRoleInCourse role, final MediaRecord mediaRecord, final List<UUID> courseIds) {
+    private static MediaRecord getMediaRecordToAdd(final LoggedInUser currentUser,
+                                                   final UserRoleInCourse role,
+                                                   final MediaRecord mediaRecord,
+                                                   final List<UUID> courseIds) {
         MediaRecord mediaRecordToAdd = null;
         for (final UUID id : courseIds) {
             try {
@@ -236,7 +278,9 @@ public class MediaController {
         return mediaRecordToAdd;
     }
 
-    private static List<MediaRecord> checkAccessForMediaRecordsAndThrowException(final LoggedInUser currentUser, final List<MediaRecord> mediaRecords, final UserRoleInCourse role) {
+    private static List<MediaRecord> checkAccessForMediaRecordsAndThrowException(final LoggedInUser currentUser,
+                                                                                 final List<MediaRecord> mediaRecords,
+                                                                                 final UserRoleInCourse role) {
         final List<MediaRecord> recordList = checkAccessForMediaRecords(currentUser, mediaRecords, role);
 
         if (recordList.contains(null)) {
@@ -254,7 +298,9 @@ public class MediaController {
      * @param mediaRecord the mediaRecord that should be checked
      * @param role        the minimum required role the user needs to perform this action
      */
-    private static void checkAccessForMediaRecord(final LoggedInUser currentUser, final MediaRecord mediaRecord, final UserRoleInCourse role) {
+    private static void checkAccessForMediaRecord(final LoggedInUser currentUser,
+                                                  final MediaRecord mediaRecord,
+                                                  final UserRoleInCourse role) {
         if (mediaRecord.getCourseIds().isEmpty()) {
             return;
         }
@@ -263,7 +309,7 @@ public class MediaController {
                 validateUserHasAccessToCourse(currentUser, role, courseId);
                 break;
             } catch (final NoAccessToCourseException exception) {
-               throw exception;
+                throw exception;
             }
         }
     }
@@ -277,11 +323,14 @@ public class MediaController {
      * @return a List of Lists of Mediarecords
      */
     @NotNull
-    private List<List<MediaRecord>> checkAccessForSubLists(final LoggedInUser currentUser, final List<List<MediaRecord>> listOfMediaRecordLists, final UserRoleInCourse role) {
+    private List<List<MediaRecord>> checkAccessForSubLists(final LoggedInUser currentUser,
+                                                           final List<List<MediaRecord>> listOfMediaRecordLists,
+                                                           final UserRoleInCourse role) {
         final List<List<MediaRecord>> result = new ArrayList<>();
 
         for (final List<MediaRecord> mediaRecords : listOfMediaRecordLists) {
-            final List<MediaRecord> newMediaRecords = checkAccessForMediaRecordsAndThrowException(currentUser, mediaRecords, role);
+            final List<MediaRecord> newMediaRecords =
+                    checkAccessForMediaRecordsAndThrowException(currentUser, mediaRecords, role);
             result.add(newMediaRecords);
         }
 
