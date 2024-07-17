@@ -51,6 +51,14 @@ type Query {
     mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
 
     """
+    Returns all media records for the given CourseIds
+
+    ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+    any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+    """
+    _internal_noauth_mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
+
+    """
     Returns all media records which were created by the users.
     """
     mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
