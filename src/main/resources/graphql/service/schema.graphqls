@@ -37,6 +37,18 @@ type MediaRecord {
   Temporary download url for the media record
   """
   downloadUrl: String!
+  """
+  Temporary upload url for the media record which can only be used from within the system.
+  (This is necessary because the MinIO pre-signed URLs cannot be changed, meaning we cannot use the same URL for both
+  internal and external access because the hostname changes.)
+  """
+  internalUploadUrl: String!
+  """
+  Temporary download url for the media record which can only be used from within the system.
+  (This is necessary because the MinIO pre-signed URLs cannot be changed, meaning we cannot use the same URL for both
+  internal and external access because the hostname changes.)
+  """
+  internalDownloadUrl: String!
 
   """
   The progress data of the given user for this medium.

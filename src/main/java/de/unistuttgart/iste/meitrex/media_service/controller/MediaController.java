@@ -41,59 +41,44 @@ public class MediaController {
     public List<MediaRecord> mediaRecords(final DataFetchingEnvironment env,
                                           @ContextValue final LoggedInUser currentUser) {
         validateUserHasGlobalPermission(currentUser, Set.of(LoggedInUser.RealmRole.SUPER_USER));
-        return mediaService.getAllMediaRecords(
-                uploadUrlInSelectionSet(env),
-                downloadUrlInSelectionSet(env)
-        );
+        return mediaService.getAllMediaRecords();
     }
 
     @QueryMapping
     public List<MediaRecord> mediaRecordsByIds(@Argument final List<UUID> ids,
-                                               final DataFetchingEnvironment env,
                                                @ContextValue final LoggedInUser currentUser) {
         final List<MediaRecord> mediaRecords =
-                mediaService.getMediaRecordsByIds(ids, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+                mediaService.getMediaRecordsByIds(ids);
 
         return checkAccessForMediaRecordsAndThrowException(currentUser, mediaRecords, UserRoleInCourse.STUDENT);
     }
 
     @QueryMapping
-    public List<MediaRecord> _internal_noauth_mediaRecordsByIds(@Argument final List<UUID> ids,
-                                                                final DataFetchingEnvironment env) {
+    public List<MediaRecord> _internal_noauth_mediaRecordsByIds(@Argument final List<UUID> ids) {
         // ⚠️ BEFORE YOU CHANGE THIS: This query is used in the docprocai-service python graphql client.
         // Before changing the signature of this query, you need to change the client for it to still function! ⚠️
-
-        final List<MediaRecord> mediaRecords = mediaService.getMediaRecordsByIds(ids,
-                uploadUrlInSelectionSet(env),
-                downloadUrlInSelectionSet(env));
-
-        return mediaRecords;
+        return mediaService.getMediaRecordsByIds(ids);
     }
 
     @QueryMapping
     public List<MediaRecord> findMediaRecordsByIds(@Argument final List<UUID> ids,
-                                                   final DataFetchingEnvironment env,
                                                    @ContextValue final LoggedInUser currentUser) {
         final List<MediaRecord> mediaRecords =
-                mediaService.findMediaRecordsByIds(ids, uploadUrlInSelectionSet(env), downloadUrlInSelectionSet(env));
+                mediaService.findMediaRecordsByIds(ids);
 
         return checkAccessForMediaRecords(currentUser, mediaRecords, UserRoleInCourse.STUDENT);
     }
 
 
     @QueryMapping
-    public List<MediaRecord> userMediaRecords(@ContextValue final LoggedInUser currentUser,
-                                              final DataFetchingEnvironment env) {
-        final List<MediaRecord> mediaRecords = mediaService.getMediaRecordsForUser(currentUser.getId(),
-                        uploadUrlInSelectionSet(env),
-                        downloadUrlInSelectionSet(env));
+    public List<MediaRecord> userMediaRecords(@ContextValue final LoggedInUser currentUser) {
+        final List<MediaRecord> mediaRecords = mediaService.getMediaRecordsForUser(currentUser.getId());
 
         return checkAccessForMediaRecordsAndThrowException(currentUser, mediaRecords, UserRoleInCourse.STUDENT);
     }
 
     @QueryMapping
     public List<List<MediaRecord>> mediaRecordsForUsers(@Argument final List<UUID> userIds,
-                                                        final DataFetchingEnvironment env,
                                                         @ContextValue final LoggedInUser currentUser) {
         if(userIds.stream().anyMatch(x -> !x.equals(currentUser.getId()))) {
             if(!currentUser.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER)) {
@@ -101,29 +86,27 @@ public class MediaController {
             }
         }
 
-        return mediaService.getMediaRecordsForUsers(userIds,
-                uploadUrlInSelectionSet(env),
-                downloadUrlInSelectionSet(env));
+        return mediaService.getMediaRecordsForUsers(userIds);
     }
 
     @QueryMapping
     public List<List<MediaRecord>> mediaRecordsByContentIds(@Argument final List<UUID> contentIds,
-                                                            final DataFetchingEnvironment env,
                                                             @ContextValue final LoggedInUser currentUser) {
-        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsByContentIds(contentIds,
-                uploadUrlInSelectionSet(env),
-                downloadUrlInSelectionSet(env));
+        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsByContentIds(contentIds);
         return checkAccessForSubLists(currentUser, mediaRecordsByContentIds, UserRoleInCourse.STUDENT);
     }
 
     @QueryMapping
     public List<List<MediaRecord>> mediaRecordsForCourses(@Argument final List<UUID> courseIds,
-                                                          final DataFetchingEnvironment env,
                                                           @ContextValue final LoggedInUser currentUser) {
-        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsForCourses(courseIds,
-                uploadUrlInSelectionSet(env),
-                downloadUrlInSelectionSet(env));
+        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsForCourses(courseIds);
         return checkAccessForSubLists(currentUser, mediaRecordsByContentIds, UserRoleInCourse.STUDENT);
+    }
+
+    @QueryMapping
+    public List<List<MediaRecord>> _internal_noauth_mediaRecordsForCourses(@Argument final List<UUID> courseIds) {
+        final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsForCourses(courseIds);
+        return mediaRecordsByContentIds;
     }
 
 
@@ -137,8 +120,7 @@ public class MediaController {
     @MutationMapping
     public MediaRecord createMediaRecord(@Argument final List<UUID> courseIds,
                                          @Argument final CreateMediaRecordInput input,
-                                         @ContextValue final LoggedInUser currentUser,
-                                         final DataFetchingEnvironment env) {
+                                         @ContextValue final LoggedInUser currentUser) {
 
         if (courseIds != null && !courseIds.isEmpty()) {
             validateUserHasAccessToCourses(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, courseIds);
@@ -147,9 +129,7 @@ public class MediaController {
         return mediaService.createMediaRecord(
                 courseIds,
                 input,
-                currentUser.getId(),
-                uploadUrlInSelectionSet(env),
-                downloadUrlInSelectionSet(env)
+                currentUser.getId()
         );
     }
 
@@ -163,17 +143,14 @@ public class MediaController {
     @MutationMapping
     public MediaRecord updateMediaRecord(@Argument final List<UUID> courseIds,
                                          @Argument final UpdateMediaRecordInput input,
-                                         @ContextValue final LoggedInUser currentUser,
-                                         final DataFetchingEnvironment env) {
+                                         @ContextValue final LoggedInUser currentUser) {
         checkAccessForMediaRecord(currentUser,
                 mediaService.getMediaRecordById(input.getId()),
                 UserRoleInCourse.ADMINISTRATOR);
 
         return mediaService.updateMediaRecord(
                 courseIds,
-                input,
-                uploadUrlInSelectionSet(env),
-                downloadUrlInSelectionSet(env)
+                input
         );
     }
 
@@ -190,7 +167,7 @@ public class MediaController {
                                                              @Argument final List<UUID> mediaRecordIds,
                                                              @ContextValue final LoggedInUser currentUser) {
         final List<MediaRecord> mediaRecords =
-                mediaService.getMediaRecordsByIds(mediaRecordIds, false, false);
+                mediaService.getMediaRecordsByIds(mediaRecordIds);
         checkAccessForMediaRecords(currentUser, mediaRecords, UserRoleInCourse.ADMINISTRATOR);
         return mediaService.setLinkedMediaRecordsForContent(contentId, mediaRecordIds);
     }
@@ -210,29 +187,35 @@ public class MediaController {
         return mediaService.setMediaRecordsForCourse(courseId, mediaRecordIds);
     }
 
-    /**
-     * Checks if the downloadUrl field is in the selection set of a graphql query.
-     *
-     * @param env The DataFetchingEnvironment of the graphql query
-     * @return Returns true if the downloadUrl field is in the selection set of the passed DataFetchingEnvironment.
-     */
-    private boolean downloadUrlInSelectionSet(final DataFetchingEnvironment env) {
-        return env.getSelectionSet().contains("downloadUrl");
+    @SchemaMapping(typeName = "MediaRecord", field = "downloadUrl")
+    public String downloadUrl(final MediaRecord mediaRecord) {
+        if (mediaRecord.getDownloadUrl() != null)
+            return mediaRecord.getDownloadUrl();
+
+        return mediaService.createMediaRecordDownloadUrl(mediaRecord.getId());
     }
 
-    /**
-     * Checks if the uploadUrl field is in the selection set of a graphql query.
-     *
-     * @param env The DataFetchingEnvironment of the graphql query
-     * @return Returns true if the uploadUrl field is in the selection set of the passed DataFetchingEnvironment.
-     */
-    private boolean uploadUrlInSelectionSet(final DataFetchingEnvironment env) {
-        return env.getSelectionSet().contains("uploadUrl");
+    @SchemaMapping(typeName = "MediaRecord", field = "uploadUrl")
+    public String uploadUrl(final MediaRecord mediaRecord) {
+        if (mediaRecord.getUploadUrl() != null)
+            return mediaRecord.getUploadUrl();
+
+        return mediaService.createMediaRecordUploadUrl(mediaRecord);
+    }
+
+    @SchemaMapping(typeName = "MediaRecord", field = "internalDownloadUrl")
+    public String internalDownloadUrl(final MediaRecord mediaRecord) {
+        return mediaService.createMediaRecordInternalDownloadUrl(mediaRecord.getId());
+    }
+
+    @SchemaMapping(typeName = "MediaRecord", field = "internalUploadUrl")
+    public String internalUploadUrl(final MediaRecord mediaRecord) {
+        return mediaService.createMediaRecordInternalUploadUrl(mediaRecord.getId());
     }
 
     /**
      * Checks if the user has access to a MediaRecord in a List of MediaRecords.
-     * If the user doesn't has access the mediaRecord will be set to null.
+     * If the user doesn't have access the mediaRecord will be set to null.
      *
      * @param currentUser  the currently LoggedIn user
      * @param mediaRecords A list of mediaRecords for which permissions should be checked
