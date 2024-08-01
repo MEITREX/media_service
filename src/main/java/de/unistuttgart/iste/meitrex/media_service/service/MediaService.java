@@ -416,10 +416,10 @@ public class MediaService {
      * @return Returns the same media record that has been passed to the method.
      */
     private MediaRecord removeExpiredUrlsFromMediaRecord(MediaRecord record) {
-        if(record.getDownloadUrl() != null & isExpired(record.getDownloadUrl()))
+        if(record.getDownloadUrl() != null && isExpired(record.getDownloadUrl()))
             record.setDownloadUrl(null);
 
-        if(record.getUploadUrl() != null & isExpired(record.getUploadUrl()))
+        if(record.getUploadUrl() != null && isExpired(record.getUploadUrl()))
             record.setUploadUrl(null);
 
         return record;
