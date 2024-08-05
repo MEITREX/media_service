@@ -1,7 +1,9 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ContentChangeEvent;
 import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
+import de.unistuttgart.iste.meitrex.common.event.MediaRecordFileCreatedEvent;
 import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.meitrex.generated.dto.CreateMediaRecordInput;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaRecord;
@@ -46,6 +48,8 @@ public class MediaService {
 
     private final MinioClient minioInternalClient;
     private final MinioClient minioExternalClient;
+
+    private final TopicPublisher topicPublisher;
 
     /**
      * Database repository storing our media records.
@@ -635,6 +639,10 @@ public class MediaService {
         }
     }
 
+    public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
+        topicPublisher.notifyMediaRecordFileCreated(new MediaRecordFileCreatedEvent(mediaRecordId));
+    }
+
     /**
      * Deletes MediaRecords without a file every night at 3 am.
      */
@@ -655,6 +663,4 @@ public class MediaService {
         }
         log.info("Cleanup completed");
     }
-
-
 }
