@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.media_service.service;
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ContentChangeEvent;
 import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
+import de.unistuttgart.iste.meitrex.common.event.MediaRecordDeletedEvent;
 import de.unistuttgart.iste.meitrex.common.event.MediaRecordFileCreatedEvent;
 import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.meitrex.generated.dto.CreateMediaRecordInput;
@@ -378,6 +379,8 @@ public class MediaService {
                             .build());
         }
 
+        topicPublisher.notifyMediaRecordDeleted(new MediaRecordDeletedEvent(entity.getId()));
+
         return id;
     }
 
@@ -659,6 +662,8 @@ public class MediaService {
 
             if (!doesObjectExist(filename, bucketId)) {
                 repository.delete(entity);
+
+                topicPublisher.notifyMediaRecordDeleted(new MediaRecordDeletedEvent(entity.getId()));
             }
         }
         log.info("Cleanup completed");
