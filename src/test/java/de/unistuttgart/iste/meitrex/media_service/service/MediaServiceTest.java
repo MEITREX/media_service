@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
@@ -26,7 +27,9 @@ class MediaServiceTest {
 
     private final ModelMapper mapper = new ModelMapper();
 
-    private final MediaService service = new MediaService(mockMinIoClient, mockMinIoClient, repository,
+    private final TopicPublisher topicPublisher = mock(TopicPublisher.class);
+
+    private final MediaService service = new MediaService(mockMinIoClient, mockMinIoClient, topicPublisher, repository,
             mapper);
 
 
