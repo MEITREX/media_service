@@ -1,10 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
-import de.unistuttgart.iste.meitrex.common.event.ContentChangeEvent;
-import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
-import de.unistuttgart.iste.meitrex.common.event.MediaRecordDeletedEvent;
-import de.unistuttgart.iste.meitrex.common.event.MediaRecordFileCreatedEvent;
+import de.unistuttgart.iste.meitrex.common.event.*;
 import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.meitrex.generated.dto.CreateMediaRecordInput;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaRecord;
@@ -271,6 +268,8 @@ public class MediaService {
             entity.getContentIds().add(contentId);
             repository.save(entity);
         }
+
+        topicPublisher.notifyContentMediaRecordLinksSet(new ContentMediaRecordLinksSetEvent(contentId, mediaRecordIds));
 
         return mediaRecordsToBeLinkedToContent.stream()
                 .map(x -> removeExpiredUrlsFromMediaRecord(modelMapper.map(x, MediaRecord.class)))
