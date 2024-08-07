@@ -4,6 +4,10 @@ import de.unistuttgart.iste.meitrex.generated.dto.MediaType;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
+import io.minio.SetBucketNotificationArgs;
+import io.minio.messages.EventType;
+import io.minio.messages.NotificationConfiguration;
+import io.minio.messages.QueueConfiguration;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -47,7 +51,21 @@ public class MediaServiceApplication {
             for (String bucket : buckets) {
                 boolean bucket_exists = minioInternalClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
                 if (!bucket_exists) {
-                    minioInternalClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+                    minioInternalClient.makeBucket(MakeBucketArgs.builder()
+                            .bucket(bucket)
+                            .build());
+
+                    QueueConfiguration queueConfig = new QueueConfiguration();
+                    queueConfig.setQueue("arn:minio:sqs::onObjectCreated:webhook");
+                    queueConfig.setEvents(List.of(EventType.OBJECT_CREATED_ANY));
+
+                    NotificationConfiguration notificationConfig = new NotificationConfiguration();
+                    notificationConfig.setQueueConfigurationList(List.of(queueConfig));
+
+                    minioInternalClient.setBucketNotification(SetBucketNotificationArgs.builder()
+                                    .bucket(bucket)
+                                    .config(notificationConfig)
+                            .build());
                     log.info("Bucket {} created.", bucket);
                 } else {
                     log.info("Bucket {} already exists.", bucket);
