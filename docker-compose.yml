@@ -30,19 +30,20 @@ services:
   #    - "3011:9090"
   #  depends_on:
   #    - minio
-  database-media:
-    image: postgres:alpine
+  database:
+    image: pgvector/pgvector:pg16
     restart: always
     expose:
-      - 3032
+      - 5432
     ports:
-      - "3032:5432"
+      - "5432:5432"
     volumes:
-      - mediadata:/var/lib/postgresql/data
+      - dbdata:/var/lib/postgresql/data
+      - ./../media_service/pg-init-scripts:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=media_service
+      - POSTGRES_CREATE_DB_MEDIA_SERVICE=media_service
   app-media:
     build:
       context: ./../media_service/ # necessary because otherwise docker-compose overrides the context when merging multiple docker-compose.yml files
@@ -55,10 +56,10 @@ services:
       - "3000:3000"
       - "3001:3001"
     depends_on:
-      - database-media
+      - database
       - minio
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database-media:5432/media_service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/media_service
       MINIO_URL: http://minio:9000
       MINIO_EXTERNAL_URL: http://localhost:3010
       SPRING_DATASOURCE_USERNAME: root
@@ -86,7 +87,7 @@ services:
       - "6379"
 volumes:
   miniodata:
-  mediadata:
+  dbdata:
   testdata:
 networks:
   default:
