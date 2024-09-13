@@ -547,7 +547,7 @@ public class MediaService {
                         .method(Method.PUT)
                         .bucket(bucketId)
                         .object(filename)
-                        .expiry(15, TimeUnit.MINUTES)
+                        .expiry(7, TimeUnit.DAYS) // maximum per S3 spec
                         .build());
     }
 
@@ -569,7 +569,7 @@ public class MediaService {
                         .method(Method.GET)
                         .bucket(bucketId)
                         .object(filename)
-                        .expiry(15, TimeUnit.MINUTES)
+                        .expiry(7, TimeUnit.DAYS) // maximum per S3 spec
                         .build());
     }
 
