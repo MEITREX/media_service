@@ -83,7 +83,7 @@ public class MediaService {
      *                                 the database.
      */
     public List<MediaRecord> getMediaRecordsByIds(final List<UUID> ids) {
-        final List<MediaRecordEntity> records = repository.findAllById(ids).stream().toList();
+        final List<MediaRecordEntity> records = repository.getAllByIdPreservingOrder(ids).stream().toList();
 
         checkForMissingMediaRecords(ids, records);
 
