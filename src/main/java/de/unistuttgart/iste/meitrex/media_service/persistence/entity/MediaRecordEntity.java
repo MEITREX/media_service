@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 
+import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MediaRecordEntity {
+public class MediaRecordEntity implements IWithId<UUID> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
