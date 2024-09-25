@@ -18,14 +18,20 @@ public class MinIoConfiguration {
     @Value("${minio.url}")
     private String minioUrl;
 
+    @Value("${minio.port}")
+    private int minioPort;
+
     @Value("${minio.external.url}")
     private String minioExternalUrl;
+
+    @Value("${minio.external.port}")
+    private int minioExternalPort;
 
     @Bean
     public MinioClient minioInternalClient() {
         return new MinioClient.Builder()
                 .credentials(accessKey, secretKey)
-                .endpoint(minioUrl)
+                .endpoint(minioUrl, minioPort, minioUrl.startsWith("https://"))
                 .build();
     }
 
@@ -33,7 +39,7 @@ public class MinIoConfiguration {
     public MinioClient minioExternalClient() {
         return new MinioClient.Builder()
                 .credentials(accessKey, secretKey)
-                .endpoint(minioExternalUrl)
+                .endpoint(minioExternalUrl, minioExternalPort, minioExternalUrl.startsWith("https://"))
                 .region("eu-central-1")
                 .build();
     }
