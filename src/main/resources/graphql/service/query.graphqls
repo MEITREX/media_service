@@ -39,9 +39,18 @@ type Query {
     Returns the media records associated the given content IDs as a list of lists where each sublist contains
     the media records associated with the content ID at the same index in the input list
 
-    🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+    🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
     """
     mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
+
+    """
+    Returns the media records associated the given content IDs as a list of lists where each sublist contains
+    the media records associated with the content ID at the same index in the input list
+
+    ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+    any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+    """
+    _internal_noauth_mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
 
     """
     Returns all media records for the given CourseIds

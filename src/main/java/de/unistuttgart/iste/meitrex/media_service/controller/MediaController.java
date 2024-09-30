@@ -97,6 +97,11 @@ public class MediaController {
     }
 
     @QueryMapping
+    public List<List<MediaRecord>> _internal_noauth_mediaRecordsByContentIds(@Argument final List<UUID> contentIds) {
+        return mediaService.getMediaRecordsByContentIds(contentIds);
+    }
+
+    @QueryMapping
     public List<List<MediaRecord>> mediaRecordsForCourses(@Argument final List<UUID> courseIds,
                                                           @ContextValue final LoggedInUser currentUser) {
         final List<List<MediaRecord>> mediaRecordsByContentIds = mediaService.getMediaRecordsForCourses(courseIds);
