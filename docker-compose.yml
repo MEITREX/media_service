@@ -60,8 +60,10 @@ services:
       - minio
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/media_service
-      MINIO_URL: http://minio:9000
-      MINIO_EXTERNAL_URL: http://localhost:3010
+      MINIO_URL: http://minio
+      MINIO_PORT: 9000
+      MINIO_EXTERNAL_URL: http://localhost
+      MINIO_EXTERNAL_PORT: 3010
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       MINIO_ACCESS_KEY: minioadmin
