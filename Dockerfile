@@ -17,8 +17,13 @@ RUN mkdir -p build/dependency && (cd build/dependency; jar -xf ../libs/*-SNAPSHO
 
 FROM eclipse-temurin:21-jdk
 VOLUME /tmp
+
+# Install libreoffice, we need it for document format conversion
+RUN apt-get update && apt-get install -y libreoffice && rm -rf /var/lib/apt/lists/*
+
 ARG DEPENDENCY=/workspace/app/build/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+
 ENTRYPOINT ["java","-cp","app:app/lib/*","de.unistuttgart.iste.meitrex.media_service.MediaServiceApplication"]

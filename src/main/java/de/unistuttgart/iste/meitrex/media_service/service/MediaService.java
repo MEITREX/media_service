@@ -5,14 +5,12 @@ import de.unistuttgart.iste.meitrex.common.event.*;
 import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.meitrex.generated.dto.CreateMediaRecordInput;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaRecord;
+import de.unistuttgart.iste.meitrex.generated.dto.MediaType;
 import de.unistuttgart.iste.meitrex.generated.dto.UpdateMediaRecordInput;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
-import io.minio.RemoveObjectArgs;
-import io.minio.StatObjectArgs;
-import io.minio.errors.ErrorResponseException;
+import io.minio.*;
+import io.minio.errors.*;
 import io.minio.http.Method;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +20,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -40,9 +41,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MediaService {
 
+    /**
+     * Map containing standardized mime types for each media type.
+     * This is used to if, for a given media type, we want to convert all uploaded files to files of a standardized
+     * type which will then be served at the standardizedDownloadUrl field.
+     * For now, we only support converting documents to PDFs.
+     */
+    public static final Map<MediaType, String> STANDARDIZED_MIME_TYPES_FOR_MEDIA_TYPES = Map.ofEntries(
+            Map.entry(MediaType.DOCUMENT, "application/pdf"),
+            Map.entry(MediaType.PRESENTATION, "application/pdf")
+    );
+
     public static final String BUCKET_ID = "bucketId";
     public static final String FILENAME = "filename";
     public static final String MEDIA_RECORDS_NOT_FOUND = "Media record(s) with id(s) %s not found.";
+    public static final String FILENAME_STANDARDIZED = "filenameStandardized";
 
     private final MinioClient minioInternalClient;
     private final MinioClient minioExternalClient;
@@ -57,6 +70,10 @@ public class MediaService {
      * Mapper used to map media record DTOs to database Entities and vice-versa.
      */
     private final ModelMapper modelMapper;
+    /**
+     * Service used to convert files to standardized formats.
+     */
+    private final FileConversionService fileConversionService;
 
     /**
      * Returns all media records.
@@ -148,7 +165,7 @@ public class MediaService {
         final List<List<MediaRecord>> result = new ArrayList<>();
         for (final UUID userId: userIds) {
             List<MediaRecord> userMediaRecords = repository.findMediaRecordEntitiesByCreatorId(userId).stream()
-                            .map(x -> modelMapper.map(x, MediaRecord.class)).toList();
+                    .map(x -> modelMapper.map(x, MediaRecord.class)).toList();
 
             removeExpiredUrlsFromMediaRecords(userMediaRecords);
 
@@ -471,7 +488,6 @@ public class MediaService {
         final ZonedDateTime expiration = date.plusSeconds(expiry - 300);
 
         return expiration.toInstant().isBefore((Instant.now()));
-
     }
 
     /**
@@ -510,9 +526,7 @@ public class MediaService {
      */
     @SneakyThrows
     public String createMediaRecordDownloadUrl(final UUID mediaRecord) {
-        requireMediaRecordExisting(mediaRecord);
-
-        final MediaRecordEntity entity = repository.getReferenceById(mediaRecord);
+        final MediaRecordEntity entity = requireMediaRecordExisting(mediaRecord);
         final Map<String, String> variables = createMinIOVariables(entity);
         final String bucketId = variables.get(BUCKET_ID);
         final String filename = variables.get(FILENAME);
@@ -527,6 +541,133 @@ public class MediaService {
         entity.setDownloadUrl(downloadUrl);
         repository.save(entity);
         return downloadUrl;
+    }
+
+    /**
+     * Creates a standardized download url for the specified media record, if possible, and stores it in the DB.
+     * @param mediaRecord UUID of the media record for which to create the standardized download url.
+     * @return Returns the created download url, if possible, or an empty optional if no standardized download url
+     * could be created.
+     */
+    public Optional<String> createMediaRecordStandardizedDownloadUrl(final UUID mediaRecord) {
+        Optional<String> url = helperCreateMediaRecordStandardizedDownloadUrl(mediaRecord);
+        if (url.isPresent()) {
+            final MediaRecordEntity entity = repository.getReferenceById(mediaRecord);
+            entity.setStandardizedDownloadUrl(url.get());
+            repository.save(entity);
+        }
+        return url;
+    }
+
+    /**
+     * Helper method for creating a standardized download url for a media record.
+     * @param mediaRecord The media record for which to create the standardized download url.
+     * @return Returns the created download url, if possible, or an empty optional if no standardized download url
+     * could be created.
+     */
+    @SneakyThrows
+    private Optional<String> helperCreateMediaRecordStandardizedDownloadUrl(final UUID mediaRecord) {
+        final MediaRecordEntity entity = requireMediaRecordExisting(mediaRecord);
+        final Map<String, String> variables = createMinIOVariables(entity);
+        final String bucketId = variables.get(BUCKET_ID);
+        final String filename = variables.get(FILENAME);
+        final String filenameStandardized = variables.get(FILENAME_STANDARDIZED);
+
+        Optional<StatObjectResponse> stat = getObjectInfo(filename, bucketId);
+        if(stat.isEmpty())
+            return Optional.empty();
+
+        // get object mime type
+        final String contentType = stat.get().contentType();
+
+        // check if we have a standardized mime type for the media type
+        final String standardizedMimeType = STANDARDIZED_MIME_TYPES_FOR_MEDIA_TYPES.get(
+                modelMapper.map(entity.getType(), MediaType.class));
+
+        // if we do not have a standardized type, return empty
+        if (standardizedMimeType == null)
+            return Optional.empty();
+
+        // if we have a standardized type and the object is already of that type, return it
+        if (contentType.equals(standardizedMimeType)) {
+            return Optional.of(
+                    minioInternalClient.getPresignedObjectUrl(
+                            GetPresignedObjectUrlArgs.builder()
+                                    .method(Method.GET)
+                                    .bucket(bucketId)
+                                    .object(filename)
+                                    .expiry(15, TimeUnit.MINUTES)
+                                    .build()));
+        }
+
+        // otherwise, check if a standardized file exists for this object. If not, return empty
+        if(!doesObjectExist(filenameStandardized, bucketId))
+            return Optional.empty();
+
+        // If a standardized file exists, return it
+        return Optional.of(
+                minioExternalClient.getPresignedObjectUrl(
+                        GetPresignedObjectUrlArgs.builder()
+                                .method(Method.GET)
+                                .bucket(bucketId)
+                                .object(filenameStandardized)
+                                .expiry(15, TimeUnit.MINUTES)
+                                .build()));
+    }
+
+    /**
+     * Check if the file of this media record needs to be converted to a standardized type and if so, convert it and
+     * store it in minio.
+     * @param mediaRecordId The id of the media record to check and convert.
+     */
+    @SneakyThrows
+    public void convertToStandardizedFileIfPossibleAndNecessary(final UUID mediaRecordId) {
+        final MediaRecordEntity entity = requireMediaRecordExisting(mediaRecordId);
+
+        final Map<String, String> variables = createMinIOVariables(entity);
+        final String bucketId = variables.get(BUCKET_ID);
+        final String filename = variables.get(FILENAME);
+        final String filenameStandardized = variables.get(FILENAME_STANDARDIZED);
+
+        Optional<StatObjectResponse> stat = getObjectInfo(filename, bucketId);
+
+        if(stat.isEmpty()) {
+            log.error("File for media record with ID {} not found", mediaRecordId);
+            return;
+        }
+
+        MediaType mediaType = modelMapper.map(entity.getType(), MediaType.class);
+
+        // check if original file is already the standardized type, then we don't need to do anything
+        final String contentType = stat.get().contentType();
+        log.info("Uploaded file with content type: {}", contentType);
+
+        if (contentType.equals(STANDARDIZED_MIME_TYPES_FOR_MEDIA_TYPES.get(mediaType))) {
+            return;
+        }
+
+        // otherwise, try to convert it
+        InputStream inFileStream = minioInternalClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(bucketId)
+                        .object(filename)
+                        .build());
+        if (mediaType.equals(MediaType.DOCUMENT) || mediaType.equals(MediaType.PRESENTATION)) {
+            fileConversionService.convertDocumentToPdf(inFileStream, convertedStream -> {
+                try {
+                    minioInternalClient.putObject(
+                            PutObjectArgs.builder()
+                                    .bucket(bucketId)
+                                    .object(filenameStandardized)
+                                    .stream(convertedStream, -1, 10000000)
+                                    .contentType("application/pdf")
+                                    .build());
+                } catch (Exception e) {
+                    log.error("Error while converting and storing standardized file", e);
+                }
+            });
+        }
+
     }
 
     /**
@@ -586,13 +727,30 @@ public class MediaService {
         variables.put(FILENAME, filename);
         final String bucketId = mediaRecord.getType().toString().toLowerCase();
         variables.put(BUCKET_ID, bucketId);
+        final String filenameStandardized = mediaRecord.getId().toString() + "_standardized";
+        variables.put(FILENAME_STANDARDIZED, filenameStandardized);
 
         return variables;
     }
 
+    private Optional<StatObjectResponse> getObjectInfo(final String filename, final String bucketName) {
+        try {
+            return Optional.of(minioInternalClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(filename)
+                            .build()));
+        } catch (final ErrorResponseException e) {
+            // return empty if object does not exist
+            return Optional.empty();
+        } catch (final Exception e) {
+            log.error("Error while checking if object exists", e);
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     private boolean doesObjectExist(final String name, final String bucketName) {
         try {
-
             minioInternalClient.statObject(StatObjectArgs.builder()
                     .bucket(bucketName)
                     .object(name).build());

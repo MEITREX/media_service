@@ -38,6 +38,15 @@ type MediaRecord {
   """
   downloadUrl: String!
   """
+  Temporary download url for the media record where, if the media record is uploaded in a non-standardized format, a
+  converted version of that file is served.
+
+  For documents, this is a PDF version of the document.
+
+  May be NULL if no standardized version is available.
+  """
+  standardizedDownloadUrl: String
+  """
   Temporary upload url for the media record which can only be used from within the system.
   (This is necessary because the MinIO pre-signed URLs cannot be changed, meaning we cannot use the same URL for both
   internal and external access because the hostname changes.)
