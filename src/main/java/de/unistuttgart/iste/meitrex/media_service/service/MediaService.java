@@ -383,6 +383,7 @@ public class MediaService {
         final Map<String, String> minioVariables = createMinIOVariables(entity);
         final String bucketId = minioVariables.get(BUCKET_ID);
         final String filename = minioVariables.get(FILENAME);
+        final String filenameStandardized = minioVariables.get(FILENAME_STANDARDIZED);
 
         repository.delete(entity);
 
@@ -392,6 +393,15 @@ public class MediaService {
                             .builder()
                             .bucket(bucketId)
                             .object(filename)
+                            .build());
+        }
+
+        if (doesObjectExist(filenameStandardized, bucketId)) {
+            minioInternalClient.removeObject(
+                    RemoveObjectArgs
+                            .builder()
+                            .bucket(bucketId)
+                            .object(filenameStandardized)
                             .build());
         }
 
