@@ -455,6 +455,9 @@ public class MediaService {
         if(record.getUploadUrl() != null && isExpired(record.getUploadUrl()))
             record.setUploadUrl(null);
 
+        if(record.getStandardizedDownloadUrl() != null && isExpired(record.getStandardizedDownloadUrl()))
+            record.setStandardizedDownloadUrl(null);
+
         return record;
     }
 
