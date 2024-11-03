@@ -29,8 +29,10 @@ class MediaServiceTest {
 
     private final TopicPublisher topicPublisher = mock(TopicPublisher.class);
 
+    private final FileConversionService fileConversionService = mock(FileConversionService.class);
+
     private final MediaService service = new MediaService(mockMinIoClient, mockMinIoClient, topicPublisher, repository,
-            mapper);
+            mapper, fileConversionService);
 
 
     MediaServiceTest() throws Exception {
