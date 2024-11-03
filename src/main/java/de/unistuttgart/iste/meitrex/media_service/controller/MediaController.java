@@ -218,6 +218,14 @@ public class MediaController {
         return mediaService.createMediaRecordInternalUploadUrl(mediaRecord.getId());
     }
 
+    @SchemaMapping(typeName = "MediaRecord", field = "standardizedDownloadUrl")
+    public String standardizedDownloadUrl(final MediaRecord mediaRecord) {
+        if (mediaRecord.getStandardizedDownloadUrl() != null)
+            return mediaRecord.getStandardizedDownloadUrl();
+
+        return mediaService.createMediaRecordStandardizedDownloadUrl(mediaRecord.getId()).orElse(null);
+    }
+
     /**
      * Checks if the user has access to a MediaRecord in a List of MediaRecords.
      * If the user doesn't have access the mediaRecord will be set to null.

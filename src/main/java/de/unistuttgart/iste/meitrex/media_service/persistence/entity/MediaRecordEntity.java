@@ -4,6 +4,7 @@ import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import jakarta.persistence.*;
 import lombok.*;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +38,9 @@ public class MediaRecordEntity implements IWithId<UUID> {
 
     @Column(length = 500)
     private String downloadUrl;
+
+    @Column(length = 500, nullable = true)
+    private String standardizedDownloadUrl;
 
     @ElementCollection
     private List<UUID> courseIds;
