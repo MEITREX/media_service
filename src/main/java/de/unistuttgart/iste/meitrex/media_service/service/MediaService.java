@@ -604,7 +604,7 @@ public class MediaService {
         // if we have a standardized type and the object is already of that type, return it
         if (contentType.equals(standardizedMimeType)) {
             return Optional.of(
-                    minioInternalClient.getPresignedObjectUrl(
+                    minioExternalClient.getPresignedObjectUrl(
                             GetPresignedObjectUrlArgs.builder()
                                     .method(Method.GET)
                                     .bucket(bucketId)
