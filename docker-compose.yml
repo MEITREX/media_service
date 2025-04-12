@@ -32,7 +32,7 @@ services:
   #    - minio
   database:
     image: pgvector/pgvector:pg16
-    restart: always
+    restart: unless-stopped
     expose:
       - 5432
     ports:
@@ -47,7 +47,7 @@ services:
   app-media:
     build:
       context: ./../media_service/ # necessary because otherwise docker-compose overrides the context when merging multiple docker-compose.yml files
-    restart: always
+    restart: unless-stopped
     container_name: media_service
     expose:
       - 3000
