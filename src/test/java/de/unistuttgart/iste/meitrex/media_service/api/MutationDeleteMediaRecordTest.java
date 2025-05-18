@@ -1,17 +1,22 @@
 package de.unistuttgart.iste.meitrex.media_service.api;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.MediaRecordDeletedEvent;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
+import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
 import de.unistuttgart.iste.meitrex.common.testutil.TablesToDelete;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +27,9 @@ import static de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRe
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.*;
 
-@ContextConfiguration(classes = MockMinIoClientConfiguration.class)
+@ContextConfiguration(classes = {MockMinIoClientConfiguration.class, MockTestPublisherConfiguration.class})
 @TablesToDelete({"media_record_content_ids","media_record_course_ids", "media_record"})
 @Transactional
 @GraphQlApiTest
@@ -40,12 +46,21 @@ class MutationDeleteMediaRecordTest {
     @InjectCurrentUserHeader
     private final LoggedInUser currentUser = userWithMemberships(courseMembership1, courseMembership2);
 
+    @Autowired
+    private TopicPublisher topicPublisher;
+
+    @BeforeEach
+    void beforeEach() {
+        reset(topicPublisher);
+    }
+
     @Test
     void testDeleteMediaRecord(final GraphQlTester tester) {
         List<MediaRecordEntity> createdMediaRecords = fillRepositoryWithMediaRecordsAndCourseIds(repository, courseId1, courseId2);
 
         createdMediaRecords = repository.saveAll(createdMediaRecords);
 
+        doNothing().when(topicPublisher).notifyMediaRecordDeleted(new MediaRecordDeletedEvent(createdMediaRecords.get(0).getId()));
 
         final String query = """
                 mutation {

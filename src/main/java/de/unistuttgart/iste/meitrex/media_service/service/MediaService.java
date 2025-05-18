@@ -120,6 +120,7 @@ public class MediaService {
         final List<MediaRecordEntity> records = repository.findAllById(ids).stream().toList();
 
         final List<MediaRecord> result = new ArrayList<>(ids.size());
+        final List<MediaRecord> expiredRecords = new ArrayList<>();
 
         // go over all requested ids
         for (final UUID id : ids) {
@@ -129,11 +130,13 @@ public class MediaService {
             // if we found an entity, convert it to a DTO
             if (entity != null) {
                 mediaRecord = modelMapper.map(entity, MediaRecord.class);
+                expiredRecords.add(mediaRecord);
             }
             result.add(mediaRecord);
         }
 
-        removeExpiredUrlsFromMediaRecords(result);
+
+        removeExpiredUrlsFromMediaRecords(expiredRecords);
 
         return result;
     }
