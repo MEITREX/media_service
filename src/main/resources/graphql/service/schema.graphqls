@@ -142,6 +142,8 @@ type Thread {
   title: String!
 
   creationTimeStamp: DateTime
+
+  posts: [Post]!
 }
 
 
@@ -180,11 +182,74 @@ type Post {
 
   authorId: UUID!
 
-  downvotedByUsers: [UUID]
+  downvotedByUsers: [UUID]!
 
-  upvotedByUsers: [UUID]
+  upvotedByUsers: [UUID]!
 
   question: QuestionThread
 
   selectedAnswer: QuestionThread
+
+  thread: Thread!
+}
+
+input InputForum {
+  id: UUID!
+
+  threads: [InputThread]
+
+  courseId: UUID!
+}
+
+input InputThread {
+  id: UUID!
+
+  forum: InputForum!
+
+  creatorId: UUID!
+
+  title: String!
+
+  posts: [InputPost]!
+}
+
+
+input InputInfoThread {
+  id: UUID!
+
+  forum: InputForum!
+
+  creatorId: UUID!
+
+  title: String!
+}
+
+input InputQuestionThread {
+  id: UUID!
+
+  forum: InputForum!
+
+  creatorId: UUID!
+
+  title: String!
+}
+
+input InputPost {
+  id: UUID!
+
+  title: String!
+
+  content: String!
+
+  authorId: UUID!
+
+  downvotedByUsers: [UUID]!
+
+  upvotedByUsers: [UUID]!
+
+  question: InputQuestionThread
+
+  selectedAnswer: InputQuestionThread
+
+  thread: InputThread!
 }

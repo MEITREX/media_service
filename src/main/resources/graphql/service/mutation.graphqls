@@ -37,4 +37,29 @@ type Mutation {
     🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
     """
     setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+
+    """
+    create Question Thread
+    """
+    createQuestionThread(questionThread: InputQuestionThread!): QuestionThread
+
+    """
+    create Info Thread
+    """
+    createInfoThread(infoThread: InputInfoThread!): InfoThread
+
+    """
+    adds post to a Thread
+    """
+    addPost(post: InputPost!): Post
+
+    """
+    upvotes the post by the user
+    """
+    upvotePost(post: InputPost!): Post
+
+    """
+    downvote the post by the user
+    """
+    downvotePost(post: InputPost!): Post
 }

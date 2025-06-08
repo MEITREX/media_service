@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -31,4 +32,7 @@ public class ThreadEntity {
 
     @CreationTimestamp
     LocalDateTime creationTime;
+
+    @OneToMany
+    List<PostEntity> posts;
 }

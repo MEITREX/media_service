@@ -38,6 +38,9 @@ public class PostEntity {
     @ElementCollection
     List<UUID> upvotedByUsers;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    ThreadEntity thread;
+
     @OneToOne
     QuestionThreadEntity question;
 

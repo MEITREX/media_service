@@ -14,6 +14,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ForumEntity {
+    public ForumEntity(UUID courseID){
+        this.courseId = courseID;
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
