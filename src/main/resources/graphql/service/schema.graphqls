@@ -124,3 +124,67 @@ enum MediaType {
   URL
 }
 
+type Forum {
+  id: UUID!
+
+  threads: [Thread]
+
+  courseId: UUID!
+}
+
+type Thread {
+  id: UUID!
+
+  forum: Forum!
+
+  creatorId: UUID!
+
+  title: String!
+
+  creationTimeStamp: DateTime
+}
+
+
+type InfoThread {
+  id: UUID!
+
+  forum: Forum!
+
+  creatorId: UUID!
+
+  title: String!
+
+  creationTimeStamp: DateTime
+}
+
+type QuestionThread {
+  id: UUID!
+
+  forum: Forum!
+
+  creatorId: UUID!
+
+  title: String!
+
+  creationTimeStamp: DateTime
+}
+
+type Post {
+  id: UUID!
+
+  title: String!
+
+  content: String!
+
+  creationTime: DateTime
+
+  authorId: UUID!
+
+  downvotedByUsers: [UUID]
+
+  upvotedByUsers: [UUID]
+
+  question: QuestionThread
+
+  selectedAnswer: QuestionThread
+}
