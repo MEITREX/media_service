@@ -54,18 +54,15 @@ public class ForumService {
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
-    public Post upvotePost(PostEntity post, UUID userId) {
-        PostEntity postEntity = postRepository.findById(post.getId()).orElseThrow(() ->
-                new EntityNotFoundException("Post with the id" + post.getId() + "not found"));
+    public Post upvotePost(PostEntity postEntity, UUID userId) {
         postEntity.getDownvotedByUsers().removeIf(id -> id.equals(userId));
         postEntity.getUpvotedByUsers().add(userId);
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
-    public Post downvotePost(PostEntity post, UUID userId) {
-        PostEntity postEntity = postRepository.findById(post.getId()).orElseThrow(() ->
-                new EntityNotFoundException("Post with the id" + post.getId() + "not found"));
+    public Post downvotePost(PostEntity postEntity, UUID userId) {
         postEntity.getUpvotedByUsers().removeIf(id -> id.equals(userId));
+        log.info(postEntity.getDownvotedByUsers().size() + "");
         postEntity.getDownvotedByUsers().add(userId);
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }

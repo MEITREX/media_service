@@ -56,10 +56,10 @@ type Mutation {
     """
     upvotes the post by the user
     """
-    upvotePost(post: UUID!): Post
+    upvotePost(postId: UUID!): Post
 
     """
     downvote the post by the user
     """
-    downvotePost(post: UUID!): Post
+    downvotePost(postId: UUID!): Post
 }

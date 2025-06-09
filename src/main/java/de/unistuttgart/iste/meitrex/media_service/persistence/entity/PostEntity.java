@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity(name = "Post")
@@ -42,10 +43,10 @@ public class PostEntity {
     UUID authorId;
 
     @ElementCollection
-    List<UUID> downvotedByUsers;
+    Set<UUID> downvotedByUsers;
 
     @ElementCollection
-    List<UUID> upvotedByUsers;
+    Set<UUID> upvotedByUsers;
 
     @ManyToOne(fetch = FetchType.LAZY)
     ThreadEntity thread;
