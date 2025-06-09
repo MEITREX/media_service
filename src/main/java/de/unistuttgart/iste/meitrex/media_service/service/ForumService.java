@@ -80,6 +80,8 @@ public class ForumService {
     }
 
     private ForumEntity createForum(UUID courseId) {
-        return new ForumEntity(courseId);
+        ForumEntity forum = new ForumEntity(courseId);
+        forum = forumRepository.save(forum);
+        return forum;
     }
 }
