@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface ForumRepository extends JpaRepository<ForumEntity, UUID> {
-    public Optional<ForumEntity> findByCourseId(UUID courseId);
+    Optional<ForumEntity> findByCourseId(UUID courseId);
 }

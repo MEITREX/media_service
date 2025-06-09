@@ -24,6 +24,6 @@ public class ForumEntity {
     @OneToMany
     List<ThreadEntity> threads;
 
-    @Column
+    @Column(unique = true)
     UUID courseId;
 }

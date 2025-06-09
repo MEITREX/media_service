@@ -202,54 +202,36 @@ input InputForum {
 }
 
 input InputThread {
-  id: UUID!
-
   forum: InputForum!
-
-  creatorId: UUID!
 
   title: String!
 
-  posts: [InputPost]!
+  posts: [InputPost]
 }
 
 
 input InputInfoThread {
-  id: UUID!
-
   forum: InputForum!
-
-  creatorId: UUID!
 
   title: String!
 }
 
 input InputQuestionThread {
-  id: UUID!
-
   forum: InputForum!
-
-  creatorId: UUID!
 
   title: String!
 }
 
 input InputPost {
-  id: UUID!
+  id: UUID
 
   title: String!
 
   content: String!
 
-  authorId: UUID!
+  question: UUID
 
-  downvotedByUsers: [UUID]!
+  selectedAnswer: UUID
 
-  upvotedByUsers: [UUID]!
-
-  question: InputQuestionThread
-
-  selectedAnswer: InputQuestionThread
-
-  thread: InputThread!
+  threadId: UUID!
 }

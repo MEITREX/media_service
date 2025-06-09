@@ -3,8 +3,13 @@ package de.unistuttgart.iste.meitrex.media_service.controller;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
 import de.unistuttgart.iste.meitrex.media_service.service.ForumService;
 import graphql.schema.DataFetchingEnvironment;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -26,6 +31,8 @@ import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccess
 @RequiredArgsConstructor
 public class ForumController {
     private final ForumService forumService;
+    private final ThreadRepository threadRepository;
+    private final PostRepository postRepository;
 
     @QueryMapping
     public Forum forum(@Argument final UUID id,
@@ -52,47 +59,55 @@ public class ForumController {
     }
 
     @MutationMapping
-    public QuestionThread createQuestionThread(@Argument final QuestionThread questionThread,
+    public QuestionThread createQuestionThread(@Argument final InputQuestionThread questionThread,
                                @ContextValue final LoggedInUser currentUser) {
         if (questionThread.getForum().getCourseId() != null) {
             validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, questionThread.getForum().getCourseId());
         }
-        return forumService.createQuestionThread(questionThread);
+        return forumService.createQuestionThread(questionThread, currentUser.getId());
     }
 
     @MutationMapping
-    public InfoThread createInfoThread(@Argument final InfoThread infoThread,
+    public InfoThread createInfoThread(@Argument final InputInfoThread infoThread,
                                            @ContextValue final LoggedInUser currentUser) {
         if (infoThread.getForum().getCourseId() != null) {
             validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, infoThread.getForum().getCourseId());
         }
-        return forumService.createInfoThread(infoThread);
+        return forumService.createInfoThread(infoThread, currentUser.getId());
     }
 
     @MutationMapping
-    public Post addPost(@Argument final Post post,
+    public Post addPost(@Argument final InputPost post,
                         @ContextValue final LoggedInUser currentUser) {
-        if (post.getThread() != null) {
-            validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, post.getThread().getForum().getCourseId());
-        }
-        return forumService.addPostToThread(post);
+        ThreadEntity thread = threadRepository.findById(post.getThreadId()).orElseThrow(()->
+                new EntityNotFoundException("Thread with the id"  + post.getThreadId() + "not found"));
+
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
+
+        return forumService.addPostToThread(post, thread , currentUser.getId());
     }
 
     @MutationMapping
-    public Post upvotePost(@Argument final Post post,
+    public Post upvotePost(@Argument final UUID postId,
                         @ContextValue final LoggedInUser currentUser) {
-        if (post.getThread() != null) {
-            validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, post.getThread().getForum().getCourseId());
-        }
+        PostEntity post = postRepository.findById(postId).orElseThrow(() ->
+                new EntityNotFoundException("Post with the id"  + postId + "not found"));
+        ThreadEntity thread = threadRepository.findById(post.getThread().getId()).orElseThrow(()->
+                new EntityNotFoundException("Thread with the id"  + post.getThread().getId() + "not found"));
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
+
         return forumService.upvotePost(post, currentUser.getId());
     }
 
     @MutationMapping
-    public Post downvotePost(@Argument final Post post,
+    public Post downvotePost(@Argument final UUID postId,
                            @ContextValue final LoggedInUser currentUser) {
-        if (post.getThread() != null) {
-            validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, post.getThread().getForum().getCourseId());
-        }
+        PostEntity post = postRepository.findById(postId).orElseThrow(() ->
+                new EntityNotFoundException("Post with the id"  + postId + "not found"));
+        ThreadEntity thread = threadRepository.findById(post.getThread().getId()).orElseThrow(()->
+                new EntityNotFoundException("Thread with the id"  + post.getThread().getId() + "not found"));
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
+
         return forumService.downvotePost(post, currentUser.getId());
     }
 }

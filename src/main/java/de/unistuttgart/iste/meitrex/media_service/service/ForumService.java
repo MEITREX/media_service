@@ -5,14 +5,15 @@ import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.QuestionThreadRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,27 +26,35 @@ public class ForumService {
     private final ModelMapper modelMapper;
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
+    private final QuestionThreadRepository questionThreadRepository;
 
     public Forum getForumById(UUID id) {
-        return modelMapper.map(forumRepository.findById(id).orElse(createForum(id)), Forum.class);
+        return modelMapper.map(forumRepository.findById(id).orElse(null), Forum.class);
     }
 
     public Forum getForumByCourseId(UUID id) {
-        return modelMapper.map(forumRepository.findByCourseId(id).orElse(createForum(id)), Forum.class);
+        ForumEntity forum = forumRepository.findByCourseId(id).orElseGet(() -> createForum(id));
+        return modelMapper.map(forum, Forum.class);
     }
 
     public Thread getThreadById(UUID id) {
         return modelMapper.map(forumRepository.findById(id).orElse(null), Thread.class);
     }
 
-    public Post addPostToThread(Post post) {
-        threadRepository.findById(post.getThread().getId()).orElseThrow(()->
-                new EntityNotFoundException("Thread with the id"  + post.getThread().getId() + "not found"));
-        PostEntity postEntity = modelMapper.map(post, PostEntity.class);
+    public Post addPostToThread(InputPost post, ThreadEntity thread, UUID userId) {
+        QuestionThreadEntity question = null;
+        QuestionThreadEntity selectedAnswer = null;
+        if (post.getQuestion() != null) {
+            question = questionThreadRepository.findById(post.getQuestion()).orElse(null);
+        }
+        if (post.getSelectedAnswer() != null) {
+            selectedAnswer = questionThreadRepository.findById(post.getSelectedAnswer()).orElse(null);
+        }
+        PostEntity postEntity = new PostEntity(post.getTitle(), post.getContent(), userId ,thread, question, selectedAnswer);
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
-    public Post upvotePost(Post post, UUID userId) {
+    public Post upvotePost(PostEntity post, UUID userId) {
         PostEntity postEntity = postRepository.findById(post.getId()).orElseThrow(() ->
                 new EntityNotFoundException("Post with the id" + post.getId() + "not found"));
         postEntity.getDownvotedByUsers().removeIf(id -> id.equals(userId));
@@ -53,7 +62,7 @@ public class ForumService {
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
-    public Post downvotePost(Post post, UUID userId) {
+    public Post downvotePost(PostEntity post, UUID userId) {
         PostEntity postEntity = postRepository.findById(post.getId()).orElseThrow(() ->
                 new EntityNotFoundException("Post with the id" + post.getId() + "not found"));
         postEntity.getUpvotedByUsers().removeIf(id -> id.equals(userId));
@@ -61,22 +70,24 @@ public class ForumService {
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
-    public QuestionThread createQuestionThread(QuestionThread questionThread) {
+    public QuestionThread createQuestionThread(InputQuestionThread questionThread, UUID userId) {
         ForumEntity forumEntity = forumRepository.findById(questionThread.getForum().getId()).orElseThrow(()->
                 new EntityNotFoundException("Forum with the id" + questionThread.getForum().getId() + "not found"));
-        QuestionThreadEntity questionThreadEntity = modelMapper.map(questionThread, QuestionThreadEntity.class);
+        QuestionThreadEntity questionThreadEntity = new QuestionThreadEntity(forumEntity, userId, questionThread.getTitle());
+        questionThreadEntity = threadRepository.save(questionThreadEntity);
         forumEntity.getThreads().add(questionThreadEntity);
         forumRepository.save(forumEntity);
-        return modelMapper.map(threadRepository.save(questionThreadEntity), QuestionThread.class);
+        return modelMapper.map(questionThreadEntity, QuestionThread.class);
     }
 
-    public InfoThread createInfoThread(InfoThread infoThread) {
+    public InfoThread createInfoThread(InputInfoThread infoThread, UUID userId) {
         ForumEntity forumEntity = forumRepository.findById(infoThread.getForum().getId()).orElseThrow(()->
                 new EntityNotFoundException("Forum with the id" + infoThread.getForum().getId() + "not found"));
-        InfoThreadEntity infoThreadEntity = modelMapper.map(infoThread, InfoThreadEntity.class);
+        InfoThreadEntity infoThreadEntity = new InfoThreadEntity(forumEntity, userId, infoThread.getTitle());
+        infoThreadEntity = threadRepository.save(infoThreadEntity);
         forumEntity.getThreads().add(infoThreadEntity);
         forumRepository.save(forumEntity);
-        return modelMapper.map(threadRepository.save(infoThreadEntity), InfoThread.class);
+        return modelMapper.map(infoThreadEntity, InfoThread.class);
     }
 
     private ForumEntity createForum(UUID courseId) {

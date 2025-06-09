@@ -16,6 +16,15 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PostEntity {
+    public PostEntity(String title, String content, UUID authorId, ThreadEntity thread, QuestionThreadEntity question, QuestionThreadEntity selectedAnswer) {
+        this.title = title;
+        this.content = content;
+        this.authorId = authorId;
+        this.thread = thread;
+        this.question = question;
+        this.selectedAnswer = selectedAnswer;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;

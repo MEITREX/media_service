@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,6 +18,13 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class ThreadEntity {
+    public ThreadEntity(ForumEntity forum, UUID creatorId, String title) {
+        this.forum = forum;
+        this.creatorId = creatorId;
+        this.title = title;
+        this.posts = new ArrayList<>();
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
