@@ -3,10 +3,7 @@ package de.unistuttgart.iste.meitrex.media_service.service;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.QuestionThreadRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +24,8 @@ public class ForumService {
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
     private final QuestionThreadRepository questionThreadRepository;
+    private final MediaRecordRepository mediaRecordRepository;
+    private final ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
 
     public Forum getForumById(UUID id) {
         return modelMapper.map(forumRepository.findById(id).orElse(null), Forum.class);
@@ -85,6 +84,16 @@ public class ForumService {
         forumEntity.getThreads().add(infoThreadEntity);
         forumRepository.save(forumEntity);
         return modelMapper.map(infoThreadEntity, InfoThread.class);
+    }
+
+    public ThreadMediaRecordReference addThreadToMediaRecord(ThreadEntity thread, MediaRecordEntity mediaRecord, int timeStamp, int pageNumber) {
+        ThreadMediaRecordReferenceEntity threadMediaRecordReferenceEntity = new ThreadMediaRecordReferenceEntity(thread, mediaRecord, timeStamp, pageNumber);
+        mediaRecord.getThreadMediaRecordReference().add(threadMediaRecordReferenceEntity);
+        thread.setThreadMediaRecordReference(threadMediaRecordReferenceEntity);
+        mediaRecordRepository.save(mediaRecord);
+        threadRepository.save(thread);
+        threadMediaRecordReferenceRepository.save(threadMediaRecordReferenceEntity);
+        return modelMapper.map(threadMediaRecordReferenceEntity, ThreadMediaRecordReference.class);
     }
 
     private ForumEntity createForum(UUID courseId) {

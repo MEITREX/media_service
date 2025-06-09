@@ -3,8 +3,10 @@ package de.unistuttgart.iste.meitrex.media_service.controller;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
 import de.unistuttgart.iste.meitrex.media_service.service.ForumService;
@@ -33,6 +35,8 @@ public class ForumController {
     private final ForumService forumService;
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
+    private final MediaController mediaController;
+    private final MediaRecordRepository mediaRecordRepository;
 
     @QueryMapping
     public Forum forum(@Argument final UUID id,
@@ -109,5 +113,16 @@ public class ForumController {
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
 
         return forumService.downvotePost(post, currentUser.getId());
+    }
+
+    @MutationMapping
+    public ThreadMediaRecordReference addThreadToMediaRecord(@Argument final InputThreadMediaRecordReference inputThreadMediaRecordReference,
+                                                             @ContextValue final LoggedInUser currentUser) {
+        ThreadEntity thread = threadRepository.findById(inputThreadMediaRecordReference.getThreadId()).orElseThrow(()->
+                new EntityNotFoundException("Thread with the id"  + inputThreadMediaRecordReference.getThreadId() + "not found"));
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
+        MediaRecordEntity mediaRecord = mediaRecordRepository.findById(inputThreadMediaRecordReference.getMediaRecordId()).orElseThrow(()->
+                new EntityNotFoundException("MediaRecord with the id"  + inputThreadMediaRecordReference.getMediaRecordId() + "not found"));
+        return forumService.addThreadToMediaRecord(thread, mediaRecord, inputThreadMediaRecordReference.getTimeStampSeconds(), inputThreadMediaRecordReference.getPageNumber());
     }
 }

@@ -62,4 +62,9 @@ type Mutation {
     downvote the post by the user
     """
     downvotePost(postId: UUID!): Post
+
+    """
+    add Thread to MediaRecord
+    """
+    addThreadToMediaRecord(threadMediaRecrodReference: InputThreadMediaRecordReference!): ThreadMediaRecordReference
 }

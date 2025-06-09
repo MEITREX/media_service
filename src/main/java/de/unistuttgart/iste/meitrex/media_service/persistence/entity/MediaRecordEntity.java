@@ -50,6 +50,9 @@ public class MediaRecordEntity implements IWithId<UUID> {
     @EqualsAndHashCode.Exclude
     private List<MediaRecordProgressDataEntity> progressData = new ArrayList<>();
 
+    @OneToMany(mappedBy = "mediaRecord")
+    private List<ThreadMediaRecordReferenceEntity> threadMediaRecordReference;
+
     public enum MediaType {
         AUDIO,
         VIDEO,

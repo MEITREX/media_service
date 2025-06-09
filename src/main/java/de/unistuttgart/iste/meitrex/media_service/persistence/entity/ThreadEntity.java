@@ -1,6 +1,8 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 
 import java.time.LocalDateTime;
+
+import de.unistuttgart.iste.meitrex.generated.dto.ThreadMediaRecordReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -43,4 +45,7 @@ public class ThreadEntity {
 
     @OneToMany
     List<PostEntity> posts;
+
+    @OneToOne
+    ThreadMediaRecordReferenceEntity threadMediaRecordReference;
 }

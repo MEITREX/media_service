@@ -24,7 +24,7 @@ public class ThreadMediaRecordReferenceEntity implements Serializable {
     @JoinColumn(name = "media_record_id")
     MediaRecordEntity mediaRecord;
 
-    @ManyToOne
+    @OneToOne
     @MapsId("threadId")
     @JoinColumn(name = "thread_id")
     ThreadEntity thread;
@@ -34,4 +34,11 @@ public class ThreadMediaRecordReferenceEntity implements Serializable {
 
     @Column
     private int pageNumber;
+
+    public ThreadMediaRecordReferenceEntity(ThreadEntity thread, MediaRecordEntity mediaRecord, int timeStamp, int pageNumber) {
+        this.thread = thread;
+        this.mediaRecord = mediaRecord;
+        this.timeStampSeconds = timeStamp;
+        this.pageNumber = pageNumber;
+    }
 }

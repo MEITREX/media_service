@@ -146,6 +146,12 @@ type Thread {
   posts: [Post]!
 }
 
+type ThreadMediaRecordReference {
+  mediaRecordId: UUID!
+  threadId: UUID!
+  timeStampSeconds: Int
+  pageNumber: Int
+}
 
 type InfoThread {
   id: UUID!
@@ -209,6 +215,12 @@ input InputThread {
   posts: [InputPost]
 }
 
+input InputThreadMediaRecordReference {
+  mediaRecordId: UUID!
+  threadId: UUID!
+  timeStampSeconds: Int
+  pageNumber: Int
+}
 
 input InputInfoThread {
   forum: InputForum!
