@@ -6,8 +6,8 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
-import java.util.Set;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "Post")
@@ -36,16 +36,16 @@ public class PostEntity {
     String content;
 
     @CreationTimestamp
-    LocalDateTime creationTime;
+    OffsetDateTime creationTime;
 
     @Column(nullable = false)
     UUID authorId;
 
     @ElementCollection
-    Set<UUID> downvotedByUsers;
+    List<UUID> downvotedByUsers;
 
     @ElementCollection
-    Set<UUID> upvotedByUsers;
+    List<UUID> upvotedByUsers;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Cascade(org.hibernate.annotations.CascadeType.ALL)

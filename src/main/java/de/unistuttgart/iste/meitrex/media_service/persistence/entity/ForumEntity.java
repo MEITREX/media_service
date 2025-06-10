@@ -3,6 +3,8 @@ package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import java.util.UUID;
@@ -16,6 +18,7 @@ import java.util.UUID;
 public class ForumEntity {
     public ForumEntity(UUID courseID){
         this.courseId = courseID;
+        threads = new ArrayList<>();
     }
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

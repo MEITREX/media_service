@@ -3,10 +3,7 @@ package de.unistuttgart.iste.meitrex.media_service.controller;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
@@ -63,7 +60,13 @@ public class ForumController {
                             @ContextValue final LoggedInUser currentUser) {
         ThreadEntity thread = forumService.getThreadById(id);
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,thread.getForum().getCourseId());
-        return modelMapper.map(thread, Thread.class);
+        if (thread instanceof QuestionThreadEntity questionThread) {
+            return modelMapper.map(questionThread, QuestionThread.class);
+        } else if (thread instanceof InfoThreadEntity infoThread){
+            return modelMapper.map(infoThread, InfoThread.class);
+        } else {
+            throw new EntityNotFoundException("Thread with id " + id + " not found");
+        }
     }
 
     @QueryMapping

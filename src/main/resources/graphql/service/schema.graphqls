@@ -228,11 +228,10 @@ input InputThreadMediaRecordReference {
   pageNumber: Int
 }
 
-
 input InputPost {
   id: UUID
 
-  threadId: UUID!
+  threadId: UUID
 
   content: String!
 }

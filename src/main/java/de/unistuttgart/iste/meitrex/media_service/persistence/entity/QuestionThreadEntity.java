@@ -2,7 +2,6 @@ package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

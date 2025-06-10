@@ -1,14 +1,12 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 
-import java.time.LocalDateTime;
-
-import de.unistuttgart.iste.meitrex.generated.dto.ThreadMediaRecordReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.CurrentTimestamp;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,9 +40,10 @@ public class ThreadEntity {
     String title;
 
     @CreationTimestamp
-    LocalDateTime creationTime;
+    OffsetDateTime creationTime;
 
     @OneToMany
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     List<PostEntity> posts;
 
     @OneToOne

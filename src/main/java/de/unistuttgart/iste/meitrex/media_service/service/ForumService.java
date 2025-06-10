@@ -4,6 +4,8 @@ import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
+import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -28,43 +31,49 @@ public class ForumService {
     private final MediaRecordRepository mediaRecordRepository;
     private final ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
 
+    private final ForumMapper forumMapper;
+    private final ThreadMapper threadMapper;
+
     public Forum getForumById(UUID id) {
-        return modelMapper.map(forumRepository.findById(id).orElse(null), Forum.class);
+        return forumMapper.forumEntityToForum(Objects.requireNonNull(forumRepository.findById(id).orElse(null)));
     }
 
     public Forum getForumByCourseId(UUID id) {
         ForumEntity forum = forumRepository.findByCourseId(id).orElseGet(() -> createForum(id));
-        return modelMapper.map(forum, Forum.class);
+        return forumMapper.forumEntityToForum(forum);
     }
 
     public ThreadEntity getThreadById(UUID id) {
-        ThreadEntity thread = threadRepository.findById(id).orElseThrow(()->
+        return threadRepository.findById(id).orElseThrow(()->
                 new EntityNotFoundException("Thread with the id" + id + "not found"));
-        if (thread instanceof QuestionThreadEntity questionThread) {
-            log.info(questionThread.getQuestion().getId() + "");
-        }
-        return thread;
     }
 
     public List<Thread> getThreadsByMediaRecord(MediaRecordEntity mediaRecord) {
         return mediaRecord.getThreadMediaRecordReference().stream()
-                .map((record) -> modelMapper.map(record.getThread(), Thread.class)).toList();
+                .map((record) -> threadMapper.mapThread(record.getThread())).toList();
     }
 
     public Post addPostToThread(InputPost post, ThreadEntity thread, UUID userId) {
         PostEntity postEntity = new PostEntity(post.getContent(), userId ,thread);
-        return modelMapper.map(postRepository.save(postEntity), Post.class);
+        postEntity = postRepository.save(postEntity);
+        thread.getPosts().add(postEntity);
+        threadRepository.save(thread);
+        return modelMapper.map(postEntity, Post.class);
     }
 
     public Post upvotePost(PostEntity postEntity, UUID userId) {
         postEntity.getDownvotedByUsers().removeIf(id -> id.equals(userId));
-        postEntity.getUpvotedByUsers().add(userId);
+        if (!postEntity.getUpvotedByUsers().contains(userId)) {
+            postEntity.getUpvotedByUsers().add(userId);
+        }
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
     public Post downvotePost(PostEntity postEntity, UUID userId) {
         postEntity.getUpvotedByUsers().removeIf(id -> id.equals(userId));
-        postEntity.getDownvotedByUsers().add(userId);
+        if (!postEntity.getDownvotedByUsers().contains(userId)) {
+            postEntity.getDownvotedByUsers().add(userId);
+        }
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
