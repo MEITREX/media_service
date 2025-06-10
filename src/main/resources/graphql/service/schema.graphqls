@@ -127,24 +127,23 @@ enum MediaType {
 type Forum {
   id: UUID!
 
-  threads: [Thread]
+  threads: [Thread!]!
 
   courseId: UUID!
 }
 
-type Thread {
+interface Thread {
   id: UUID!
 
   forum: Forum!
 
   creatorId: UUID!
 
-  title: String!
-
   creationTimeStamp: DateTime
 
-  posts: [Post]!
+  posts: [Post!]!
 }
+
 
 type ThreadMediaRecordReference {
   mediaRecordId: UUID!
@@ -153,34 +152,44 @@ type ThreadMediaRecordReference {
   pageNumber: Int
 }
 
-type InfoThread {
+type InfoThread implements Thread {
   id: UUID!
+
+  title: String!
 
   forum: Forum!
 
   creatorId: UUID!
 
-  title: String!
+  creationTimeStamp: DateTime!
 
-  creationTimeStamp: DateTime
+  posts: [Post!]!
+
+  info: Post!
+
 }
 
-type QuestionThread {
+type QuestionThread implements Thread {
   id: UUID!
+
+  title: String!
 
   forum: Forum!
 
   creatorId: UUID!
 
-  title: String!
+  creationTimeStamp: DateTime!
 
-  creationTimeStamp: DateTime
+  question: Post!
+
+  posts: [Post!]!
+
+  selectedAnswer: Post
+
 }
 
 type Post {
   id: UUID!
-
-  title: String!
 
   content: String!
 
@@ -193,8 +202,6 @@ type Post {
   upvotedByUsers: [UUID]!
 
   question: QuestionThread
-
-  selectedAnswer: QuestionThread
 
   thread: Thread!
 }
