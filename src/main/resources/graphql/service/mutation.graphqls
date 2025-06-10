@@ -39,14 +39,14 @@ type Mutation {
     setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
     """
-    create Question Thread
+    create question thread
     """
-    createQuestionThread(questionThread: InputQuestionThread!): QuestionThread
+    createQuestionThread(thread: InputQuestionThread!): QuestionThread
 
     """
-    create Info Thread
+    create info thread
     """
-    createInfoThread(infoThread: InputInfoThread!): InfoThread
+    createInfoThread(thread: InputInfoThread!): InfoThread
 
     """
     adds post to a Thread
@@ -64,7 +64,17 @@ type Mutation {
     downvotePost(postId: UUID!): Post
 
     """
+    update post
+    """
+    updatePost(post: InputPost!): Post
+
+    """
+    delete post
+    """
+    deletePost(postId: UUID!): Post
+
+    """
     add Thread to MediaRecord
     """
-    addThreadToMediaRecord(threadMediaRecrodReference: InputThreadMediaRecordReference!): ThreadMediaRecordReference
+    addThreadToMediaRecord(threadMediaRecordReference: InputThreadMediaRecordReference!): ThreadMediaRecordReference
 }

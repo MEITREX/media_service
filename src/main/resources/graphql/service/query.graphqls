@@ -83,6 +83,11 @@ type Query {
     forumByCourseId(id: UUID!): Forum
 
     """
+    Returns thread for MediaRecord
+    """
+    threadsByMediaRecord(id: UUID!): [Thread!]!
+
+    """
     Returns thread
     """
     thread(id: UUID!): Thread

@@ -135,21 +135,29 @@ type Forum {
 interface Thread {
   id: UUID!
 
-  forum: Forum!
-
   creatorId: UUID!
 
-  creationTimeStamp: DateTime
+  creationTime: DateTime
+
+  title: String!
 
   posts: [Post!]!
 }
 
+type QuestionThread implements Thread {
+  id: UUID!
 
-type ThreadMediaRecordReference {
-  mediaRecordId: UUID!
-  threadId: UUID!
-  timeStampSeconds: Int
-  pageNumber: Int
+  creatorId: UUID!
+
+  creationTime: DateTime!
+
+  title: String!
+
+  question: Post!
+
+  selectedAnswer: Post
+
+  posts: [Post!]!
 }
 
 type InfoThread implements Thread {
@@ -161,31 +169,18 @@ type InfoThread implements Thread {
 
   creatorId: UUID!
 
-  creationTimeStamp: DateTime!
-
-  posts: [Post!]!
+  creationTime: DateTime!
 
   info: Post!
 
+  posts: [Post!]!
 }
 
-type QuestionThread implements Thread {
-  id: UUID!
-
-  title: String!
-
-  forum: Forum!
-
-  creatorId: UUID!
-
-  creationTimeStamp: DateTime!
-
-  question: Post!
-
-  posts: [Post!]!
-
-  selectedAnswer: Post
-
+type ThreadMediaRecordReference {
+  mediaRecordId: UUID!
+  threadId: UUID!
+  timeStampSeconds: Int
+  pageNumber: Int
 }
 
 type Post {
@@ -193,33 +188,37 @@ type Post {
 
   content: String!
 
-  creationTime: DateTime
+  creationTime: DateTime!
 
   authorId: UUID!
 
   downvotedByUsers: [UUID]!
 
   upvotedByUsers: [UUID]!
-
-  question: QuestionThread
-
-  thread: Thread!
 }
 
 input InputForum {
   id: UUID!
 
-  threads: [InputThread]
-
   courseId: UUID!
 }
 
-input InputThread {
-  forum: InputForum!
+input InputQuestionThread {
+  forumId: UUID!
 
   title: String!
 
-  posts: [InputPost]
+  question: InputPost!
+
+  answer: InputPost
+}
+
+input InputInfoThread {
+  forumId: UUID!
+
+  title: String!
+
+  info: InputPost!
 }
 
 input InputThreadMediaRecordReference {
@@ -229,28 +228,11 @@ input InputThreadMediaRecordReference {
   pageNumber: Int
 }
 
-input InputInfoThread {
-  forum: InputForum!
-
-  title: String!
-}
-
-input InputQuestionThread {
-  forum: InputForum!
-
-  title: String!
-}
 
 input InputPost {
   id: UUID
 
-  title: String!
+  threadId: UUID!
 
   content: String!
-
-  question: UUID
-
-  selectedAnswer: UUID
-
-  threadId: UUID!
 }
