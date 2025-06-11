@@ -9,11 +9,9 @@ import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRe
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
 import de.unistuttgart.iste.meitrex.media_service.service.ForumService;
-import graphql.schema.DataFetchingEnvironment;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.modelmapper.ModelMapper;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.ContextValue;
@@ -26,10 +24,8 @@ import javax.naming.AuthenticationException;
 import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccessValidator.validateUserHasAccessToCourse;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
-import static de.unistuttgart.iste.meitrex.common.user_handling.GlobalPermissionAccessValidator.validateUserHasGlobalPermission;
 import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccessValidator.validateUserHasAccessToCourses;
 
 @Slf4j
@@ -39,18 +35,16 @@ public class ForumController {
     private final ForumService forumService;
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
-    private final MediaController mediaController;
     private final MediaRecordRepository mediaRecordRepository;
     private final ModelMapper modelMapper;
     private final ForumRepository forumRepository;
+    private final String NOT_FOUND = " not found";
+
 
     @QueryMapping
     public Forum forum(@Argument final UUID id,
                               @ContextValue final LoggedInUser currentUser) {
         Forum forum = forumService.getForumById(id);
-        if (forum == null) {
-            throw new EntityNotFoundException("Forum with id " + id + " not found");
-        }
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,forum.getCourseId());
         return forum;
     }
@@ -65,7 +59,7 @@ public class ForumController {
         } else if (thread instanceof InfoThreadEntity infoThread){
             return modelMapper.map(infoThread, InfoThread.class);
         } else {
-            throw new EntityNotFoundException("Thread with id " + id + " not found");
+            throw new EntityNotFoundException("Thread with id " + id + NOT_FOUND);
         }
     }
 
@@ -73,7 +67,7 @@ public class ForumController {
     public List<Thread> threadsByMediaRecord(@Argument UUID id,
                                              @ContextValue final LoggedInUser currentUser) {
         MediaRecordEntity mediaRecord = mediaRecordRepository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException("MediaRecord with id " + id + " not found"));
+                new EntityNotFoundException("MediaRecord with id " + id + NOT_FOUND));
         if (mediaRecord.getCourseIds() != null && !mediaRecord.getCourseIds().isEmpty()) {
             validateUserHasAccessToCourses(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, mediaRecord.getCourseIds());
         }
@@ -92,7 +86,7 @@ public class ForumController {
     public QuestionThread createQuestionThread(@Argument final InputQuestionThread thread,
                                @ContextValue final LoggedInUser currentUser) {
         ForumEntity forum = forumRepository.findById(thread.getForumId()).orElseThrow(() ->
-                new EntityNotFoundException("Forum with the id " + thread.getForumId() + " not found"));
+                new EntityNotFoundException("Forum with the id " + thread.getForumId() + NOT_FOUND));
         if (forum.getCourseId() != null) {
             validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, forum.getCourseId());
         }
@@ -103,7 +97,7 @@ public class ForumController {
     public InfoThread createInfoThread(@Argument final InputInfoThread thread,
                                        @ContextValue final LoggedInUser currentUser) {
         ForumEntity forum = forumRepository.findById(thread.getForumId()).orElseThrow(() ->
-                new EntityNotFoundException("Forum with the id " + thread.getForumId() + " not found"));
+                new EntityNotFoundException("Forum with the id " + thread.getForumId() + NOT_FOUND));
         if (forum.getCourseId() != null) {
             validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, forum.getCourseId());
         }
@@ -114,7 +108,7 @@ public class ForumController {
     public Post addPost(@Argument final InputPost post,
                         @ContextValue final LoggedInUser currentUser) {
         ThreadEntity thread = threadRepository.findById(post.getThreadId()).orElseThrow(()->
-                new EntityNotFoundException("Thread with the id"  + post.getThreadId() + "not found"));
+                new EntityNotFoundException("Thread with the id"  + post.getThreadId() + NOT_FOUND));
 
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
 
@@ -155,19 +149,19 @@ public class ForumController {
     public ThreadMediaRecordReference addThreadToMediaRecord(@Argument final InputThreadMediaRecordReference threadMediaRecordReference,
                                                              @ContextValue final LoggedInUser currentUser) {
         ThreadEntity thread = threadRepository.findById(threadMediaRecordReference.getThreadId()).orElseThrow(()->
-                new EntityNotFoundException("Thread with the id"  + threadMediaRecordReference.getThreadId() + "not found"));
+                new EntityNotFoundException("Thread with the id"  + threadMediaRecordReference.getThreadId() + NOT_FOUND));
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
         MediaRecordEntity mediaRecord = mediaRecordRepository.findById(threadMediaRecordReference.getMediaRecordId()).orElseThrow(()->
-                new EntityNotFoundException("MediaRecord with the id"  + threadMediaRecordReference.getMediaRecordId() + "not found"));
+                new EntityNotFoundException("MediaRecord with the id"  + threadMediaRecordReference.getMediaRecordId() + NOT_FOUND));
         return forumService.addThreadToMediaRecord(thread, mediaRecord, threadMediaRecordReference.getTimeStampSeconds(), threadMediaRecordReference.getPageNumber());
     }
 
 
     private PostEntity checkUserInCourse(@Argument UUID postId, @ContextValue LoggedInUser currentUser) {
         PostEntity post = postRepository.findById(postId).orElseThrow(() ->
-                new EntityNotFoundException("Post with the id"  + postId + "not found"));
+                new EntityNotFoundException("Post with the id"  + postId + NOT_FOUND));
         ThreadEntity thread = threadRepository.findById(post.getThread().getId()).orElseThrow(()->
-                new EntityNotFoundException("Thread with the id"  + post.getThread().getId() + "not found"));
+                new EntityNotFoundException("Thread with the id"  + post.getThread().getId() + NOT_FOUND));
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
         return post;
     }

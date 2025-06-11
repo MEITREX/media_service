@@ -2,22 +2,29 @@ package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Cascade;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 public class QuestionThreadEntity extends ThreadEntity{
     public QuestionThreadEntity(ForumEntity forum, UUID creatorId, String title, @NotNull PostEntity question) {
         super(forum, creatorId, title);
         this.question = question;
+    }
+
+    @Builder
+    public QuestionThreadEntity(UUID id, ForumEntity forum, UUID creatorId, String title, OffsetDateTime creationTime, List<PostEntity> posts, ThreadMediaRecordReferenceEntity threadMediaRecordReference, @NotNull PostEntity question, PostEntity answer) {
+        super(id, forum, creatorId, title, creationTime, posts, threadMediaRecordReference);
+        this.question = question;
+        this.answer = answer;
     }
 
     @OneToOne

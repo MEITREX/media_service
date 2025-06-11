@@ -13,12 +13,11 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class ThreadEntity {
+public abstract class ThreadEntity {
     public ThreadEntity(ForumEntity forum, UUID creatorId, String title) {
         this.forum = forum;
         this.creatorId = creatorId;

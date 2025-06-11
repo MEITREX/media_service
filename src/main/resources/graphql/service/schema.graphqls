@@ -165,8 +165,6 @@ type InfoThread implements Thread {
 
   title: String!
 
-  forum: Forum!
-
   creatorId: UUID!
 
   creationTime: DateTime!

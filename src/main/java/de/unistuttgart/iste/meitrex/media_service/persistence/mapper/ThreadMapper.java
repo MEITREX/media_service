@@ -6,7 +6,6 @@ import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.InfoThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadEntity;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ public class ThreadMapper {
         } else if (threadEntity instanceof InfoThreadEntity infoThread) {
             return modelMapper.map(infoThread, InfoThread.class);
         } else {
-            throw new EntityNotFoundException("Thread with the id" + threadEntity.getId() + "not found");
+            throw new ClassCastException("Thread Entity is in wrong class " + threadEntity.getClass().getName());
         }
     }
 }

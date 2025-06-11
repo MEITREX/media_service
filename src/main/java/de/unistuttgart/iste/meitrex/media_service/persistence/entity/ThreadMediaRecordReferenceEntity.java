@@ -7,9 +7,13 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.PackagePrivate;
 
 import java.io.Serializable;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 @Entity(name = "ThreadMediaRecordReference")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,23 +26,41 @@ public class ThreadMediaRecordReferenceEntity implements Serializable {
     @ManyToOne
     @MapsId("mediaRecordId")
     @JoinColumn(name = "media_record_id")
-    MediaRecordEntity mediaRecord;
+    transient MediaRecordEntity mediaRecord;
 
     @OneToOne
     @MapsId("threadId")
     @JoinColumn(name = "thread_id")
-    ThreadEntity thread;
+    transient ThreadEntity thread;
 
     @Column
-    private int timeStampSeconds;
+    private Integer timeStampSeconds;
 
     @Column
-    private int pageNumber;
+    private Integer pageNumber;
 
     public ThreadMediaRecordReferenceEntity(ThreadEntity thread, MediaRecordEntity mediaRecord, int timeStamp, int pageNumber) {
         this.thread = thread;
         this.mediaRecord = mediaRecord;
         this.timeStampSeconds = timeStamp;
         this.pageNumber = pageNumber;
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner joiner = new StringJoiner(", ", "{ ", " }");
+        if (mediaRecord != null) {
+            joiner.add("mediaRecordId: " + mediaRecord.getId());
+        }
+        if (thread != null) {
+            joiner.add("threadId: " + thread.getId());
+        }
+        if (timeStampSeconds != null) {
+            joiner.add("timeStampSeconds: " + timeStampSeconds);
+        }
+        if (pageNumber != null) {
+            joiner.add("pageNumber: " + pageNumber);
+        }
+        return joiner.toString();
     }
 }

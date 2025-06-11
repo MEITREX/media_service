@@ -17,15 +17,16 @@ import javax.naming.AuthenticationException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ForumService {
 
-    private final ForumRepository forumRepository;
-
     private final ModelMapper modelMapper;
+
+    private final ForumRepository forumRepository;
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
     private final MediaRecordRepository mediaRecordRepository;
@@ -35,7 +36,8 @@ public class ForumService {
     private final ThreadMapper threadMapper;
 
     public Forum getForumById(UUID id) {
-        return forumMapper.forumEntityToForum(Objects.requireNonNull(forumRepository.findById(id).orElse(null)));
+        return forumMapper.forumEntityToForum(forumRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("Forum with the id " + id + " not found")));
     }
 
     public Forum getForumByCourseId(UUID id) {
@@ -45,12 +47,12 @@ public class ForumService {
 
     public ThreadEntity getThreadById(UUID id) {
         return threadRepository.findById(id).orElseThrow(()->
-                new EntityNotFoundException("Thread with the id" + id + "not found"));
+                new EntityNotFoundException("Thread with the id " + id + " not found"));
     }
 
     public List<Thread> getThreadsByMediaRecord(MediaRecordEntity mediaRecord) {
         return mediaRecord.getThreadMediaRecordReference().stream()
-                .map((record) -> threadMapper.mapThread(record.getThread())).toList();
+                .map((pRecordEntity) -> threadMapper.mapThread(pRecordEntity.getThread())).collect(Collectors.toList());
     }
 
     public Post addPostToThread(InputPost post, ThreadEntity thread, UUID userId) {
@@ -120,7 +122,12 @@ public class ForumService {
     }
 
     public ThreadMediaRecordReference addThreadToMediaRecord(ThreadEntity thread, MediaRecordEntity mediaRecord, int timeStamp, int pageNumber) {
-        ThreadMediaRecordReferenceEntity threadMediaRecordReferenceEntity = new ThreadMediaRecordReferenceEntity(thread, mediaRecord, timeStamp, pageNumber);
+        ThreadMediaRecordReferenceEntity threadMediaRecordReferenceEntity = ThreadMediaRecordReferenceEntity.builder()
+                .thread(thread)
+                .mediaRecord(mediaRecord)
+                .timeStampSeconds(timeStamp)
+                .pageNumber(pageNumber)
+                .build();
         mediaRecord.getThreadMediaRecordReference().add(threadMediaRecordReferenceEntity);
         thread.setThreadMediaRecordReference(threadMediaRecordReferenceEntity);
         mediaRecordRepository.save(mediaRecord);
