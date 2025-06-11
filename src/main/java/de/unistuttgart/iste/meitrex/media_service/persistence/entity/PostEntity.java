@@ -88,4 +88,9 @@ public class PostEntity {
         return equalsId && equalsContent && equalsCreationTime && equalsAuthorId && equalsDownvotedByUsers &&
                 equalsUpvodedByUsers && equalsThread;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, content, creationTime, authorId, downvotedByUsers, upvotedByUsers, thread);
+    }
 }
