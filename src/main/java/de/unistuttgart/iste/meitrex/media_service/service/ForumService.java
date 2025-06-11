@@ -51,7 +51,7 @@ public class ForumService {
     }
 
     public List<Thread> getThreadsByMediaRecord(MediaRecordEntity mediaRecord) {
-        return mediaRecord.getThreadMediaRecordReference().stream()
+        return threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord).parallelStream()
                 .map((pRecordEntity) -> threadMapper.mapThread(pRecordEntity.getThread())).collect(Collectors.toList());
     }
 
@@ -128,7 +128,6 @@ public class ForumService {
                 .timeStampSeconds(timeStamp)
                 .pageNumber(pageNumber)
                 .build();
-        mediaRecord.getThreadMediaRecordReference().add(threadMediaRecordReferenceEntity);
         thread.setThreadMediaRecordReference(threadMediaRecordReferenceEntity);
         mediaRecordRepository.save(mediaRecord);
         threadRepository.save(thread);

@@ -2,14 +2,11 @@ package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import de.unistuttgart.iste.meitrex.generated.dto.Thread;
-import de.unistuttgart.iste.meitrex.media_service.persistence.embeddable.ThreadMediaRecordReferenceKey;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import jakarta.persistence.EntityNotFoundException;
-import org.aspectj.weaver.patterns.TypePatternQuestions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
@@ -126,15 +123,14 @@ class ForumServiceTest {
                 .creatorId(UUID.randomUUID())
                 .type(MediaRecordEntity.MediaType.DOCUMENT)
                 .contentIds(new ArrayList<>(List.of(UUID.randomUUID())))
-                .threadMediaRecordReference(new ArrayList<>())
                 .build();
         final ThreadMediaRecordReferenceEntity threadMediaRecordReference = ThreadMediaRecordReferenceEntity.builder()
-                .id(new ThreadMediaRecordReferenceKey())
+                .id(UUID.randomUUID())
                 .mediaRecord(mediaRecord)
                 .thread(thread)
                 .build();
-        mediaRecord.getThreadMediaRecordReference().add(threadMediaRecordReference);
         thread.setThreadMediaRecordReference(threadMediaRecordReference);
+        when(threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord)).thenReturn(List.of(threadMediaRecordReference));
         assertThat(forumService.getThreadsByMediaRecord(mediaRecord).getFirst(), is(threadMapper.mapThread(thread)));
     }
 
@@ -447,7 +443,6 @@ class ForumServiceTest {
 
         final MediaRecordEntity mediaRecord = MediaRecordEntity.builder()
                 .id(UUID.randomUUID())
-                .threadMediaRecordReference(new ArrayList<>())
                 .build();
 
         final int timeStamp = 10;
