@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.embeddable.ThreadMediaRecordReferenceKey;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
@@ -124,13 +125,17 @@ class ForumServiceTest {
                 .type(MediaRecordEntity.MediaType.DOCUMENT)
                 .contentIds(new ArrayList<>(List.of(UUID.randomUUID())))
                 .build();
+        ThreadMediaRecordReferenceKey threadMediaRecordReferenceKey = ThreadMediaRecordReferenceKey.builder()
+                .mediaRecordId(mediaRecord.getId())
+                .threadId(thread.getId())
+                .build();
         final ThreadMediaRecordReferenceEntity threadMediaRecordReference = ThreadMediaRecordReferenceEntity.builder()
-                .id(UUID.randomUUID())
+                .id(threadMediaRecordReferenceKey)
                 .mediaRecord(mediaRecord)
                 .thread(thread)
                 .build();
         thread.setThreadMediaRecordReference(threadMediaRecordReference);
-        when(threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord)).thenReturn(List.of(threadMediaRecordReference));
+        when(threadMediaRecordReferenceRepository.findAll()).thenReturn(List.of(threadMediaRecordReference));
         assertThat(forumService.getThreadsByMediaRecord(mediaRecord).getFirst(), is(threadMapper.mapThread(thread)));
     }
 

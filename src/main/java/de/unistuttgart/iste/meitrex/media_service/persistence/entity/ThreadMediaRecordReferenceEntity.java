@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 
+import de.unistuttgart.iste.meitrex.media_service.persistence.embeddable.ThreadMediaRecordReferenceKey;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,15 +19,18 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ThreadMediaRecordReferenceEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    UUID id;
+public class ThreadMediaRecordReferenceEntity implements Serializable {
+    @EmbeddedId
+    ThreadMediaRecordReferenceKey id;
 
     @ManyToOne
+    @MapsId("mediaRecordId")
+    @JoinColumn(name = "media_record_id")
     MediaRecordEntity mediaRecord;
 
     @OneToOne
+    @MapsId("threadId")
+    @JoinColumn(name = "thread_id")
     ThreadEntity thread;
 
     @Column
