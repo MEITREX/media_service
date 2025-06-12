@@ -58,9 +58,12 @@ public class ThreadMediaRecordReferenceEntity implements Serializable {
         if (thread != null) {
             joiner.add("threadId: " + thread.getId());
         }
-        joiner.add("timeStampSeconds: " + timeStampSeconds);
-        joiner.add("pageNumber: " + pageNumber);
-
+        if (timeStampSeconds != null) {
+            joiner.add("timeStampSeconds: " + timeStampSeconds);
+        }
+        if (pageNumber != null) {
+            joiner.add("pageNumber: " + pageNumber);
+        }
         return joiner.toString();
     }
 
