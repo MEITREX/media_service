@@ -16,12 +16,14 @@ public class ThreadMapper {
     private final ModelMapper modelMapper;
 
     public Thread mapThread(ThreadEntity threadEntity) {
-        if (threadEntity instanceof QuestionThreadEntity questionThread) {
-            return modelMapper.map(questionThread, QuestionThread.class);
-        } else if (threadEntity instanceof InfoThreadEntity infoThread) {
-            return modelMapper.map(infoThread, InfoThread.class);
-        } else {
-            throw new ClassCastException("Thread Entity is in wrong class " + threadEntity.getClass().getName());
+        switch (threadEntity) {
+            case QuestionThreadEntity questionThread -> {
+                return modelMapper.map(questionThread, QuestionThread.class);
+            }
+            case InfoThreadEntity infoThreadEntity -> {
+                return modelMapper.map(infoThreadEntity, InfoThread.class);
+            }
+            default -> throw new IllegalArgumentException("Unknown thread: " + threadEntity);
         }
     }
 }
