@@ -135,7 +135,7 @@ class ForumServiceTest {
                 .thread(thread)
                 .build();
         thread.setThreadMediaRecordReference(threadMediaRecordReference);
-        when(threadMediaRecordReferenceRepository.findAll()).thenReturn(List.of(threadMediaRecordReference));
+        when(threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord)).thenReturn(List.of(threadMediaRecordReference));
         assertThat(forumService.getThreadsByMediaRecord(mediaRecord).getFirst(), is(threadMapper.mapThread(thread)));
     }
 
