@@ -70,6 +70,8 @@ public class PostEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PostEntity that = (PostEntity) o;
+        if (this.thread == null && that.thread == null) return true;
+        if (this.thread == null) return false;
         return Objects.equals(id, that.id) && Objects.equals(content, that.content) && Objects.equals(creationTime, that.creationTime) && Objects.equals(authorId, that.authorId) && Objects.equals(downvotedByUsers, that.downvotedByUsers) && Objects.equals(upvotedByUsers, that.upvotedByUsers) && Objects.equals(thread.getId(), that.thread.getId());
     }
 
