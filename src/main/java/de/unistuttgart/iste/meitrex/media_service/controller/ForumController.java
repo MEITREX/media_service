@@ -88,7 +88,7 @@ public class ForumController {
         ForumEntity forum = forumRepository.findById(thread.getForumId()).orElseThrow(() ->
                 new EntityNotFoundException("Forum with the id " + thread.getForumId() + NOT_FOUND));
         if (forum.getCourseId() != null) {
-            validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, forum.getCourseId());
+            validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, forum.getCourseId());
         }
         return forumService.createQuestionThread(thread, forum, currentUser.getId());
     }
@@ -99,7 +99,7 @@ public class ForumController {
         ForumEntity forum = forumRepository.findById(thread.getForumId()).orElseThrow(() ->
                 new EntityNotFoundException("Forum with the id " + thread.getForumId() + NOT_FOUND));
         if (forum.getCourseId() != null) {
-            validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, forum.getCourseId());
+            validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, forum.getCourseId());
         }
         return forumService.createInfoThread(thread, forum, currentUser.getId());
     }
@@ -110,7 +110,7 @@ public class ForumController {
         ThreadEntity thread = threadRepository.findById(post.getThreadId()).orElseThrow(()->
                 new EntityNotFoundException("Thread with the id"  + post.getThreadId() + NOT_FOUND));
 
-        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, thread.getForum().getCourseId());
 
         return forumService.addPostToThread(post, thread , currentUser.getId());
     }
@@ -150,7 +150,7 @@ public class ForumController {
                                                              @ContextValue final LoggedInUser currentUser) {
         ThreadEntity thread = threadRepository.findById(threadMediaRecordReference.getThreadId()).orElseThrow(()->
                 new EntityNotFoundException("Thread with the id"  + threadMediaRecordReference.getThreadId() + NOT_FOUND));
-        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, thread.getForum().getCourseId());
         MediaRecordEntity mediaRecord = mediaRecordRepository.findById(threadMediaRecordReference.getMediaRecordId()).orElseThrow(()->
                 new EntityNotFoundException("MediaRecord with the id"  + threadMediaRecordReference.getMediaRecordId() + NOT_FOUND));
         return forumService.addThreadToMediaRecord(thread, mediaRecord, threadMediaRecordReference.getTimeStampSeconds(), threadMediaRecordReference.getPageNumber());
@@ -162,7 +162,7 @@ public class ForumController {
                 new EntityNotFoundException("Post with the id"  + postId + NOT_FOUND));
         ThreadEntity thread = threadRepository.findById(post.getThread().getId()).orElseThrow(()->
                 new EntityNotFoundException("Thread with the id"  + post.getThread().getId() + NOT_FOUND));
-        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, thread.getForum().getCourseId());
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, thread.getForum().getCourseId());
         return post;
     }
 }
