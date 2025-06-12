@@ -4,6 +4,7 @@ import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Forum;
+import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
@@ -80,7 +81,7 @@ public class QueryThreadTest {
     }
 
     @Test
-    void testQueryThread(final GraphQlTester tester) {
+    void testQueryQuestionThread(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -133,6 +134,63 @@ public class QueryThreadTest {
         assertThat(thread.getTitle(), is(threadEntity.getTitle()));
         assertThat(thread.getQuestion().getContent(), is(threadEntity.getQuestion().getContent()));
         assertThat(thread.getQuestion().getAuthorId(), is(threadEntity.getQuestion().getAuthorId()));
+        assertThat(forumRepository.findAll(), hasSize(1));
+    }
+
+    @Test
+    void testQueryInfoThread(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+        PostEntity infoEntity = PostEntity.builder()
+                .content("info Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        InfoThreadEntity threadEntity = InfoThreadEntity.builder()
+                .forum(forumEntity)
+                .info(infoEntity)
+                .title("Thread Title")
+                .threadMediaRecordReference(null)
+                .posts(new ArrayList<>())
+                .creatorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        infoEntity.setThread(threadEntity);
+        infoEntity = postRepository.save(infoEntity);
+        threadRepository.save(threadEntity);
+        forumEntity.getThreads().add(threadEntity);
+        forumRepository.save(forumEntity);
+        final String query = """
+                query {
+                    thread(id: "%s") {
+                        ... on InfoThread {
+                            id
+                            creatorId
+                            creationTime
+                            posts {
+                                id
+                            }
+                            title
+                            info {
+                                authorId
+                                content
+                                creationTime
+                            }
+                        }
+                    }
+                }
+                """.formatted(threadEntity.getId());
+        InfoThread thread = tester.document(query)
+                .execute()
+                .path("thread").entity(InfoThread.class).get();
+        assertThat(thread.getId(), is(threadEntity.getId()));
+        assertThat(thread.getCreatorId(), is(thread.getCreatorId()));
+        assertThat(thread.getTitle(), is(threadEntity.getTitle()));
+        assertThat(thread.getInfo().getContent(), is(threadEntity.getInfo().getContent()));
+        assertThat(thread.getInfo().getAuthorId(), is(threadEntity.getInfo().getAuthorId()));
         assertThat(forumRepository.findAll(), hasSize(1));
     }
 }

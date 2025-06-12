@@ -60,6 +60,31 @@ public class QueryThreadsByMediaRecordTest {
     private ThreadMapper threadMapper;
 
     @Test
+    void testQueryThreadMediaRecordEmpty(final GraphQlTester tester) {
+        final UUID mediaRecordId = UUID.randomUUID();
+        final String query = """
+                query {
+                    threadsByMediaRecord(id: "%s") {
+                        id
+                        title
+                        creationTime
+                        creatorId
+                    }
+                }
+                """.formatted(mediaRecordId);
+        tester.document(query)
+                .execute()
+                .errors()
+                .satisfy(errors -> {
+                    assertThat(errors, hasSize(1));
+                    assertThat(errors.getFirst().getMessage(), containsString("MediaRecord with id " + mediaRecordId + " not found"));
+                    assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
+                });
+        assertThat(mediaRecordRepository.findAll(), hasSize(0));
+
+    }
+
+    @Test
     void testQueryThreadEmpty(final GraphQlTester tester) {
         MediaRecordEntity mediaRecord = MediaRecordRepositoryUtil.fillRepositoryWithMediaRecords(mediaRecordRepository).getFirst();
 
