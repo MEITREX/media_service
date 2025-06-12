@@ -67,26 +67,10 @@ public class PostEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof PostEntity other)) {
-            return false;
-        }
-
-        boolean equalsId = (this.id == null && other.id == null) || (this.id != null && this.id.equals(other.id));
-        boolean equalsContent = (this.content == null && other.content == null) ||
-                (this.content != null && this.content.equals(other.content));
-        boolean equalsCreationTime = (this.creationTime == null && other.creationTime == null) ||
-                (this.creationTime != null && this.creationTime.equals(other.creationTime));
-        boolean equalsAuthorId = (this.authorId == null && other.authorId == null) ||
-                (this.authorId != null && this.authorId.equals(other.authorId));
-        boolean equalsDownvotedByUsers = (this.downvotedByUsers == null && other.downvotedByUsers == null) ||
-                (this.downvotedByUsers != null && this.downvotedByUsers.equals(other.downvotedByUsers));
-        boolean equalsUpvodedByUsers = (this.upvotedByUsers == null && other.upvotedByUsers == null) ||
-                (this.upvotedByUsers != null && this.upvotedByUsers.equals(other.upvotedByUsers));
-        boolean equalsThread = (this.thread == null && other.thread == null) ||
-                (this.thread != null && this.thread.getId() != null && this.thread.getId().equals(other.thread.getId()));
-        return equalsId && equalsContent && equalsCreationTime && equalsAuthorId && equalsDownvotedByUsers &&
-                equalsUpvodedByUsers && equalsThread;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostEntity that = (PostEntity) o;
+        return Objects.equals(id, that.id) && Objects.equals(content, that.content) && Objects.equals(creationTime, that.creationTime) && Objects.equals(authorId, that.authorId) && Objects.equals(downvotedByUsers, that.downvotedByUsers) && Objects.equals(upvotedByUsers, that.upvotedByUsers) && Objects.equals(thread.getId(), that.thread.getId());
     }
 
     @Override
