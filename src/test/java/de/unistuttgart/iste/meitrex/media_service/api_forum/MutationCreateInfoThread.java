@@ -4,12 +4,12 @@ import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Forum;
+import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
+import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
-import de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRepositoryUtil;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
-import static graphql.ErrorType.DataFetchingException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -30,7 +29,7 @@ import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMem
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class QueryForumByIdTest {
+public class MutationCreateInfoThread {
     @Autowired
     private ForumRepository forumRepository;
 
@@ -54,47 +53,30 @@ public class QueryForumByIdTest {
     private ForumMapper forumMapper;
 
     @Test
-    void testQueryForumEmpty(final GraphQlTester tester) {
-        final String query = """
-                query {
-                    forumByCourseId(id: "%s") {
-                        id
-                        courseId
-                        threads {
-                            id
-                        }
-                    }
-                }
-                """.formatted(courseId1);
-        Forum forum = tester.document(query)
-                .execute()
-                .path("forumByCourseId").entity(Forum.class).get();
-        assertThat(forum.getCourseId(), is(courseId1));
-        assertThat(forumRepository.findAll(), hasSize(1));
-    }
-
-    @Test
-    void testQueryForum(final GraphQlTester tester) {
+    void testAddInfoThreadToForum(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
                 .build();
         forumEntity = forumRepository.save(forumEntity);
         final String query = """
-                query {
-                    forumByCourseId(id: "%s") {
+                mutation {
+                    createInfoThread(
+                        thread: {forumId: "%s", title: "Test title", info: {content: "Test Info"}}
+                    ) {
                         id
-                        courseId
-                        threads {
-                            id
+                        title
+                        info {
+                            content
                         }
                     }
                 }
-                """.formatted(forumEntity.getCourseId());
-        Forum forum = tester.document(query)
+                """.formatted(forumEntity.getId());
+        InfoThread infoThread = tester.document(query)
                 .execute()
-                .path("forumByCourseId").entity(Forum.class).get();
-        assertThat(modelMapper.map(forum, ForumEntity.class), is(forumEntity));
-        assertThat(forumRepository.findAll(), hasSize(1));
+                .path("createInfoThread").entity(InfoThread.class).get();
+        assertThat(infoThread.getTitle(), is("Test title"));
+        assertThat(infoThread.getInfo().getContent(), is("Test Info"));
+        assertThat(threadRepository.findAll(), hasSize(1));
     }
 }

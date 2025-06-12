@@ -121,17 +121,11 @@ public class ForumService {
         return modelMapper.map(post, Post.class);
     }
 
-    public ThreadMediaRecordReference addThreadToMediaRecord(ThreadEntity thread, MediaRecordEntity mediaRecord, int timeStamp, int pageNumber) {
-        ThreadMediaRecordReferenceEntity threadMediaRecordReferenceEntity = ThreadMediaRecordReferenceEntity.builder()
-                .thread(thread)
-                .mediaRecord(mediaRecord)
-                .timeStampSeconds(timeStamp)
-                .pageNumber(pageNumber)
-                .build();
-        thread.setThreadMediaRecordReference(threadMediaRecordReferenceEntity);
-        mediaRecordRepository.save(mediaRecord);
-        threadRepository.save(thread);
+    public ThreadMediaRecordReference addThreadToMediaRecord(ThreadEntity thread, MediaRecordEntity mediaRecord, Integer timeStamp, Integer pageNumber) {
+        ThreadMediaRecordReferenceEntity threadMediaRecordReferenceEntity = new ThreadMediaRecordReferenceEntity(thread, mediaRecord, timeStamp, pageNumber);
         threadMediaRecordReferenceRepository.save(threadMediaRecordReferenceEntity);
+        thread.setThreadMediaRecordReference(threadMediaRecordReferenceEntity);
+        threadRepository.save(thread);
         return modelMapper.map(threadMediaRecordReferenceEntity, ThreadMediaRecordReference.class);
     }
 

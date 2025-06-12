@@ -125,15 +125,8 @@ class ForumServiceTest {
                 .type(MediaRecordEntity.MediaType.DOCUMENT)
                 .contentIds(new ArrayList<>(List.of(UUID.randomUUID())))
                 .build();
-        ThreadMediaRecordReferenceKey threadMediaRecordReferenceKey = ThreadMediaRecordReferenceKey.builder()
-                .mediaRecordId(mediaRecord.getId())
-                .threadId(thread.getId())
-                .build();
-        final ThreadMediaRecordReferenceEntity threadMediaRecordReference = ThreadMediaRecordReferenceEntity.builder()
-                .id(threadMediaRecordReferenceKey)
-                .mediaRecord(mediaRecord)
-                .thread(thread)
-                .build();
+        final ThreadMediaRecordReferenceEntity threadMediaRecordReference = new ThreadMediaRecordReferenceEntity(thread, mediaRecord, null, null);
+
         thread.setThreadMediaRecordReference(threadMediaRecordReference);
         when(threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord)).thenReturn(List.of(threadMediaRecordReference));
         assertThat(forumService.getThreadsByMediaRecord(mediaRecord).getFirst(), is(threadMapper.mapThread(thread)));
@@ -453,12 +446,8 @@ class ForumServiceTest {
         final int timeStamp = 10;
         final int pageNumber = 3;
 
-        final ThreadMediaRecordReferenceEntity threadMediaRecordReference = ThreadMediaRecordReferenceEntity.builder()
-                .thread(threadEntity)
-                .mediaRecord(mediaRecord)
-                .timeStampSeconds(timeStamp)
-                .pageNumber(pageNumber)
-                .build();
+        final ThreadMediaRecordReferenceEntity threadMediaRecordReference = new ThreadMediaRecordReferenceEntity(threadEntity, mediaRecord, timeStamp, pageNumber);
+
         assertThat(forumService.addThreadToMediaRecord(threadEntity, mediaRecord, timeStamp, pageNumber), is(modelMapper.map(threadMediaRecordReference, ThreadMediaRecordReference.class)));
     }
 }

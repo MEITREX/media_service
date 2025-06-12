@@ -91,6 +91,6 @@ public class PostEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, content, creationTime, authorId, downvotedByUsers, upvotedByUsers, thread);
+        return Objects.hash(id, content, creationTime, authorId, downvotedByUsers, upvotedByUsers, thread.getId());
     }
 }

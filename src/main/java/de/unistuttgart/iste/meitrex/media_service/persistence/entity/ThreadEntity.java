@@ -46,5 +46,6 @@ public abstract class ThreadEntity {
     List<PostEntity> posts;
 
     @OneToOne
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     ThreadMediaRecordReferenceEntity threadMediaRecordReference;
 }
