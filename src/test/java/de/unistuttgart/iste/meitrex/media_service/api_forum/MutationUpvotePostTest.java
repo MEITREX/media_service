@@ -77,6 +77,7 @@ public class MutationUpvotePostTest {
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
+                .numberOfPosts(0)
                 .build();
         questionEntity.setThread(threadEntity);
         questionEntity = postRepository.save(questionEntity);

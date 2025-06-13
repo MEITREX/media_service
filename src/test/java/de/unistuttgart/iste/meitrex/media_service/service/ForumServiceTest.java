@@ -88,6 +88,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(List.of())
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
         when(threadRepository.findById(thread.getId())).thenReturn(Optional.of(thread));
 
@@ -117,6 +118,7 @@ class ForumServiceTest {
                 .posts(new ArrayList<>())
                 .forum(forum)
                 .question(question)
+                .numberOfPosts(0)
                 .build();
         MediaRecordEntity mediaRecord = MediaRecordEntity.builder()
                 .name("Example Record1")
@@ -148,6 +150,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
                 .id(UUID.randomUUID())
@@ -190,6 +193,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
                 .id(UUID.randomUUID())
@@ -232,6 +236,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
                 .id(UUID.randomUUID())
@@ -274,6 +279,7 @@ class ForumServiceTest {
                 .posts(new ArrayList<>())
                 .forum(forum)
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
 
         final PostEntity questionEntity = PostEntity.builder()
@@ -326,6 +332,7 @@ class ForumServiceTest {
                 .posts(new ArrayList<>())
                 .forum(forum)
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
 
         final PostEntity infoEntity = PostEntity.builder()
@@ -378,6 +385,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
                 .id(UUID.randomUUID())
@@ -408,6 +416,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
                 .id(UUID.randomUUID())
@@ -437,6 +446,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
                 .threadMediaRecordReference(null)
+                .numberOfPosts(0)
                 .build();
 
         final MediaRecordEntity mediaRecord = MediaRecordEntity.builder()

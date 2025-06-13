@@ -131,6 +131,7 @@ public class QueryThreadsByMediaRecordTest {
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
+                .numberOfPosts(0)
                 .build();
         questionEntity.setThread(threadEntity);
         postRepository.save(questionEntity);

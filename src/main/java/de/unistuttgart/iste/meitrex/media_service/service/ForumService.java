@@ -59,6 +59,7 @@ public class ForumService {
         PostEntity postEntity = new PostEntity(post.getContent(), userId ,thread);
         postEntity = postRepository.save(postEntity);
         thread.getPosts().add(postEntity);
+        thread.setNumberOfPosts(thread.getNumberOfPosts() + 1);
         threadRepository.save(thread);
         return modelMapper.map(postEntity, Post.class);
     }
@@ -117,6 +118,10 @@ public class ForumService {
         if (!post.getAuthorId().equals(user.getId())) {
             throw new AuthenticationException("User is not authorized to update this post");
         }
+        ThreadEntity thread = post.getThread();
+        thread.getPosts().remove(post);
+        thread.setNumberOfPosts(thread.getNumberOfPosts() - 1);
+        threadRepository.save(thread);
         postRepository.delete(post);
         return modelMapper.map(post, Post.class);
     }

@@ -21,10 +21,11 @@ public class InfoThreadEntity extends ThreadEntity{
     }
 
     @Builder
-    public InfoThreadEntity(UUID id, ForumEntity forum, UUID creatorId, String title, OffsetDateTime creationTime, List<PostEntity> posts, ThreadMediaRecordReferenceEntity threadMediaRecordReference, @NotNull PostEntity info) {
-        super(id, forum, creatorId, title, creationTime, posts, threadMediaRecordReference);
+    public InfoThreadEntity(UUID id, ForumEntity forum, UUID creatorId, String title, OffsetDateTime creationTime, List<PostEntity> posts, Integer numberOfPosts, ThreadMediaRecordReferenceEntity threadMediaRecordReference, @NotNull PostEntity info) {
+        super(id, forum, creatorId, title, creationTime, posts, numberOfPosts, threadMediaRecordReference);
         this.info = info;
     }
+
 
     @OneToOne
     @NotNull

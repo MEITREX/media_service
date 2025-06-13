@@ -74,6 +74,7 @@ public class MutationUpdatePostTest {
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
+                .numberOfPosts(1)
                 .build();
         PostEntity postEntity = PostEntity.builder()
                 .content("Post Content")

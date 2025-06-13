@@ -23,6 +23,7 @@ public abstract class ThreadEntity {
         this.creatorId = creatorId;
         this.title = title;
         this.posts = new ArrayList<>();
+        numberOfPosts = 0;
     }
 
     @Id
@@ -33,7 +34,7 @@ public abstract class ThreadEntity {
     ForumEntity forum;
 
     @Column(nullable = false)
-    private UUID creatorId;
+    UUID creatorId;
 
     @Column(nullable = false)
     String title;
@@ -44,6 +45,9 @@ public abstract class ThreadEntity {
     @OneToMany
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
     List<PostEntity> posts;
+
+    @Column(nullable = false)
+    Integer numberOfPosts;
 
     @OneToOne
     @Cascade(org.hibernate.annotations.CascadeType.ALL)

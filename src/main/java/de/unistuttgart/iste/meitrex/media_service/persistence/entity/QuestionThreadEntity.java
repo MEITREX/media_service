@@ -21,8 +21,8 @@ public class QuestionThreadEntity extends ThreadEntity{
     }
 
     @Builder
-    public QuestionThreadEntity(UUID id, ForumEntity forum, UUID creatorId, String title, OffsetDateTime creationTime, List<PostEntity> posts, ThreadMediaRecordReferenceEntity threadMediaRecordReference, @NotNull PostEntity question, PostEntity answer) {
-        super(id, forum, creatorId, title, creationTime, posts, threadMediaRecordReference);
+    public QuestionThreadEntity(UUID id, ForumEntity forum, UUID creatorId, String title, OffsetDateTime creationTime, List<PostEntity> posts, Integer numberOfPosts, ThreadMediaRecordReferenceEntity threadMediaRecordReference, @NotNull PostEntity question, PostEntity answer) {
+        super(id, forum, creatorId, title, creationTime, posts, numberOfPosts, threadMediaRecordReference);
         this.question = question;
         this.answer = answer;
     }
