@@ -9,7 +9,7 @@ The Media Service is a component designed to fulfill the following functions wit
 
 3. **GraphQL Endpoint:** Users can interact with the service through a GraphQL endpoint, enabling the retrieval of URLs for uploading and downloading media files.
 
-
+4. **Forum:** It provides the functionality for the forum. It can create a forum, threads and posts and join the threads with a media object.
 
 ## Media Service
 

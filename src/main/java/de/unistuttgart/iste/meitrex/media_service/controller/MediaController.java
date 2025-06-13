@@ -294,7 +294,7 @@ public class MediaController {
      * @param mediaRecord the mediaRecord that should be checked
      * @param role        the minimum required role the user needs to perform this action
      */
-    private static void checkAccessForMediaRecord(final LoggedInUser currentUser,
+    public static void checkAccessForMediaRecord(final LoggedInUser currentUser,
                                                   final MediaRecord mediaRecord,
                                                   final UserRoleInCourse role) {
         if (mediaRecord.getCourseIds().isEmpty()) {
