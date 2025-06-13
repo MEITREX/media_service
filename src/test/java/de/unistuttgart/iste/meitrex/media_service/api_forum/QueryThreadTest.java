@@ -5,7 +5,10 @@ import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.InfoThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
@@ -22,11 +25,10 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
+import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
 import static graphql.ErrorType.DataFetchingException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-
-import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
 
 @GraphQlApiTest
 @Transactional

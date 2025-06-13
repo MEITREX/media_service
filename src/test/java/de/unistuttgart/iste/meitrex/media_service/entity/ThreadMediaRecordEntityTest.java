@@ -2,16 +2,13 @@ package de.unistuttgart.iste.meitrex.media_service.entity;
 
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadMediaRecordReferenceEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
-import de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRepositoryUtil;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 public class ThreadMediaRecordEntityTest {
     private final UUID courseId1 = UUID.randomUUID();

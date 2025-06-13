@@ -3,7 +3,6 @@ package de.unistuttgart.iste.meitrex.media_service.persistence.embeddable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.io.Serializable;
 import java.util.UUID;

@@ -2,7 +2,10 @@ package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cascade;
 import org.jetbrains.annotations.NotNull;
 

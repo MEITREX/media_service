@@ -3,10 +3,11 @@ package de.unistuttgart.iste.meitrex.media_service.api_forum;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.generated.dto.Post;
-import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.generated.dto.ThreadMediaRecordReference;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
@@ -23,11 +24,10 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
+import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
 import static graphql.ErrorType.DataFetchingException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-
-import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
 
 @GraphQlApiTest
 @Transactional

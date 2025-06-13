@@ -4,14 +4,11 @@ import de.unistuttgart.iste.meitrex.media_service.persistence.embeddable.ThreadM
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.PackagePrivate;
 import org.hibernate.annotations.Cascade;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.StringJoiner;
-import java.util.UUID;
 
 @Entity(name = "ThreadMediaRecordReference")
 @Getter
