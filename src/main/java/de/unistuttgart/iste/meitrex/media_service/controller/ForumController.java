@@ -37,8 +37,8 @@ public class ForumController {
     private final MediaRecordRepository mediaRecordRepository;
     private final ModelMapper modelMapper;
     private final ForumRepository forumRepository;
-    private final static String NOT_FOUND = " not found";
-    private final static String THREAD = "Thread with id ";
+    private static final String NOT_FOUND = " not found";
+    private static final String THREAD = "Thread with id ";
     private final ThreadMapper threadMapper;
 
 

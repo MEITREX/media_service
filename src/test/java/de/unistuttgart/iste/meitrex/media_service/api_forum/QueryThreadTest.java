@@ -151,7 +151,7 @@ class QueryThreadTest {
                 .numberOfPosts(0)
                 .build();
         infoEntity.setThread(threadEntity);
-        infoEntity = postRepository.save(infoEntity);
+        postRepository.save(infoEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
