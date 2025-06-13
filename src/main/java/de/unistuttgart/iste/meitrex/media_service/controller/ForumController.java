@@ -4,6 +4,7 @@ import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
@@ -40,6 +41,7 @@ public class ForumController {
     private final ForumRepository forumRepository;
     private final String NOT_FOUND = " not found";
     private final String THREAD = "Thread with id ";
+    private final ThreadMapper threadMapper;
 
 
     @QueryMapping
@@ -157,6 +159,16 @@ public class ForumController {
         return forumService.addThreadToMediaRecord(thread, mediaRecord, threadMediaRecordReference.getTimeStampSeconds(), threadMediaRecordReference.getPageNumber());
     }
 
+    @MutationMapping
+    public QuestionThread selectAnswer(@Argument final UUID postId){
+        PostEntity post = postRepository.findById(postId).orElseThrow(
+                () -> new EntityNotFoundException("Post with the id " + postId + NOT_FOUND)
+        );
+        if (! (post.getThread() instanceof QuestionThreadEntity questionThread)) {
+            throw new EntityNotFoundException("Thread with the id " + post.getThread().getId() + " is not a questionThread");
+        }
+        return forumService.addAnserToQuestionThread(questionThread, post);
+    }
 
     private PostEntity checkUserInCourse(@Argument UUID postId, @ContextValue LoggedInUser currentUser) {
         PostEntity post = postRepository.findById(postId).orElseThrow(() ->

@@ -3,11 +3,13 @@ package de.unistuttgart.iste.meitrex.media_service.api_forum;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
+import de.unistuttgart.iste.meitrex.generated.dto.Post;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.InfoThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
-import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import jakarta.transaction.Transactional;
@@ -22,16 +24,16 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
+import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
 import static graphql.ErrorType.DataFetchingException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
-
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class QueryThreadTest {
+public class MutationSelectAnswerTest {
+
     @Autowired
     private ForumRepository forumRepository;
 
@@ -53,32 +55,99 @@ public class QueryThreadTest {
     private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
     @Autowired
     private ForumMapper forumMapper;
-    @Autowired
-    private ThreadMapper threadMapper;
 
     @Test
-    void testQueryThreadEmpty(final GraphQlTester tester) {
-        UUID threadId = UUID.randomUUID();
+    void testSelectAnswerWrongPostId(final GraphQlTester tester) {
+        UUID postId = UUID.randomUUID();
         final String query = """
-                query {
-                    thread(id: "%s") {
+                mutation {
+                    selectAnswer(
+                        postId: "%s"
+                    ) {
                         id
+                        selectedAnswer {
+                            id
+                            content
+                            creationTime
+                            authorId
+                        }
                     }
                 }
-                """.formatted(threadId);
+                """.formatted(postId);
         tester.document(query)
                 .execute()
                 .errors()
                 .satisfy(errors -> {
                     assertThat(errors, hasSize(1));
-                    assertThat(errors.getFirst().getMessage(), containsString("Thread with the id " + threadId + " not found"));
+                    assertThat(errors.getFirst().getMessage(), containsString("Post with the id " +
+                            postId + " not found"));
                     assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
                 });
-        assertThat(threadRepository.findAll(), hasSize(0));
     }
 
     @Test
-    void testQueryQuestionThread(final GraphQlTester tester) {
+    void testSelectAnswerInfoThread(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+        PostEntity questionEntity = PostEntity.builder()
+                .content("question Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        InfoThreadEntity threadEntity = InfoThreadEntity.builder()
+                .forum(forumEntity)
+                .info(questionEntity)
+                .title("Thread Title")
+                .threadMediaRecordReference(null)
+                .posts(new ArrayList<>())
+                .creatorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .numberOfPosts(1)
+                .build();
+        PostEntity postEntity = PostEntity.builder()
+                .content("Post Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .thread(threadEntity)
+                .build();
+        postEntity = postRepository.save(postEntity);
+        questionEntity.setThread(threadEntity);
+        questionEntity = postRepository.save(questionEntity);
+        threadEntity.getPosts().add(postEntity);
+        threadRepository.save(threadEntity);
+        forumEntity.getThreads().add(threadEntity);
+        forumRepository.save(forumEntity);
+        final String query = """
+                mutation {
+                    selectAnswer(
+                        postId: "%s"
+                    ) {
+                        id
+                        selectedAnswer {
+                            id
+                            content
+                            creationTime
+                            authorId
+                        }
+                    }
+                }
+                """.formatted(postEntity.getId());
+        tester.document(query)
+                .execute()
+                .errors()
+                .satisfy(errors -> {
+                    assertThat(errors, hasSize(1));
+                    assertThat(errors.getFirst().getMessage(), containsString("Thread with the id " +
+                            threadEntity.getId() + " is not a questionThread"));
+                    assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
+                });
+    }
+
+    @Test
+    void testSelectAnswer(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -97,99 +166,42 @@ public class QueryThreadTest {
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
-                .numberOfPosts(0)
+                .numberOfPosts(1)
                 .build();
-        questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
-        threadRepository.save(threadEntity);
-        forumEntity.getThreads().add(threadEntity);
-        forumRepository.save(forumEntity);
-        final String query = """
-                query {
-                    thread(id: "%s") {
-                        ... on QuestionThread {
-                            id
-                            creatorId
-                            creationTime
-                            posts {
-                                id
-                            }
-                            title
-                            question {
-                                authorId
-                                content
-                                creationTime
-                            }
-                        }
-                    }
-                }
-                """.formatted(threadEntity.getId());
-        QuestionThread thread = tester.document(query)
-                .execute()
-                .path("thread").entity(QuestionThread.class).get();
-        assertThat(thread.getId(), is(threadEntity.getId()));
-        assertThat(thread.getCreatorId(), is(thread.getCreatorId()));
-        assertThat(thread.getTitle(), is(threadEntity.getTitle()));
-        assertThat(thread.getQuestion().getContent(), is(threadEntity.getQuestion().getContent()));
-        assertThat(thread.getQuestion().getAuthorId(), is(threadEntity.getQuestion().getAuthorId()));
-        assertThat(forumRepository.findAll(), hasSize(1));
-    }
-
-    @Test
-    void testQueryInfoThread(final GraphQlTester tester) {
-        ForumEntity forumEntity = ForumEntity.builder()
-                .courseId(courseId1)
-                .threads(new ArrayList<>())
-                .build();
-        forumEntity = forumRepository.save(forumEntity);
-        PostEntity infoEntity = PostEntity.builder()
-                .content("info Content")
+        PostEntity postEntity = PostEntity.builder()
+                .content("Post Content")
                 .authorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
+                .thread(threadEntity)
                 .build();
-        InfoThreadEntity threadEntity = InfoThreadEntity.builder()
-                .forum(forumEntity)
-                .info(infoEntity)
-                .title("Thread Title")
-                .threadMediaRecordReference(null)
-                .posts(new ArrayList<>())
-                .creatorId(currentUser.getId())
-                .creationTime(OffsetDateTime.now())
-                .numberOfPosts(0)
-                .build();
-        infoEntity.setThread(threadEntity);
-        infoEntity = postRepository.save(infoEntity);
+        postEntity = postRepository.save(postEntity);
+        questionEntity.setThread(threadEntity);
+        questionEntity = postRepository.save(questionEntity);
+        threadEntity.getPosts().add(postEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
         final String query = """
-                query {
-                    thread(id: "%s") {
-                        ... on InfoThread {
+                mutation {
+                    selectAnswer(
+                        postId: "%s"
+                    ) {
+                        id
+                        selectedAnswer {
                             id
-                            creatorId
+                            content
                             creationTime
-                            posts {
-                                id
-                            }
-                            title
-                            info {
-                                authorId
-                                content
-                                creationTime
-                            }
+                            authorId
                         }
                     }
                 }
-                """.formatted(threadEntity.getId());
-        InfoThread thread = tester.document(query)
+                """.formatted(postEntity.getId());
+        QuestionThread questionThread = tester.document(query)
                 .execute()
-                .path("thread").entity(InfoThread.class).get();
-        assertThat(thread.getId(), is(threadEntity.getId()));
-        assertThat(thread.getCreatorId(), is(thread.getCreatorId()));
-        assertThat(thread.getTitle(), is(threadEntity.getTitle()));
-        assertThat(thread.getInfo().getContent(), is(threadEntity.getInfo().getContent()));
-        assertThat(thread.getInfo().getAuthorId(), is(threadEntity.getInfo().getAuthorId()));
-        assertThat(forumRepository.findAll(), hasSize(1));
+                .path("selectAnswer").entity(QuestionThread.class).get();
+        assertThat(questionThread.getSelectedAnswer().getContent(), is(postEntity.getContent()));
+        assertThat(questionThread.getSelectedAnswer().getAuthorId(), is(postEntity.getAuthorId()));
+        assertThat(questionThread.getSelectedAnswer().getId(), is(postEntity.getId()));
+        assertThat(postRepository.findAll(), hasSize(2));
     }
 }

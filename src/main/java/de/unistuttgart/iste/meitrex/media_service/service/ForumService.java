@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -132,6 +131,14 @@ public class ForumService {
         thread.setThreadMediaRecordReference(threadMediaRecordReferenceEntity);
         threadRepository.save(thread);
         return modelMapper.map(threadMediaRecordReferenceEntity, ThreadMediaRecordReference.class);
+    }
+
+    public QuestionThread addAnserToQuestionThread(QuestionThreadEntity questionThread, PostEntity answer) {
+        questionThread.setSelectedAnswer(answer);
+        questionThread = threadRepository.save(questionThread);
+        QuestionThread question = modelMapper.map(questionThread, QuestionThread.class);
+        System.out.println(question.getSelectedAnswer().getContent());
+        return modelMapper.map(questionThread, QuestionThread.class);
     }
 
     private ForumEntity createForum(UUID courseId) {

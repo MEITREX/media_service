@@ -21,10 +21,12 @@ public class QuestionThreadEntity extends ThreadEntity{
     }
 
     @Builder
-    public QuestionThreadEntity(UUID id, ForumEntity forum, UUID creatorId, String title, OffsetDateTime creationTime, List<PostEntity> posts, Integer numberOfPosts, ThreadMediaRecordReferenceEntity threadMediaRecordReference, @NotNull PostEntity question, PostEntity answer) {
+    public QuestionThreadEntity(UUID id, ForumEntity forum, UUID creatorId, String title, OffsetDateTime creationTime,
+                                List<PostEntity> posts, Integer numberOfPosts, ThreadMediaRecordReferenceEntity threadMediaRecordReference,
+                                @NotNull PostEntity question, PostEntity selectedAnswer) {
         super(id, forum, creatorId, title, creationTime, posts, numberOfPosts, threadMediaRecordReference);
         this.question = question;
-        this.answer = answer;
+        this.selectedAnswer = selectedAnswer;
     }
 
     @OneToOne
@@ -33,5 +35,5 @@ public class QuestionThreadEntity extends ThreadEntity{
     PostEntity question;
 
     @OneToOne
-    PostEntity answer;
+    PostEntity selectedAnswer;
 }
