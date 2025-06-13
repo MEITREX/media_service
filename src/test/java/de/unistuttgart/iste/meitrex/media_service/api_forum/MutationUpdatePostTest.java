@@ -30,11 +30,9 @@ import static org.hamcrest.Matchers.is;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class MutationUpdatePostTest {
+class MutationUpdatePostTest {
     @Autowired
     private ForumRepository forumRepository;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     private final UUID courseId1 = UUID.randomUUID();
 
@@ -48,10 +46,6 @@ public class MutationUpdatePostTest {
     private PostRepository postRepository;
     @Autowired
     private ThreadRepository threadRepository;
-    @Autowired
-    private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
-    @Autowired
-    private ForumMapper forumMapper;
 
     @Test
     void testUpdatePostToThread(final GraphQlTester tester) {
@@ -83,7 +77,7 @@ public class MutationUpdatePostTest {
                 .build();
         postEntity = postRepository.save(postEntity);
         questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
+        postRepository.save(questionEntity);
         threadEntity.getPosts().add(postEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);

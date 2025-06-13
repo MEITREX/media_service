@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +21,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public abstract class ThreadEntity {
-    public ThreadEntity(ForumEntity forum, UUID creatorId, String title) {
+public abstract class ThreadEntity implements Serializable {
+    protected ThreadEntity(ForumEntity forum, UUID creatorId, String title) {
         this.forum = forum;
         this.creatorId = creatorId;
         this.title = title;

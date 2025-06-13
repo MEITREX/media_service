@@ -10,8 +10,7 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class ThreadMediaRecordEntityTest {
-    private final UUID courseId1 = UUID.randomUUID();
+class ThreadMediaRecordEntityTest {
 
     @Test
     void testThreadMediaRecordToString(){

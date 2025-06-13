@@ -33,11 +33,9 @@ import static org.hamcrest.Matchers.*;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class QueryThreadTest {
+class QueryThreadTest {
     @Autowired
     private ForumRepository forumRepository;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     private final UUID courseId1 = UUID.randomUUID();
 
@@ -45,18 +43,11 @@ public class QueryThreadTest {
 
     @InjectCurrentUserHeader
     private final LoggedInUser currentUser = userWithMembershipsAndRealmRoles(Set.of(LoggedInUser.RealmRole.SUPER_USER), courseMembership1);
-    @Autowired
-    private MediaRecordRepository mediaRecordRepository;
+
     @Autowired
     private PostRepository postRepository;
     @Autowired
     private ThreadRepository threadRepository;
-    @Autowired
-    private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
-    @Autowired
-    private ForumMapper forumMapper;
-    @Autowired
-    private ThreadMapper threadMapper;
 
     @Test
     void testQueryThreadEmpty(final GraphQlTester tester) {
@@ -102,7 +93,7 @@ public class QueryThreadTest {
                 .numberOfPosts(0)
                 .build();
         questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
+        postRepository.save(questionEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);

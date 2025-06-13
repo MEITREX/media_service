@@ -31,12 +31,10 @@ import static org.hamcrest.Matchers.*;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class MutationSelectAnswerTest {
+class MutationSelectAnswerTest {
 
     @Autowired
     private ForumRepository forumRepository;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     private final UUID courseId1 = UUID.randomUUID();
 
@@ -44,16 +42,11 @@ public class MutationSelectAnswerTest {
 
     @InjectCurrentUserHeader
     private final LoggedInUser currentUser = userWithMembershipsAndRealmRoles(Set.of(LoggedInUser.RealmRole.SUPER_USER), courseMembership1);
-    @Autowired
-    private MediaRecordRepository mediaRecordRepository;
+
     @Autowired
     private PostRepository postRepository;
     @Autowired
     private ThreadRepository threadRepository;
-    @Autowired
-    private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
-    @Autowired
-    private ForumMapper forumMapper;
 
     @Test
     void testSelectAnswerWrongPostId(final GraphQlTester tester) {
@@ -114,7 +107,7 @@ public class MutationSelectAnswerTest {
                 .build();
         postEntity = postRepository.save(postEntity);
         questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
+        postRepository.save(questionEntity);
         threadEntity.getPosts().add(postEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
@@ -175,7 +168,7 @@ public class MutationSelectAnswerTest {
                 .build();
         postEntity = postRepository.save(postEntity);
         questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
+        postRepository.save(questionEntity);
         threadEntity.getPosts().add(postEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);

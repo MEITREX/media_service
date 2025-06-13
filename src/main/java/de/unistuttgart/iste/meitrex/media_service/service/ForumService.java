@@ -51,7 +51,7 @@ public class ForumService {
 
     public List<Thread> getThreadsByMediaRecord(MediaRecordEntity mediaRecord) {
         return threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord).parallelStream()
-                .map((pRecordEntity) -> threadMapper.mapThread(pRecordEntity.getThread())).collect(Collectors.toList());
+                .map((pRecordEntity) -> threadMapper.mapThread(pRecordEntity.getThread())).toList();
     }
 
     public Post addPostToThread(InputPost post, ThreadEntity thread, UUID userId) {
@@ -137,7 +137,6 @@ public class ForumService {
         questionThread.setSelectedAnswer(answer);
         questionThread = threadRepository.save(questionThread);
         QuestionThread question = modelMapper.map(questionThread, QuestionThread.class);
-        System.out.println(question.getSelectedAnswer().getContent());
         return modelMapper.map(questionThread, QuestionThread.class);
     }
 

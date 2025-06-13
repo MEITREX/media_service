@@ -17,7 +17,7 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class MapperTest {
+class MapperTest {
     ModelMapper modelMapper = new ModelMapper();
     ThreadMapper threadMapper = new ThreadMapper(modelMapper);
 

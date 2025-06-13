@@ -32,11 +32,9 @@ import static org.hamcrest.Matchers.*;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class QueryThreadsByMediaRecordTest {
+class QueryThreadsByMediaRecordTest {
     @Autowired
     private ForumRepository forumRepository;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     private final UUID courseId1 = UUID.randomUUID();
 
@@ -52,10 +50,6 @@ public class QueryThreadsByMediaRecordTest {
     private ThreadRepository threadRepository;
     @Autowired
     private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
-    @Autowired
-    private ForumMapper forumMapper;
-    @Autowired
-    private ThreadMapper threadMapper;
 
     @Test
     void testQueryThreadMediaRecordEmpty(final GraphQlTester tester) {
@@ -86,7 +80,6 @@ public class QueryThreadsByMediaRecordTest {
     void testQueryThreadEmpty(final GraphQlTester tester) {
         MediaRecordEntity mediaRecord = MediaRecordRepositoryUtil.fillRepositoryWithMediaRecords(mediaRecordRepository).getFirst();
 
-        UUID courseId = mediaRecord.getCourseIds().getFirst();
         UUID mediaRecordId = mediaRecord.getId();
 
         final String query = """
@@ -104,6 +97,7 @@ public class QueryThreadsByMediaRecordTest {
                 .path("threadsByMediaRecord")
                 .entityList(Thread.class).get();
 
+        assertThat(threadList, hasSize(0));
         assertThat(threadRepository.findAll(), hasSize(0));
     }
 

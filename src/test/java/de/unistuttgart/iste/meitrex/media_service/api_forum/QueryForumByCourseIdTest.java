@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.is;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class QueryForumByCourseIdTest {
+class QueryForumByCourseIdTest {
     @Autowired
     private ForumRepository forumRepository;
 
@@ -39,16 +39,6 @@ public class QueryForumByCourseIdTest {
 
     @InjectCurrentUserHeader
     private final LoggedInUser currentUser = userWithMembershipsAndRealmRoles(Set.of(LoggedInUser.RealmRole.SUPER_USER), courseMembership1);
-    @Autowired
-    private MediaRecordRepository mediaRecordRepository;
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private ThreadRepository threadRepository;
-    @Autowired
-    private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
-    @Autowired
-    private ForumMapper forumMapper;
 
     @Test
     void testQueryForumEmpty(final GraphQlTester tester) {

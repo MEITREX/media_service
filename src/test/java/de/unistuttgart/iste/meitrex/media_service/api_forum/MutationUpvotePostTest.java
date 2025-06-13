@@ -31,11 +31,9 @@ import static org.hamcrest.Matchers.is;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class MutationUpvotePostTest {
+class MutationUpvotePostTest {
     @Autowired
     private ForumRepository forumRepository;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     private final UUID courseId1 = UUID.randomUUID();
 
@@ -43,16 +41,11 @@ public class MutationUpvotePostTest {
 
     @InjectCurrentUserHeader
     private final LoggedInUser currentUser = userWithMembershipsAndRealmRoles(Set.of(LoggedInUser.RealmRole.SUPER_USER), courseMembership1);
-    @Autowired
-    private MediaRecordRepository mediaRecordRepository;
+
     @Autowired
     private PostRepository postRepository;
     @Autowired
     private ThreadRepository threadRepository;
-    @Autowired
-    private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
-    @Autowired
-    private ForumMapper forumMapper;
 
     @Test
     void testAddPostToThread(final GraphQlTester tester) {

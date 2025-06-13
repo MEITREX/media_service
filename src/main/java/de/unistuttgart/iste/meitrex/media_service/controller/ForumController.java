@@ -37,8 +37,8 @@ public class ForumController {
     private final MediaRecordRepository mediaRecordRepository;
     private final ModelMapper modelMapper;
     private final ForumRepository forumRepository;
-    private final String NOT_FOUND = " not found";
-    private final String THREAD = "Thread with id ";
+    private final static String NOT_FOUND = " not found";
+    private final static String THREAD = "Thread with id ";
     private final ThreadMapper threadMapper;
 
 
@@ -55,13 +55,7 @@ public class ForumController {
                             @ContextValue final LoggedInUser currentUser) {
         ThreadEntity thread = forumService.getThreadById(id);
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,thread.getForum().getCourseId());
-        if (thread instanceof QuestionThreadEntity questionThread) {
-            return modelMapper.map(questionThread, QuestionThread.class);
-        } else if (thread instanceof InfoThreadEntity infoThread){
-            return modelMapper.map(infoThread, InfoThread.class);
-        } else {
-            throw new EntityNotFoundException(THREAD + id + NOT_FOUND);
-        }
+        return threadMapper.mapThread(thread);
     }
 
     @QueryMapping

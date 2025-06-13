@@ -32,11 +32,9 @@ import static org.hamcrest.Matchers.*;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class MutationAddThreadToMediaRecordTest {
+class MutationAddThreadToMediaRecordTest {
     @Autowired
     private ForumRepository forumRepository;
-
-    private final ModelMapper modelMapper = new ModelMapper();
 
     private final UUID courseId1 = UUID.randomUUID();
 
@@ -52,8 +50,6 @@ public class MutationAddThreadToMediaRecordTest {
     private ThreadRepository threadRepository;
     @Autowired
     private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
-    @Autowired
-    private ForumMapper forumMapper;
 
     @Test
     void testAddThreadToMediaRecordWrongRecordId(final GraphQlTester tester) {
@@ -78,7 +74,7 @@ public class MutationAddThreadToMediaRecordTest {
                 .numberOfPosts(0)
                 .build();
         questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
+        postRepository.save(questionEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
@@ -127,7 +123,7 @@ public class MutationAddThreadToMediaRecordTest {
                 .numberOfPosts(0)
                 .build();
         questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
+        postRepository.save(questionEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
@@ -178,7 +174,7 @@ public class MutationAddThreadToMediaRecordTest {
                 .numberOfPosts(0)
                 .build();
         questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
+        postRepository.save(questionEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
