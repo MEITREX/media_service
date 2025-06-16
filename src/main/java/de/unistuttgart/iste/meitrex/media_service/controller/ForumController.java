@@ -5,10 +5,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.media_service.service.ForumService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +37,7 @@ public class ForumController {
     private static final String NOT_FOUND = " not found";
     private static final String THREAD = "Thread with id ";
     private final ThreadMapper threadMapper;
+    private final QuestionThreadRepository questionThreadRepository;
 
 
     @QueryMapping
@@ -156,9 +154,9 @@ public class ForumController {
         PostEntity post = postRepository.findById(postId).orElseThrow(
                 () -> new EntityNotFoundException("Post with the id " + postId + NOT_FOUND)
         );
-        if (! (post.getThread() instanceof QuestionThreadEntity questionThread)) {
-            throw new EntityNotFoundException("Thread with the id " + post.getThread().getId() + " is not a questionThread");
-        }
+        log.info(post.getThread().toString());
+        QuestionThreadEntity questionThread = questionThreadRepository.findById(post.getThread().getId()).orElseThrow(
+                () -> new EntityNotFoundException("QuestionThread with the id " + post.getThread().getId() + NOT_FOUND));
         return forumService.addAnserToQuestionThread(questionThread, post);
     }
 

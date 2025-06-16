@@ -132,8 +132,8 @@ class MutationSelectAnswerTest {
                 .errors()
                 .satisfy(errors -> {
                     assertThat(errors, hasSize(1));
-                    assertThat(errors.getFirst().getMessage(), containsString("Thread with the id " +
-                            threadEntity.getId() + " is not a questionThread"));
+                    assertThat(errors.getFirst().getMessage(), containsString("QuestionThread with the id " +
+                            threadEntity.getId() + " not found"));
                     assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
                 });
     }
