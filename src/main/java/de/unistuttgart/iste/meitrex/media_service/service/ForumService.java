@@ -117,12 +117,14 @@ public class ForumService {
         if (!post.getAuthorId().equals(user.getId())) {
             throw new AuthenticationException("User is not authorized to update this post");
         }
+        Post realPost = modelMapper.map(post, Post.class);
         ThreadEntity thread = post.getThread();
         thread.getPosts().remove(post);
         thread.setNumberOfPosts(thread.getNumberOfPosts() - 1);
         threadRepository.save(thread);
+        post.setThread(null);
         postRepository.delete(post);
-        return modelMapper.map(post, Post.class);
+        return realPost;
     }
 
     public ThreadMediaRecordReference addThreadToMediaRecord(ThreadEntity thread, MediaRecordEntity mediaRecord, Integer timeStamp, Integer pageNumber) {
