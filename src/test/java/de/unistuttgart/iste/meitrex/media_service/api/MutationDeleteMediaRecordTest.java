@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +26,8 @@ import static de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRe
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.reset;
 
 @ContextConfiguration(classes = {MockMinIoClientConfiguration.class, MockTestPublisherConfiguration.class})
 @TablesToDelete({"media_record_content_ids","media_record_course_ids", "media_record"})
