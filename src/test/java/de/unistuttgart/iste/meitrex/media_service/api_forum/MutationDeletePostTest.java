@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.is;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class MutationDeletePostTest {
+class MutationDeletePostTest {
     @Autowired
     private ForumRepository forumRepository;
 

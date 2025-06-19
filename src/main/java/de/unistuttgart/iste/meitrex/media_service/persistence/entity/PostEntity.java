@@ -50,10 +50,10 @@ public class PostEntity implements Serializable {
     UUID authorId;
 
     @ElementCollection
-    List<UUID> downvotedByUsers;
+    private List<UUID> downvotedByUsers;
 
     @ElementCollection
-    List<UUID> upvotedByUsers;
+    private List<UUID> upvotedByUsers;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Cascade(org.hibernate.annotations.CascadeType.ALL)

@@ -48,7 +48,7 @@ public abstract class ThreadEntity implements Serializable {
 
     @OneToMany
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
-    List<PostEntity> posts;
+    private List<PostEntity> posts;
 
     @Column(nullable = false)
     Integer numberOfPosts;
