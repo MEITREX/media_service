@@ -85,7 +85,6 @@ public class ForumService {
         PostEntity questionEntity = new PostEntity(thread.getQuestion().getContent(), userId);
         QuestionThreadEntity threadEntity = new QuestionThreadEntity(forum, userId, thread.getTitle(), questionEntity);
         questionEntity.setThread(threadEntity);
-        postRepository.save(questionEntity);
 
         threadEntity = threadRepository.save(threadEntity);
         forum.getThreads().add(threadEntity);
@@ -98,7 +97,6 @@ public class ForumService {
         PostEntity infoEntity = new PostEntity(thread.getInfo().getContent(), userId);
         InfoThreadEntity threadEntity = new InfoThreadEntity(forum, userId, thread.getTitle(), infoEntity);
         infoEntity.setThread(threadEntity);
-        postRepository.save(infoEntity);
 
         threadEntity = threadRepository.save(threadEntity);
         forum.getThreads().add(threadEntity);

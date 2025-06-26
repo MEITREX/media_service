@@ -18,7 +18,7 @@ import java.util.UUID;
 @ToString(callSuper = true)
 public class QuestionThreadEntity extends ThreadEntity{
 
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @OneToOne(cascade = CascadeType.ALL)
     @NotNull
     PostEntity question;
 
