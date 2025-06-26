@@ -1,7 +1,11 @@
 package de.unistuttgart.iste.meitrex.media_service.api_forum;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
+import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
@@ -13,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -22,7 +27,11 @@ import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMem
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 
+@ContextConfiguration(classes = {MockTestPublisherConfiguration.class})
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
@@ -38,6 +47,8 @@ class MutationCreateInfoThreadTest {
     private final LoggedInUser currentUser = userWithMembershipsAndRealmRoles(Set.of(LoggedInUser.RealmRole.SUPER_USER), courseMembership1);
     @Autowired
     private ThreadRepository threadRepository;
+    @Autowired
+    private TopicPublisher topicPublisher;
 
     @Test
     void testAddInfoThreadToForum(final GraphQlTester tester) {
@@ -46,6 +57,9 @@ class MutationCreateInfoThreadTest {
                 .threads(new ArrayList<>())
                 .build();
         forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(isA(ForumActivityEvent.class));
+
         final String query = """
                 mutation {
                     createInfoThread(
@@ -65,5 +79,7 @@ class MutationCreateInfoThreadTest {
         assertThat(infoThread.getTitle(), is("Test title"));
         assertThat(infoThread.getInfo().getContent(), is("Test Info"));
         assertThat(threadRepository.findAll(), hasSize(1));
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.THREAD));
     }
 }

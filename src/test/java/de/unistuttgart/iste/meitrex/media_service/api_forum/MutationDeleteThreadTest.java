@@ -3,8 +3,10 @@ package de.unistuttgart.iste.meitrex.media_service.api_forum;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
+import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.InfoThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
@@ -46,7 +48,7 @@ public class MutationDeleteThreadTest {
     private ThreadRepository threadRepository;
 
     @Test
-    void testDeleteThread(final GraphQlTester tester) {
+    void testDeleteQuestionThread(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -95,6 +97,61 @@ public class MutationDeleteThreadTest {
         QuestionThread thread = tester.document(query)
                 .execute()
                 .path("deleteThread").entity(QuestionThread.class).get();
+        assertThat(thread.getId(), is(threadEntity.getId()));
+        assertThat(postRepository.findAll(), hasSize(0));
+        assertThat(threadRepository.findAll(), hasSize(0));
+    }
+
+    @Test
+    void testDeleteInfoThread(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+        PostEntity infoEntity = PostEntity.builder()
+                .content("info Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        InfoThreadEntity threadEntity = InfoThreadEntity.builder()
+                .forum(forumEntity)
+                .info(infoEntity)
+                .title("Thread Title")
+                .threadMediaRecordReference(null)
+                .posts(new ArrayList<>())
+                .creatorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .numberOfPosts(1)
+                .build();
+        PostEntity postEntity = PostEntity.builder()
+                .content("Post Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .thread(threadEntity)
+                .build();
+        postEntity = postRepository.save(postEntity);
+        infoEntity.setThread(threadEntity);
+        infoEntity = postRepository.save(infoEntity);
+        threadEntity.getPosts().add(postEntity);
+        threadEntity = threadRepository.save(threadEntity);
+        forumEntity.getThreads().add(threadEntity);
+        forumEntity = forumRepository.save(forumEntity);
+        System.out.println(forumRepository.findAll());
+        System.out.println(threadRepository.findAll());
+        System.out.println(postRepository.findAll());
+        final String query = """
+                mutation {
+                    deleteThread(
+                        threadId: "%s"
+                    ) {
+                        id
+                    }
+                }
+                """.formatted(threadEntity.getId());
+        InfoThread thread = tester.document(query)
+                .execute()
+                .path("deleteThread").entity(InfoThread.class).get();
         assertThat(thread.getId(), is(threadEntity.getId()));
         assertThat(postRepository.findAll(), hasSize(0));
         assertThat(threadRepository.findAll(), hasSize(0));
