@@ -70,6 +70,8 @@ type Post {
 
     authorId: UUID!
 
+    edited: Boolean!
+
     downvotedByUsers: [UUID]!
 
     upvotedByUsers: [UUID]!

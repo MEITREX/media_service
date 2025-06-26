@@ -10,7 +10,6 @@ import de.unistuttgart.iste.meitrex.media_service.service.ForumService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.ContextValue;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -32,7 +31,6 @@ public class ForumController {
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
     private final MediaRecordRepository mediaRecordRepository;
-    private final ModelMapper modelMapper;
     private final ForumRepository forumRepository;
     private static final String NOT_FOUND = " not found";
     private static final String THREAD = "Thread with id ";
@@ -136,6 +134,15 @@ public class ForumController {
                            @ContextValue final LoggedInUser currentUser) throws AuthenticationException {
         PostEntity postEntity = checkUserInCourse(postId, currentUser);
         return forumService.deletePost(postEntity, currentUser);
+    }
+
+    @MutationMapping
+    public Thread deleteThread(@Argument final UUID threadId,
+                               @ContextValue final LoggedInUser currentUser) throws AuthenticationException {
+        ThreadEntity thread = threadRepository.findById(threadId).orElseThrow(() ->
+                new EntityNotFoundException(THREAD + threadId + NOT_FOUND));
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, thread.getForum().getCourseId());
+        return forumService.deleteThread(thread, currentUser);
     }
 
     @MutationMapping

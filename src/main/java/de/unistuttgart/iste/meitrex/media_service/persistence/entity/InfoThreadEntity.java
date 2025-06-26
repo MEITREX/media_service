@@ -18,6 +18,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 public class InfoThreadEntity extends ThreadEntity{
+
+    @OneToOne
+    @NotNull
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    PostEntity info;
+
     public InfoThreadEntity(ForumEntity forum, UUID creatorId, String title, @NotNull PostEntity info) {
         super(forum, creatorId, title);
         this.info = info;
@@ -28,10 +34,4 @@ public class InfoThreadEntity extends ThreadEntity{
         super(id, forum, creatorId, title, creationTime, posts, numberOfPosts, threadMediaRecordReference);
         this.info = info;
     }
-
-
-    @OneToOne
-    @NotNull
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
-    PostEntity info;
 }

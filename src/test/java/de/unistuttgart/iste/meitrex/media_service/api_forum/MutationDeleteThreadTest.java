@@ -3,7 +3,7 @@ package de.unistuttgart.iste.meitrex.media_service.api_forum;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.generated.dto.Post;
+import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
@@ -19,7 +19,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ import static org.hamcrest.Matchers.is;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-class MutationUpvotePostTest {
+public class MutationDeleteThreadTest {
     @Autowired
     private ForumRepository forumRepository;
 
@@ -41,14 +40,13 @@ class MutationUpvotePostTest {
 
     @InjectCurrentUserHeader
     private final LoggedInUser currentUser = userWithMembershipsAndRealmRoles(Set.of(LoggedInUser.RealmRole.SUPER_USER), courseMembership1);
-
     @Autowired
     private PostRepository postRepository;
     @Autowired
     private ThreadRepository threadRepository;
 
     @Test
-    void testUpvotePost(final GraphQlTester tester) {
+    void testDeleteThread(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -58,8 +56,6 @@ class MutationUpvotePostTest {
                 .content("question Content")
                 .authorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
-                .upvotedByUsers(new ArrayList<>())
-                .downvotedByUsers(new ArrayList<>(List.of(currentUser.getId())))
                 .build();
         QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
                 .forum(forumEntity)
@@ -69,77 +65,38 @@ class MutationUpvotePostTest {
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
-                .numberOfPosts(0)
+                .numberOfPosts(1)
                 .build();
-        questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
-        threadRepository.save(threadEntity);
-        forumEntity.getThreads().add(threadEntity);
-        forumRepository.save(forumEntity);
-        final String query = """
-                mutation {
-                    upvotePost(
-                        postId: "%s"
-                    ) {
-                        id
-                        upvotedByUsers
-                        downvotedByUsers
-                    }
-                }
-                """.formatted(questionEntity.getId());
-        Post post = tester.document(query)
-                .execute()
-                .path("upvotePost").entity(Post.class).get();
-        assertThat(post.getUpvotedByUsers(), is(List.of(currentUser.getId())));
-        assertThat(post.getDownvotedByUsers(), hasSize(0));
-        assertThat(postRepository.findAll(), hasSize(1));
-    }
-
-    @Test
-    void testUpvotePostTwoTimes(final GraphQlTester tester) {
-        ForumEntity forumEntity = ForumEntity.builder()
-                .courseId(courseId1)
-                .threads(new ArrayList<>())
-                .build();
-        forumEntity = forumRepository.save(forumEntity);
-        PostEntity questionEntity = PostEntity.builder()
-                .content("question Content")
+        PostEntity postEntity = PostEntity.builder()
+                .content("Post Content")
                 .authorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
-                .upvotedByUsers(new ArrayList<>(List.of(currentUser.getId())))
-                .downvotedByUsers(new ArrayList<>(List.of(currentUser.getId())))
+                .thread(threadEntity)
                 .build();
-        QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
-                .forum(forumEntity)
-                .question(questionEntity)
-                .title("Thread Title")
-                .threadMediaRecordReference(null)
-                .posts(new ArrayList<>())
-                .creatorId(currentUser.getId())
-                .creationTime(OffsetDateTime.now())
-                .numberOfPosts(0)
-                .build();
+        postEntity = postRepository.save(postEntity);
         questionEntity.setThread(threadEntity);
         questionEntity = postRepository.save(questionEntity);
-        threadRepository.save(threadEntity);
+        threadEntity.getPosts().add(postEntity);
+        threadEntity = threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
-        forumRepository.save(forumEntity);
+        forumEntity = forumRepository.save(forumEntity);
+        System.out.println(forumRepository.findAll());
+        System.out.println(threadRepository.findAll());
+        System.out.println(postRepository.findAll());
         final String query = """
                 mutation {
-                    upvotePost(
-                        postId: "%s"
+                    deleteThread(
+                        threadId: "%s"
                     ) {
                         id
-                        upvotedByUsers
-                        downvotedByUsers
                     }
                 }
-                """.formatted(questionEntity.getId());
-        Post post = tester.document(query)
+                """.formatted(threadEntity.getId());
+        QuestionThread thread = tester.document(query)
                 .execute()
-                .path("upvotePost").entity(Post.class).get();
-        assertThat(post.getUpvotedByUsers(), hasSize(0));
-        assertThat(post.getDownvotedByUsers(), hasSize(0));
-        assertThat(postRepository.findAll(), hasSize(1));
+                .path("deleteThread").entity(QuestionThread.class).get();
+        assertThat(thread.getId(), is(threadEntity.getId()));
+        assertThat(postRepository.findAll(), hasSize(0));
+        assertThat(threadRepository.findAll(), hasSize(0));
     }
 }

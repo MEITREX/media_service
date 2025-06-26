@@ -79,6 +79,7 @@ class MutationAddPostTest {
                     ) {
                         id
                         content
+                        edited
                     }
                 }
                 """.formatted(threadEntity.getId());
@@ -86,6 +87,7 @@ class MutationAddPostTest {
                 .execute()
                 .path("addPost").entity(Post.class).get();
         assertThat(post.getContent(), is("Test Content"));
+        assertThat(post.getEdited(), is(false));
         assertThat(postRepository.findAll(), hasSize(2));
     }
 }

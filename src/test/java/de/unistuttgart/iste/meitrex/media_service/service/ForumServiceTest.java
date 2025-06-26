@@ -28,16 +28,14 @@ class ForumServiceTest {
     private final ForumRepository forumRepository = mock(ForumRepository.class);
     private final ThreadRepository threadRepository = mock(ThreadRepository.class);
     private final PostRepository postRepository = mock(PostRepository.class);
-    private final MediaRecordRepository mediaRecordRepository = mock(MediaRecordRepository.class);
     private final ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository = mock(ThreadMediaRecordReferenceRepository.class);
 
     private final ModelMapper modelMapper = new ModelMapper();
     private final ThreadMapper threadMapper = new ThreadMapper(modelMapper);
     private final ForumMapper forumMapper = new ForumMapper(threadMapper);
 
-
     private final ForumService forumService = new ForumService(modelMapper, forumRepository, threadRepository,
-            postRepository, mediaRecordRepository, threadMediaRecordReferenceRepository, forumMapper, threadMapper);
+            postRepository, threadMediaRecordReferenceRepository, forumMapper, threadMapper);
 
     @Test
     void testGetForumById() {

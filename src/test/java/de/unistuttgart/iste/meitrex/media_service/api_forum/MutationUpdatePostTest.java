@@ -75,6 +75,7 @@ class MutationUpdatePostTest {
                 .authorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
                 .thread(threadEntity)
+                .edited(false)
                 .build();
         postEntity = postRepository.save(postEntity);
         questionEntity.setThread(threadEntity);
@@ -90,6 +91,7 @@ class MutationUpdatePostTest {
                     ) {
                         id
                         content
+                        edited
                     }
                 }
                 """.formatted(postEntity.getId(), threadEntity.getId());
@@ -97,6 +99,7 @@ class MutationUpdatePostTest {
                 .execute()
                 .path("updatePost").entity(Post.class).get();
         assertThat(post.getContent(), is("Update Content"));
+        assertThat(post.getEdited(), is(true));
         assertThat(postRepository.findAll(), hasSize(2));
     }
 }

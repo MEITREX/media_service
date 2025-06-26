@@ -1,11 +1,9 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Cascade;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,7 +15,16 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @Data
+@ToString(callSuper = true)
 public class QuestionThreadEntity extends ThreadEntity{
+
+    @OneToOne(cascade = CascadeType.REMOVE)
+    @NotNull
+    PostEntity question;
+
+    @OneToOne
+    PostEntity selectedAnswer;
+
     public QuestionThreadEntity(ForumEntity forum, UUID creatorId, String title, @NotNull PostEntity question) {
         super(forum, creatorId, title);
         this.question = question;
@@ -31,12 +38,4 @@ public class QuestionThreadEntity extends ThreadEntity{
         this.question = question;
         this.selectedAnswer = selectedAnswer;
     }
-
-    @OneToOne
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
-    @NotNull
-    PostEntity question;
-
-    @OneToOne
-    PostEntity selectedAnswer;
 }

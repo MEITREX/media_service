@@ -27,7 +27,6 @@ public class ForumService {
     private final ForumRepository forumRepository;
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
-    private final MediaRecordRepository mediaRecordRepository;
     private final ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
 
     private final ForumMapper forumMapper;
@@ -66,6 +65,8 @@ public class ForumService {
         postEntity.getDownvotedByUsers().removeIf(id -> id.equals(userId));
         if (!postEntity.getUpvotedByUsers().contains(userId)) {
             postEntity.getUpvotedByUsers().add(userId);
+        } else {
+            postEntity.getUpvotedByUsers().remove(userId);
         }
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
@@ -74,6 +75,8 @@ public class ForumService {
         postEntity.getUpvotedByUsers().removeIf(id -> id.equals(userId));
         if (!postEntity.getDownvotedByUsers().contains(userId)) {
             postEntity.getDownvotedByUsers().add(userId);
+        } else {
+            postEntity.getDownvotedByUsers().remove(userId);
         }
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
@@ -109,11 +112,14 @@ public class ForumService {
             throw new AuthenticationException("User is not authorized to update this post");
         }
         postEntity.setContent(post.getContent());
+        postEntity.setEdited(true);
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
     public Post deletePost(PostEntity post, LoggedInUser user) throws AuthenticationException {
-        if (!post.getAuthorId().equals(user.getId())) {
+        if (!post.getAuthorId().equals(user.getId())
+                && !(user.getRealmRoles().contains(LoggedInUser.RealmRole.COURSE_CREATOR)
+                || user.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER))) {
             throw new AuthenticationException("User is not authorized to update this post");
         }
         Post realPost = modelMapper.map(post, Post.class);
@@ -121,9 +127,22 @@ public class ForumService {
         thread.getPosts().remove(post);
         thread.setNumberOfPosts(thread.getNumberOfPosts() - 1);
         threadRepository.save(thread);
-        post.setThread(null);
         postRepository.delete(post);
         return realPost;
+    }
+
+    public Thread deleteThread(ThreadEntity thread, LoggedInUser user) throws AuthenticationException {
+        if (!thread.getCreatorId().equals(user.getId())
+                && !(user.getRealmRoles().contains(LoggedInUser.RealmRole.COURSE_CREATOR)
+                || user.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER))) {
+            throw new AuthenticationException("User is not authorized to delete this thread");
+        }
+        Thread realThread = threadMapper.mapThread(thread);
+        ForumEntity forum = thread.getForum();
+        forum.getThreads().remove(thread);
+        threadRepository.delete(thread);
+        forumRepository.save(forum);
+        return realThread;
     }
 
     public ThreadMediaRecordReference addThreadToMediaRecord(ThreadEntity thread, MediaRecordEntity mediaRecord, Integer timeStamp, Integer pageNumber) {

@@ -22,13 +22,6 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class ThreadEntity implements Serializable {
-    protected ThreadEntity(ForumEntity forum, UUID creatorId, String title) {
-        this.forum = forum;
-        this.creatorId = creatorId;
-        this.title = title;
-        this.posts = new ArrayList<>();
-        numberOfPosts = 0;
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -46,8 +39,7 @@ public abstract class ThreadEntity implements Serializable {
     @CreationTimestamp
     OffsetDateTime creationTime;
 
-    @OneToMany
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostEntity> posts;
 
     @Column(nullable = false)
@@ -56,4 +48,26 @@ public abstract class ThreadEntity implements Serializable {
     @OneToOne
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
     ThreadMediaRecordReferenceEntity threadMediaRecordReference;
+
+    protected ThreadEntity(ForumEntity forum, UUID creatorId, String title) {
+        this.forum = forum;
+        this.creatorId = creatorId;
+        this.title = title;
+        this.posts = new ArrayList<>();
+        numberOfPosts = 0;
+    }
+
+    @Override
+    public String toString() {
+        return "ThreadEntity{" +
+                "id=" + id +
+                ", forumId=" + forum.getId() +
+                ", creatorId=" + creatorId +
+                ", title='" + title + '\'' +
+                ", creationTime=" + creationTime +
+                ", posts=" + posts +
+                ", numberOfPosts=" + numberOfPosts +
+                ", threadMediaRecordReference=" + threadMediaRecordReference +
+                '}';
+    }
 }
