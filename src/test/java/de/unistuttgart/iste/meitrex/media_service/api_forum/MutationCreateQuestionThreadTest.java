@@ -8,6 +8,7 @@ import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadContentReferenceRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRepositoryUtil;
@@ -45,6 +46,8 @@ class MutationCreateQuestionThreadTest {
 
     @Autowired
     private MediaRecordRepository mediaRecordRepository;
+    @Autowired
+    private ThreadContentReferenceRepository threadContentReferenceRepository;
 
     @Test
     void testAddQuestionThreadToForum(final GraphQlTester tester) {
@@ -112,5 +115,6 @@ class MutationCreateQuestionThreadTest {
         assertThat(questionThread.getThreadContentReference().getTimeStampSeconds(), is(10));
         assertThat(questionThread.getThreadContentReference().getPageNumber(), is(20));
         assertThat(threadRepository.findAll(), hasSize(1));
+        assertThat(threadContentReferenceRepository.findAll(), hasSize(1));
     }
 }

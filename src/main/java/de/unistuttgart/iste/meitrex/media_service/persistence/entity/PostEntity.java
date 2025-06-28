@@ -3,7 +3,6 @@ package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;

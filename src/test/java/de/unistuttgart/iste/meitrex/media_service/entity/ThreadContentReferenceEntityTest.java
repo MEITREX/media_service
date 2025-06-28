@@ -1,6 +1,5 @@
 package de.unistuttgart.iste.meitrex.media_service.entity;
 
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadContentReferenceEntity;
 import org.junit.jupiter.api.Test;
