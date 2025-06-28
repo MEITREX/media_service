@@ -126,7 +126,7 @@ public class ForumService {
                 .filter(courseId -> courseId.equals(thread.getForum().getCourseId())).findAny().orElseThrow(() ->
                         new EntityNotFoundException("Content with the id " + contentId
                                 + " not in course " + thread.getForum().getCourseId()));
-        addThreadToContent(thread, contentId, timeStampSeconds, pageNumber);
+        thread.setThreadContentReference(new ThreadContentReferenceEntity(thread, contentId, timeStampSeconds, pageNumber));
     }
 
     public Post updatePost(InputPost post, PostEntity postEntity, UUID userId) throws AuthenticationException {
