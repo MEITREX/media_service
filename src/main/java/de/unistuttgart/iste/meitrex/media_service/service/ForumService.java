@@ -28,6 +28,7 @@ public class ForumService {
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
     private final ThreadContentReferenceRepository threadContentReferenceRepository;
+    private final MediaRecordRepository mediaRecordRepository;
 
     private final ForumMapper forumMapper;
     private final ThreadMapper threadMapper;
@@ -86,6 +87,11 @@ public class ForumService {
         QuestionThreadEntity threadEntity = new QuestionThreadEntity(forum, userId, thread.getTitle(), questionEntity);
         questionEntity.setThread(threadEntity);
 
+        if (thread.getThreadContentReference() != null){
+            addThreatToContentOnThreadCreation(threadEntity, thread.getThreadContentReference().getContentId(),
+                    thread.getThreadContentReference().getTimeStampSeconds(),
+                    thread.getThreadContentReference().getPageNumber());
+        }
         threadEntity = threadRepository.save(threadEntity);
         forum.getThreads().add(threadEntity);
         forumRepository.save(forum);
@@ -98,11 +104,29 @@ public class ForumService {
         InfoThreadEntity threadEntity = new InfoThreadEntity(forum, userId, thread.getTitle(), infoEntity);
         infoEntity.setThread(threadEntity);
 
+        if (thread.getThreadContentReference() != null){
+            addThreatToContentOnThreadCreation(threadEntity, thread.getThreadContentReference().getContentId(),
+                    thread.getThreadContentReference().getTimeStampSeconds(),
+                    thread.getThreadContentReference().getPageNumber());
+        }
+
         threadEntity = threadRepository.save(threadEntity);
         forum.getThreads().add(threadEntity);
         forumRepository.save(forum);
 
         return modelMapper.map(threadEntity, InfoThread.class);
+    }
+
+    private void addThreatToContentOnThreadCreation(ThreadEntity thread, UUID contentId, Integer timeStampSeconds, Integer pageNumber) {
+        List<MediaRecordEntity> mediaRecordEntities = mediaRecordRepository
+                .findMediaRecordEntitiesByContentIds(List.of(contentId));
+        mediaRecordEntities.stream().findAny().orElseThrow(()-> new EntityNotFoundException("MediaRecord that includes content with the id "
+                + contentId + " not found"));
+        mediaRecordEntities.stream().map(MediaRecordEntity::getCourseIds).flatMap(List::stream)
+                .filter(courseId -> courseId.equals(thread.getForum().getCourseId())).findAny().orElseThrow(() ->
+                        new EntityNotFoundException("Content with the id " + contentId
+                                + " not in course " + thread.getForum().getCourseId()));
+        addThreadToContent(thread, contentId, timeStampSeconds, pageNumber);
     }
 
     public Post updatePost(InputPost post, PostEntity postEntity, UUID userId) throws AuthenticationException {

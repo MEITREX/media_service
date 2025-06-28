@@ -10,14 +10,11 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-class ThreadMediaContentEntityTest {
+class ThreadContentReferenceEntityTest {
 
     @Test
     void testThreadContentToString(){
         QuestionThreadEntity questionThread = QuestionThreadEntity.builder()
-                .id(UUID.randomUUID())
-                .build();
-        MediaRecordEntity mediaRecord = MediaRecordEntity.builder()
                 .id(UUID.randomUUID())
                 .build();
         int timestamp = 10;
@@ -32,9 +29,6 @@ class ThreadMediaContentEntityTest {
     @Test
     void testThreadContentEquals() {
         QuestionThreadEntity questionThread = QuestionThreadEntity.builder()
-                .id(UUID.randomUUID())
-                .build();
-        MediaRecordEntity mediaRecord = MediaRecordEntity.builder()
                 .id(UUID.randomUUID())
                 .build();
         int timestamp = 10;
