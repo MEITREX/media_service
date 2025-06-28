@@ -27,7 +27,7 @@ public class ForumService {
     private final ForumRepository forumRepository;
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
-    private final ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
+    private final ThreadContentReferenceRepository threadContentReferenceRepository;
 
     private final ForumMapper forumMapper;
     private final ThreadMapper threadMapper;
@@ -47,9 +47,9 @@ public class ForumService {
                 new EntityNotFoundException("Thread with the id " + id + " not found"));
     }
 
-    public List<Thread> getThreadsByMediaRecord(MediaRecordEntity mediaRecord) {
-        return threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord).parallelStream()
-                .map(pRecordEntity -> threadMapper.mapThread(pRecordEntity.getThread())).toList();
+    public List<Thread> getThreadsByThreadContentReferences(List<ThreadContentReferenceEntity> threadContentReferenceEntities) {
+        return threadContentReferenceEntities.stream().map(ThreadContentReferenceEntity::getThread)
+                .map(threadMapper::mapThread).toList();
     }
 
     public Post addPostToThread(InputPost post, ThreadEntity thread, UUID userId) {
@@ -143,12 +143,12 @@ public class ForumService {
         return realThread;
     }
 
-    public ThreadMediaRecordReference addThreadToMediaRecord(ThreadEntity thread, MediaRecordEntity mediaRecord, Integer timeStamp, Integer pageNumber) {
-        ThreadMediaRecordReferenceEntity threadMediaRecordReferenceEntity = new ThreadMediaRecordReferenceEntity(thread, mediaRecord, timeStamp, pageNumber);
-        threadMediaRecordReferenceRepository.save(threadMediaRecordReferenceEntity);
-        thread.setThreadMediaRecordReference(threadMediaRecordReferenceEntity);
+    public ThreadContentReference addThreadToContent(ThreadEntity thread, UUID contentId, Integer timeStamp, Integer pageNumber) {
+        ThreadContentReferenceEntity threadContentReferenceEntity = new ThreadContentReferenceEntity(thread, contentId, timeStamp, pageNumber);
+        threadContentReferenceRepository.save(threadContentReferenceEntity);
+        thread.setThreadContentReference(threadContentReferenceEntity);
         threadRepository.save(thread);
-        return modelMapper.map(threadMediaRecordReferenceEntity, ThreadMediaRecordReference.class);
+        return modelMapper.map(threadContentReferenceEntity, ThreadContentReference.class);
     }
 
     public QuestionThread addAnserToQuestionThread(QuestionThreadEntity questionThread, PostEntity answer) {

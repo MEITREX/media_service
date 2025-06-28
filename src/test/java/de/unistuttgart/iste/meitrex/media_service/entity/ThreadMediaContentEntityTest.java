@@ -2,7 +2,7 @@ package de.unistuttgart.iste.meitrex.media_service.entity;
 
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadMediaRecordReferenceEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadContentReferenceEntity;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -10,10 +10,10 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-class ThreadMediaRecordEntityTest {
+class ThreadMediaContentEntityTest {
 
     @Test
-    void testThreadMediaRecordToString(){
+    void testThreadContentToString(){
         QuestionThreadEntity questionThread = QuestionThreadEntity.builder()
                 .id(UUID.randomUUID())
                 .build();
@@ -22,14 +22,15 @@ class ThreadMediaRecordEntityTest {
                 .build();
         int timestamp = 10;
         int pageNumber = 1;
-        ThreadMediaRecordReferenceEntity threadMediaRecordReference =
-                new ThreadMediaRecordReferenceEntity(questionThread, mediaRecord, timestamp, pageNumber);
-        assertThat(threadMediaRecordReference.toString(), is("{ mediaRecordId: " + mediaRecord.getId()
+        UUID contentId = UUID.randomUUID();
+        ThreadContentReferenceEntity threadContentReference =
+                new ThreadContentReferenceEntity(questionThread, contentId, timestamp, pageNumber);
+        assertThat(threadContentReference.toString(), is("{ contentId: " + contentId
                 + ", threadId: " + questionThread.getId() + ", timeStampSeconds: 10, pageNumber: 1 }"));
     }
 
     @Test
-    void testThreadMediaRecordEquals() {
+    void testThreadContentEquals() {
         QuestionThreadEntity questionThread = QuestionThreadEntity.builder()
                 .id(UUID.randomUUID())
                 .build();
@@ -38,10 +39,11 @@ class ThreadMediaRecordEntityTest {
                 .build();
         int timestamp = 10;
         int pageNumber = 1;
-        ThreadMediaRecordReferenceEntity threadMediaRecordReference =
-                new ThreadMediaRecordReferenceEntity(questionThread, mediaRecord, timestamp, pageNumber);
-        ThreadMediaRecordReferenceEntity threadMediaRecordReference2 =
-                new ThreadMediaRecordReferenceEntity(questionThread, mediaRecord, timestamp, pageNumber);
-        assertThat(threadMediaRecordReference.equals(threadMediaRecordReference2), is(true));
+        UUID contentId = UUID.randomUUID();
+        ThreadContentReferenceEntity threadContentReference =
+                new ThreadContentReferenceEntity(questionThread, contentId, timestamp, pageNumber);
+        ThreadContentReferenceEntity threadContentReference2 =
+                new ThreadContentReferenceEntity(questionThread, contentId, timestamp, pageNumber);
+        assertThat(threadContentReference.equals(threadContentReference2), is(true));
     }
 }

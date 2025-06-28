@@ -54,8 +54,8 @@ type InfoThread implements Thread {
     numberOfPosts: Int!
 }
 
-type ThreadMediaRecordReference {
-    mediaRecordId: UUID!
+type ThreadContentReference {
+    contentId: UUID!
     threadId: UUID!
     timeStampSeconds: Int
     pageNumber: Int
@@ -101,8 +101,8 @@ input InputInfoThread {
     info: InputPost!
 }
 
-input InputThreadMediaRecordReference {
-    mediaRecordId: UUID!
+input InputThreadContentReference {
+    contentId: UUID!
     threadId: UUID!
     timeStampSeconds: Int
     pageNumber: Int

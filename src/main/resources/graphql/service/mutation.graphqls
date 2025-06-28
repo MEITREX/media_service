@@ -81,7 +81,7 @@ type Mutation {
     """
     add Thread to MediaRecord
     """
-    addThreadToMediaRecord(threadMediaRecordReference: InputThreadMediaRecordReference!): ThreadMediaRecordReference
+    addThreadToContent(threadContentReference: InputThreadContentReference!): ThreadContentReference
 
     """
     add Answer to QuestionThread

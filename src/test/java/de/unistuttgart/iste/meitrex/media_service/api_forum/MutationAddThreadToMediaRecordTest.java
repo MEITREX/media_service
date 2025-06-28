@@ -3,11 +3,8 @@ package de.unistuttgart.iste.meitrex.media_service.api_forum;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.generated.dto.ThreadMediaRecordReference;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
+import de.unistuttgart.iste.meitrex.generated.dto.ThreadContentReference;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRepositoryUtil;
@@ -47,10 +44,10 @@ class MutationAddThreadToMediaRecordTest {
     @Autowired
     private ThreadRepository threadRepository;
     @Autowired
-    private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
+    private ThreadContentReferenceRepository threadContentReferenceRepository;
 
     @Test
-    void testAddThreadToMediaRecordWrongRecordId(final GraphQlTester tester) {
+    void testAddThreadToContentdWrongContentId(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -65,7 +62,7 @@ class MutationAddThreadToMediaRecordTest {
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
@@ -76,30 +73,31 @@ class MutationAddThreadToMediaRecordTest {
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
-        UUID mediaRecordId = UUID.randomUUID();
+        UUID contentId = UUID.randomUUID();
         final String query = """
                 mutation {
-                    addThreadToMediaRecord(
-                        threadMediaRecordReference: {threadId: "%s", mediaRecordId: "%s"}
+                    addThreadToContent(
+                        threadContentReference: {threadId: "%s", contentId: "%s"}
                     ) {
                         threadId
-                        mediaRecordId
+                        contentId
                     }
                 }
-                """.formatted(threadEntity.getId(), mediaRecordId);
+                """.formatted(threadEntity.getId(), contentId);
         tester.document(query)
                 .execute()
                 .errors()
                 .satisfy(errors -> {
                     assertThat(errors, hasSize(1));
-                    assertThat(errors.getFirst().getMessage(), containsString("MediaRecord with the id " + mediaRecordId + " not found"));
+                    assertThat(errors.getFirst().getMessage(), containsString("MediaRecord that includes " +
+                            "content with the id " + contentId + " not found"));
                     assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
                 });
-        assertThat(threadMediaRecordReferenceRepository.findAll(), hasSize(0));
+        assertThat(threadContentReferenceRepository.findAll(), hasSize(0));
     }
 
     @Test
-    void testAddThreadToMediaRecordWrongThreadId(final GraphQlTester tester) {
+    void testAddThreadToContentWrongThreadId(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -114,7 +112,7 @@ class MutationAddThreadToMediaRecordTest {
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
@@ -126,18 +124,18 @@ class MutationAddThreadToMediaRecordTest {
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
         MediaRecordEntity mediaRecord = MediaRecordRepositoryUtil.fillRepositoryWithMediaRecordsAndCourseIds(mediaRecordRepository, courseId1, UUID.randomUUID()).getFirst();
-        UUID mediaRecordId = mediaRecord.getId();
+        UUID contentId = mediaRecord.getContentIds().stream().findFirst().get();
         UUID threadId = UUID.randomUUID();
         final String query = """
                 mutation {
-                    addThreadToMediaRecord(
-                        threadMediaRecordReference: {threadId: "%s", mediaRecordId: "%s"}
+                    addThreadToContent(
+                        threadContentReference: {threadId: "%s", contentId: "%s"}
                     ) {
                         threadId
-                        mediaRecordId
+                        contentId
                     }
                 }
-                """.formatted(threadId, mediaRecordId);
+                """.formatted(threadId, contentId);
         tester.document(query)
                 .execute()
                 .errors()
@@ -146,11 +144,11 @@ class MutationAddThreadToMediaRecordTest {
                     assertThat(errors.getFirst().getMessage(), containsString("Thread with id " + threadId + " not found"));
                     assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
                 });
-        assertThat(threadMediaRecordReferenceRepository.findAll(), hasSize(0));
+        assertThat(threadContentReferenceRepository.findAll(), hasSize(0));
     }
 
     @Test
-    void testAddThreadToMediaRecord(final GraphQlTester tester) {
+    void testAddThreadToContent(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -165,7 +163,7 @@ class MutationAddThreadToMediaRecordTest {
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
@@ -177,22 +175,22 @@ class MutationAddThreadToMediaRecordTest {
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
         MediaRecordEntity mediaRecord = MediaRecordRepositoryUtil.fillRepositoryWithMediaRecordsAndCourseIds(mediaRecordRepository, courseId1, UUID.randomUUID()).getFirst();
-        UUID mediaRecordId = mediaRecord.getId();
+        UUID contentId = mediaRecord.getContentIds().stream().findFirst().get();
         final String query = """
                 mutation {
-                    addThreadToMediaRecord(
-                        threadMediaRecordReference: {threadId: "%s", mediaRecordId: "%s"}
+                    addThreadToContent(
+                        threadContentReference: {threadId: "%s", contentId: "%s"}
                     ) {
                         threadId
-                        mediaRecordId
+                        contentId
                     }
                 }
-                """.formatted(threadEntity.getId(), mediaRecordId);
-        ThreadMediaRecordReference threadMediaRecordReference = tester.document(query)
+                """.formatted(threadEntity.getId(), contentId);
+        ThreadContentReference threadContentReference = tester.document(query)
                 .execute()
-                .path("addThreadToMediaRecord").entity(ThreadMediaRecordReference.class).get();
-        assertThat(threadMediaRecordReference.getThreadId(), is(threadEntity.getId()));
-        assertThat(threadMediaRecordReference.getMediaRecordId(), is(mediaRecordId));
-        assertThat(threadMediaRecordReferenceRepository.findAll(), hasSize(1));
+                .path("addThreadToContent").entity(ThreadContentReference.class).get();
+        assertThat(threadContentReference.getThreadId(), is(threadEntity.getId()));
+        assertThat(threadContentReference.getContentId(), is(contentId));
+        assertThat(threadContentReferenceRepository.findAll(), hasSize(1));
     }
 }

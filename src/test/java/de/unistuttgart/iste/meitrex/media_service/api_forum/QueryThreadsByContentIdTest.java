@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.*;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-class QueryThreadsByMediaRecordTest {
+class QueryThreadsByContentIdTest {
     @Autowired
     private ForumRepository forumRepository;
 
@@ -46,29 +46,26 @@ class QueryThreadsByMediaRecordTest {
     @Autowired
     private ThreadRepository threadRepository;
     @Autowired
-    private ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
+    private ThreadContentReferenceRepository threadContentReferenceRepository;
 
     @Test
-    void testQueryThreadMediaRecordEmpty(final GraphQlTester tester) {
-        final UUID mediaRecordId = UUID.randomUUID();
+    void testQueryThreadContentIdEmpty(final GraphQlTester tester) {
+        final UUID contentId = UUID.randomUUID();
         final String query = """
                 query {
-                    threadsByMediaRecord(id: "%s") {
+                    threadsByContentId(id: "%s") {
                         id
                         title
                         creationTime
                         creatorId
                     }
                 }
-                """.formatted(mediaRecordId);
-        tester.document(query)
+                """.formatted(contentId);
+        List<Thread> threads = tester.document(query)
                 .execute()
-                .errors()
-                .satisfy(errors -> {
-                    assertThat(errors, hasSize(1));
-                    assertThat(errors.getFirst().getMessage(), containsString("MediaRecord with id " + mediaRecordId + " not found"));
-                    assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
-                });
+                .path("threadsByContentId")
+                .entityList(Thread.class).get();
+        assertThat(threads, hasSize(0));
         assertThat(mediaRecordRepository.findAll(), hasSize(0));
 
     }
@@ -77,21 +74,21 @@ class QueryThreadsByMediaRecordTest {
     void testQueryThreadEmpty(final GraphQlTester tester) {
         MediaRecordEntity mediaRecord = MediaRecordRepositoryUtil.fillRepositoryWithMediaRecords(mediaRecordRepository).getFirst();
 
-        UUID mediaRecordId = mediaRecord.getId();
+        UUID contentId = mediaRecord.getContentIds().stream().findFirst().get();
 
         final String query = """
                 query {
-                    threadsByMediaRecord(id: "%s") {
+                    threadsByContentId(id: "%s") {
                         id
                         title
                         creationTime
                         creatorId
                     }
                 }
-                """.formatted(mediaRecordId);
+                """.formatted(contentId);
         List<Thread> threadList = tester.document(query)
                 .execute()
-                .path("threadsByMediaRecord")
+                .path("threadsByContentId")
                 .entityList(Thread.class).get();
 
         assertThat(threadList, hasSize(0));
@@ -101,7 +98,6 @@ class QueryThreadsByMediaRecordTest {
     @Test
     void testQueryThread(final GraphQlTester tester) {
         MediaRecordEntity mediaRecord = MediaRecordRepositoryUtil.fillRepositoryWithMediaRecordsAndCourseIds(mediaRecordRepository, courseId1, UUID.randomUUID()).getFirst();
-        UUID mediaRecordId = mediaRecord.getId();
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -116,7 +112,7 @@ class QueryThreadsByMediaRecordTest {
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
@@ -127,25 +123,26 @@ class QueryThreadsByMediaRecordTest {
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
-        ThreadMediaRecordReferenceEntity threadMediaRecordReference = new ThreadMediaRecordReferenceEntity(threadEntity,
-                mediaRecord, null, null);
-        threadMediaRecordReferenceRepository.save(threadMediaRecordReference);
-        threadEntity.setThreadMediaRecordReference(threadMediaRecordReference);
+        UUID contentId = mediaRecord.getContentIds().stream().findFirst().get();
+        ThreadContentReferenceEntity threadContentReference = new ThreadContentReferenceEntity(threadEntity,
+                contentId, null, null);
+        threadContentReferenceRepository.save(threadContentReference);
+        threadEntity.setThreadContentReference(threadContentReference);
         threadRepository.save(threadEntity);
 
         final String query = """
                 query {
-                    threadsByMediaRecord(id: "%s") {
+                    threadsByContentId(id: "%s") {
                         id
                         title
                         creationTime
                         creatorId
                     }
                 }
-                """.formatted(mediaRecordId);
+                """.formatted(contentId);
         List<QuestionThread> threadList = tester.document(query)
                 .execute()
-                .path("threadsByMediaRecord")
+                .path("threadsByContentId")
                 .entityList(QuestionThread.class).get();
 
         assertThat(threadList, hasSize(1));

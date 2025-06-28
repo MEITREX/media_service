@@ -64,7 +64,7 @@ class MutationUpdatePostTest {
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
