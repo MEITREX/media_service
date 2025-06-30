@@ -29,7 +29,8 @@ class ForumServiceTest {
     private final ForumRepository forumRepository = mock(ForumRepository.class);
     private final ThreadRepository threadRepository = mock(ThreadRepository.class);
     private final PostRepository postRepository = mock(PostRepository.class);
-    private final ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository = mock(ThreadMediaRecordReferenceRepository.class);
+    private final ThreadContentReferenceRepository threadContentReferenceRepository = mock(ThreadContentReferenceRepository.class);
+    private final MediaRecordRepository mediaRecordRepository = mock(MediaRecordRepository.class);
 
     private final TopicPublisher topicPublisher = mock(TopicPublisher.class);
 
@@ -38,7 +39,7 @@ class ForumServiceTest {
     private final ForumMapper forumMapper = new ForumMapper(threadMapper);
 
     private final ForumService forumService = new ForumService(modelMapper, forumRepository, threadRepository,
-            postRepository, threadMediaRecordReferenceRepository, topicPublisher, forumMapper, threadMapper);
+            postRepository, threadContentReferenceRepository, topicPublisher, forumMapper, threadMapper);
 
     @Test
     void testGetForumById() {
@@ -87,7 +88,7 @@ class ForumServiceTest {
                 .title("TestTitle")
                 .creationTime(OffsetDateTime.now())
                 .posts(List.of())
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
         when(threadRepository.findById(thread.getId())).thenReturn(Optional.of(thread));
@@ -120,18 +121,13 @@ class ForumServiceTest {
                 .question(question)
                 .numberOfPosts(0)
                 .build();
-        MediaRecordEntity mediaRecord = MediaRecordEntity.builder()
-                .name("Example Record1")
-                .courseIds(new ArrayList<>(List.of(UUID.randomUUID())))
-                .creatorId(UUID.randomUUID())
-                .type(MediaRecordEntity.MediaType.DOCUMENT)
-                .contentIds(new ArrayList<>(List.of(UUID.randomUUID())))
-                .build();
-        final ThreadMediaRecordReferenceEntity threadMediaRecordReference = new ThreadMediaRecordReferenceEntity(thread, mediaRecord, null, null);
+        UUID contentId = UUID.randomUUID();
+        final ThreadContentReferenceEntity threadContentReference = new ThreadContentReferenceEntity(thread, contentId, null, null);
 
-        thread.setThreadMediaRecordReference(threadMediaRecordReference);
-        when(threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord)).thenReturn(List.of(threadMediaRecordReference));
-        assertThat(forumService.getThreadsByMediaRecord(mediaRecord).getFirst(), is(threadMapper.mapThread(thread)));
+        thread.setThreadContentReference(threadContentReference);
+        when(threadContentReferenceRepository.findAllByContentId(contentId)).thenReturn(List.of(threadContentReference));
+        assertThat(forumService.getThreadsByThreadContentReferences(List.of(threadContentReference)).getFirst(),
+                is(threadMapper.mapThread(thread)));
     }
 
     @Test
@@ -149,7 +145,7 @@ class ForumServiceTest {
                 .title("TestTitle")
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
@@ -192,7 +188,7 @@ class ForumServiceTest {
                 .title("TestTitle")
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
@@ -235,7 +231,7 @@ class ForumServiceTest {
                 .title("TestTitle")
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
@@ -278,7 +274,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
                 .forum(forum)
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
 
@@ -331,7 +327,7 @@ class ForumServiceTest {
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
                 .forum(forum)
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
 
@@ -384,7 +380,7 @@ class ForumServiceTest {
                 .title("TestTitle")
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
@@ -415,7 +411,7 @@ class ForumServiceTest {
                 .title("TestTitle")
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
         final PostEntity postEntity = PostEntity.builder()
@@ -445,19 +441,20 @@ class ForumServiceTest {
                 .title("TestTitle")
                 .creationTime(OffsetDateTime.now())
                 .posts(new ArrayList<>())
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .numberOfPosts(0)
                 .build();
 
-        final MediaRecordEntity mediaRecord = MediaRecordEntity.builder()
-                .id(UUID.randomUUID())
-                .build();
 
         final int timeStamp = 10;
         final int pageNumber = 3;
 
-        final ThreadMediaRecordReferenceEntity threadMediaRecordReference = new ThreadMediaRecordReferenceEntity(threadEntity, mediaRecord, timeStamp, pageNumber);
+        UUID contentId = UUID.randomUUID();
 
-        assertThat(forumService.addThreadToMediaRecord(threadEntity, mediaRecord, timeStamp, pageNumber), is(modelMapper.map(threadMediaRecordReference, ThreadMediaRecordReference.class)));
+        final ThreadContentReferenceEntity threadContentReferenceEntity = new
+                ThreadContentReferenceEntity(threadEntity, contentId, timeStamp, pageNumber);
+
+        assertThat(forumService.addThreadToContent(threadEntity, contentId, timeStamp, pageNumber),
+                is(modelMapper.map(threadContentReferenceEntity, ThreadContentReference.class)));
     }
 }

@@ -9,9 +9,12 @@ import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfigurati
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
+import de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRepositoryUtil;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +51,10 @@ class MutationCreateInfoThreadTest {
     @Autowired
     private ThreadRepository threadRepository;
     @Autowired
+    private MediaRecordRepository mediaRecordRepository;
+    @Autowired
     private TopicPublisher topicPublisher;
+
 
     @Test
     void testAddInfoThreadToForum(final GraphQlTester tester) {
@@ -79,6 +85,52 @@ class MutationCreateInfoThreadTest {
         assertThat(infoThread.getTitle(), is("Test title"));
         assertThat(infoThread.getInfo().getContent(), is("Test Info"));
         assertThat(threadRepository.findAll(), hasSize(1));
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.THREAD));
+    }
+
+    @Test
+    void testAddInfoThreadToForumAndContent(final GraphQlTester tester) {
+        MediaRecordEntity mediaRecord = MediaRecordRepositoryUtil.fillRepositoryWithMediaRecordsAndCourseIds(mediaRecordRepository, courseId1, UUID.randomUUID()).getFirst();
+        UUID contentId = mediaRecord.getContentIds().stream().findFirst().get();
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(isA(ForumActivityEvent.class));
+
+        final String query = """
+                mutation {
+                    createInfoThread(
+                        thread: {forumId: "%s", title: "Test title", info: {content: "Test Info"}, threadContentReference: {contentId: "%s", timeStampSeconds: 10, pageNumber: 20}}
+                    ) {
+                        id
+                        title
+                        info {
+                            content
+                        }
+                        threadContentReference {
+                            contentId
+                            threadId
+                            timeStampSeconds
+                            pageNumber
+                        }
+                    }
+                }
+                """.formatted(forumEntity.getId(), contentId);
+        InfoThread infoThread = tester.document(query)
+                .execute()
+                .path("createInfoThread").entity(InfoThread.class).get();
+        assertThat(infoThread.getTitle(), is("Test title"));
+        assertThat(infoThread.getInfo().getContent(), is("Test Info"));
+        assertThat(infoThread.getThreadContentReference().getContentId(), is(contentId));
+        assertThat(infoThread.getThreadContentReference().getThreadId(), is(infoThread.getId()));
+        assertThat(infoThread.getThreadContentReference().getTimeStampSeconds(), is(10));
+        assertThat(infoThread.getThreadContentReference().getPageNumber(), is(20));
+        assertThat(threadRepository.findAll(), hasSize(1));
+
         verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
                 courseId1, ForumActivity.THREAD));
     }

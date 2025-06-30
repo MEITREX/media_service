@@ -4,7 +4,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
 import lombok.*;
-import org.hibernate.annotations.Cascade;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.OffsetDateTime;
@@ -32,9 +31,9 @@ public class QuestionThreadEntity extends ThreadEntity{
 
     @Builder
     public QuestionThreadEntity(UUID id, ForumEntity forum, UUID creatorId, String title, OffsetDateTime creationTime,
-                                List<PostEntity> posts, Integer numberOfPosts, ThreadMediaRecordReferenceEntity threadMediaRecordReference,
+                                List<PostEntity> posts, Integer numberOfPosts, ThreadContentReferenceEntity threadContentReferenceEntity,
                                 @NotNull PostEntity question, PostEntity selectedAnswer) {
-        super(id, forum, creatorId, title, creationTime, posts, numberOfPosts, threadMediaRecordReference);
+        super(id, forum, creatorId, title, creationTime, posts, numberOfPosts, threadContentReferenceEntity);
         this.question = question;
         this.selectedAnswer = selectedAnswer;
     }

@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
@@ -15,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "Thread")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,9 +44,8 @@ public abstract class ThreadEntity implements Serializable {
     @Column(nullable = false)
     Integer numberOfPosts;
 
-    @OneToOne
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
-    ThreadMediaRecordReferenceEntity threadMediaRecordReference;
+    @OneToOne(cascade = CascadeType.ALL)
+    ThreadContentReferenceEntity threadContentReference;
 
     protected ThreadEntity(ForumEntity forum, UUID creatorId, String title) {
         this.forum = forum;
@@ -67,7 +65,7 @@ public abstract class ThreadEntity implements Serializable {
                 ", creationTime=" + creationTime +
                 ", posts=" + posts +
                 ", numberOfPosts=" + numberOfPosts +
-                ", threadMediaRecordReference=" + threadMediaRecordReference +
+                ", threadContentReference=" + threadContentReference +
                 '}';
     }
 }

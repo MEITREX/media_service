@@ -76,7 +76,7 @@ class QueryForumByCourseIdTest {
                         }
                     }
                 }
-                """.formatted(forumEntity.getCourseId());
+                """.formatted(courseId1);
         Forum forum = tester.document(query)
                 .execute()
                 .path("forumByCourseId").entity(Forum.class).get();

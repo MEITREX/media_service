@@ -1,8 +1,8 @@
 package de.unistuttgart.iste.meitrex.media_service.controller;
 
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
+import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccessValidator.validateUserHasAccessToCourse;
-import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccessValidator.validateUserHasAccessToCourses;
 
 @Slf4j
 @Controller
@@ -36,6 +35,7 @@ public class ForumController {
     private static final String THREAD = "Thread with id ";
     private final ThreadMapper threadMapper;
     private final QuestionThreadRepository questionThreadRepository;
+    private final ThreadContentReferenceRepository threadContentReferenceRepository;
 
 
     @QueryMapping
@@ -55,14 +55,15 @@ public class ForumController {
     }
 
     @QueryMapping
-    public List<Thread> threadsByMediaRecord(@Argument UUID id,
+    public List<Thread> threadsByContentId(@Argument UUID id,
                                              @ContextValue final LoggedInUser currentUser) {
-        MediaRecordEntity mediaRecord = mediaRecordRepository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException("MediaRecord with id " + id + NOT_FOUND));
-        if (mediaRecord.getCourseIds() != null && !mediaRecord.getCourseIds().isEmpty()) {
-            validateUserHasAccessToCourses(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, mediaRecord.getCourseIds());
-        }
-        return forumService.getThreadsByMediaRecord(mediaRecord);
+        List<ThreadContentReferenceEntity> threadContentReferenceEntities =
+                threadContentReferenceRepository.findAllByContentId(id);
+        threadContentReferenceEntities.stream().findAny().ifPresent(threadContentReferenceEntity -> {
+           validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT,
+                   threadContentReferenceEntity.getThread().getForum().getCourseId());
+        });
+        return forumService.getThreadsByThreadContentReferences(threadContentReferenceEntities);
     }
 
     @QueryMapping
@@ -146,14 +147,21 @@ public class ForumController {
     }
 
     @MutationMapping
-    public ThreadMediaRecordReference addThreadToMediaRecord(@Argument final InputThreadMediaRecordReference threadMediaRecordReference,
+    public ThreadContentReference addThreadToContent(@Argument final InputThreadContentReference threadContentReference,
                                                              @ContextValue final LoggedInUser currentUser) {
-        ThreadEntity thread = threadRepository.findById(threadMediaRecordReference.getThreadId()).orElseThrow(()->
-                new EntityNotFoundException(THREAD + threadMediaRecordReference.getThreadId() + NOT_FOUND));
+        ThreadEntity thread = threadRepository.findById(threadContentReference.getThreadId()).orElseThrow(()->
+                new EntityNotFoundException(THREAD + threadContentReference.getThreadId() + NOT_FOUND));
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, thread.getForum().getCourseId());
-        MediaRecordEntity mediaRecord = mediaRecordRepository.findById(threadMediaRecordReference.getMediaRecordId()).orElseThrow(()->
-                new EntityNotFoundException("MediaRecord with the id "  + threadMediaRecordReference.getMediaRecordId() + NOT_FOUND));
-        return forumService.addThreadToMediaRecord(thread, mediaRecord, threadMediaRecordReference.getTimeStampSeconds(), threadMediaRecordReference.getPageNumber());
+
+        List<MediaRecordEntity> mediaRecordEntities = mediaRecordRepository
+                .findMediaRecordEntitiesByContentIds(List.of(threadContentReference.getContentId()));
+        mediaRecordEntities.stream().findAny().orElseThrow(()-> new EntityNotFoundException("MediaRecord that includes content with the id "
+                + threadContentReference.getContentId() + NOT_FOUND));
+        mediaRecordEntities.stream().map(MediaRecordEntity::getCourseIds).flatMap(List::stream)
+                .filter(courseId -> courseId.equals(thread.getForum().getCourseId())).findAny().orElseThrow(() ->
+                        new EntityNotFoundException("Content with the id " + threadContentReference.getContentId()
+                        + " not in course " + thread.getForum().getCourseId()));
+        return forumService.addThreadToContent(thread, threadContentReference.getContentId(), threadContentReference.getTimeStampSeconds(), threadContentReference.getPageNumber());
     }
 
     @MutationMapping
