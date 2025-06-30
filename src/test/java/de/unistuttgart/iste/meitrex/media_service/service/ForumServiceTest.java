@@ -39,7 +39,7 @@ class ForumServiceTest {
     private final ForumMapper forumMapper = new ForumMapper(threadMapper);
 
     private final ForumService forumService = new ForumService(modelMapper, forumRepository, threadRepository,
-            postRepository, threadContentReferenceRepository, topicPublisher, forumMapper, threadMapper);
+            postRepository, threadContentReferenceRepository, mediaRecordRepository, topicPublisher, forumMapper, threadMapper);
 
     @Test
     void testGetForumById() {

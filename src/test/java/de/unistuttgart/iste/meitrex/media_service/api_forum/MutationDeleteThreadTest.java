@@ -118,7 +118,7 @@ public class MutationDeleteThreadTest {
                 .forum(forumEntity)
                 .info(infoEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
