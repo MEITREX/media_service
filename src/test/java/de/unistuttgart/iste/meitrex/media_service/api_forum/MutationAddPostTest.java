@@ -109,5 +109,6 @@ class MutationAddPostTest {
         assertThat(post.getContent(), is("Test Content"));
         assertThat(post.getEdited(), is(false));
         assertThat(postRepository.findAll(), hasSize(2));
+        assertThat(threadRepository.findAll(), hasSize(1));
     }
 }

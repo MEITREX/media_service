@@ -100,6 +100,7 @@ public class MutationDeleteThreadTest {
         assertThat(thread.getId(), is(threadEntity.getId()));
         assertThat(postRepository.findAll(), hasSize(0));
         assertThat(threadRepository.findAll(), hasSize(0));
+        assertThat(forumRepository.findAll(), hasSize(1));
     }
 
     @Test
@@ -155,5 +156,6 @@ public class MutationDeleteThreadTest {
         assertThat(thread.getId(), is(threadEntity.getId()));
         assertThat(postRepository.findAll(), hasSize(0));
         assertThat(threadRepository.findAll(), hasSize(0));
+        assertThat(forumRepository.findAll(), hasSize(1));
     }
 }

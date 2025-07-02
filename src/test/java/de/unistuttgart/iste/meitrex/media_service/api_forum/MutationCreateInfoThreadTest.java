@@ -10,9 +10,7 @@ import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRepositoryUtil;
 import jakarta.transaction.Transactional;
@@ -54,6 +52,10 @@ class MutationCreateInfoThreadTest {
     private MediaRecordRepository mediaRecordRepository;
     @Autowired
     private TopicPublisher topicPublisher;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private ThreadContentReferenceRepository threadContentReferenceRepository;
 
 
     @Test
@@ -85,6 +87,8 @@ class MutationCreateInfoThreadTest {
         assertThat(infoThread.getTitle(), is("Test title"));
         assertThat(infoThread.getInfo().getContent(), is("Test Info"));
         assertThat(threadRepository.findAll(), hasSize(1));
+        assertThat(forumRepository.findAll(), hasSize(1));
+        assertThat(postRepository.findAll(), hasSize(1));
         verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
                 courseId1, ForumActivity.THREAD));
     }
@@ -130,6 +134,9 @@ class MutationCreateInfoThreadTest {
         assertThat(infoThread.getThreadContentReference().getTimeStampSeconds(), is(10));
         assertThat(infoThread.getThreadContentReference().getPageNumber(), is(20));
         assertThat(threadRepository.findAll(), hasSize(1));
+        assertThat(forumRepository.findAll(), hasSize(1));
+        assertThat(threadContentReferenceRepository.findAll(), hasSize(1));
+        assertThat(postRepository.findAll(), hasSize(1));
 
         verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
                 courseId1, ForumActivity.THREAD));

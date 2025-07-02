@@ -125,6 +125,7 @@ class QueryThreadTest {
         assertThat(thread.getQuestion().getContent(), is(threadEntity.getQuestion().getContent()));
         assertThat(thread.getQuestion().getAuthorId(), is(threadEntity.getQuestion().getAuthorId()));
         assertThat(forumRepository.findAll(), hasSize(1));
+        assertThat(threadRepository.findAll(), hasSize(1));
     }
 
     @Test
@@ -183,5 +184,6 @@ class QueryThreadTest {
         assertThat(thread.getInfo().getContent(), is(threadEntity.getInfo().getContent()));
         assertThat(thread.getInfo().getAuthorId(), is(threadEntity.getInfo().getAuthorId()));
         assertThat(forumRepository.findAll(), hasSize(1));
+        assertThat(threadRepository.findAll(), hasSize(1));
     }
 }

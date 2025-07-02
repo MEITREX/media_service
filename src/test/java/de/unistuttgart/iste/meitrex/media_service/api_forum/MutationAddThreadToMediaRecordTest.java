@@ -97,6 +97,7 @@ class MutationAddThreadToMediaRecordTest {
                     assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
                 });
         assertThat(threadContentReferenceRepository.findAll(), hasSize(0));
+        assertThat(postRepository.findAll(), hasSize(1));
     }
 
     @Test
@@ -148,6 +149,7 @@ class MutationAddThreadToMediaRecordTest {
                     assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
                 });
         assertThat(threadContentReferenceRepository.findAll(), hasSize(0));
+        assertThat(postRepository.findAll(), hasSize(1));
     }
 
     @Test
@@ -195,5 +197,6 @@ class MutationAddThreadToMediaRecordTest {
         assertThat(threadContentReference.getThreadId(), is(threadEntity.getId()));
         assertThat(threadContentReference.getContentId(), is(contentId));
         assertThat(threadContentReferenceRepository.findAll(), hasSize(1));
+        assertThat(postRepository.findAll(), hasSize(1));
     }
 }
