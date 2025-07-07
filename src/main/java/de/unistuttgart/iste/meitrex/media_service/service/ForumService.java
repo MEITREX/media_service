@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -31,8 +30,8 @@ public class ForumService {
     private final ForumRepository forumRepository;
     private final ThreadRepository threadRepository;
     private final PostRepository postRepository;
+    private final ThreadContentReferenceRepository threadContentReferenceRepository;
     private final MediaRecordRepository mediaRecordRepository;
-    private final ThreadMediaRecordReferenceRepository threadMediaRecordReferenceRepository;
 
     private final ForumMapper forumMapper;
     private final ThreadMapper threadMapper;
@@ -52,9 +51,9 @@ public class ForumService {
                 new EntityNotFoundException("Thread with the id " + id + " not found"));
     }
 
-    public List<Thread> getThreadsByMediaRecord(MediaRecordEntity mediaRecord) {
-        return threadMediaRecordReferenceRepository.findAllByMediaRecord(mediaRecord).parallelStream()
-                .map(pRecordEntity -> threadMapper.mapThread(pRecordEntity.getThread())).toList();
+    public List<Thread> getThreadsByThreadContentReferences(List<ThreadContentReferenceEntity> threadContentReferenceEntities) {
+        return threadContentReferenceEntities.stream().map(ThreadContentReferenceEntity::getThread)
+                .map(threadMapper::mapThread).toList();
     }
 
     public Post addPostToThread(InputPost post, ThreadEntity thread, UUID userId) {
@@ -70,6 +69,8 @@ public class ForumService {
         postEntity.getDownvotedByUsers().removeIf(id -> id.equals(userId));
         if (!postEntity.getUpvotedByUsers().contains(userId)) {
             postEntity.getUpvotedByUsers().add(userId);
+        } else {
+            postEntity.getUpvotedByUsers().remove(userId);
         }
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
@@ -78,6 +79,8 @@ public class ForumService {
         postEntity.getUpvotedByUsers().removeIf(id -> id.equals(userId));
         if (!postEntity.getDownvotedByUsers().contains(userId)) {
             postEntity.getDownvotedByUsers().add(userId);
+        } else {
+            postEntity.getDownvotedByUsers().remove(userId);
         }
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
@@ -86,8 +89,12 @@ public class ForumService {
         PostEntity questionEntity = new PostEntity(thread.getQuestion().getContent(), userId);
         QuestionThreadEntity threadEntity = new QuestionThreadEntity(forum, userId, thread.getTitle(), questionEntity);
         questionEntity.setThread(threadEntity);
-        postRepository.save(questionEntity);
 
+        if (thread.getThreadContentReference() != null){
+            addThreatToContentOnThreadCreation(threadEntity, thread.getThreadContentReference().getContentId(),
+                    thread.getThreadContentReference().getTimeStampSeconds(),
+                    thread.getThreadContentReference().getPageNumber());
+        }
         threadEntity = threadRepository.save(threadEntity);
         forum.getThreads().add(threadEntity);
         forumRepository.save(forum);
@@ -99,7 +106,12 @@ public class ForumService {
         PostEntity infoEntity = new PostEntity(thread.getInfo().getContent(), userId);
         InfoThreadEntity threadEntity = new InfoThreadEntity(forum, userId, thread.getTitle(), infoEntity);
         infoEntity.setThread(threadEntity);
-        postRepository.save(infoEntity);
+
+        if (thread.getThreadContentReference() != null){
+            addThreatToContentOnThreadCreation(threadEntity, thread.getThreadContentReference().getContentId(),
+                    thread.getThreadContentReference().getTimeStampSeconds(),
+                    thread.getThreadContentReference().getPageNumber());
+        }
 
         threadEntity = threadRepository.save(threadEntity);
         forum.getThreads().add(threadEntity);
@@ -108,16 +120,31 @@ public class ForumService {
         return modelMapper.map(threadEntity, InfoThread.class);
     }
 
+    private void addThreatToContentOnThreadCreation(ThreadEntity thread, UUID contentId, Integer timeStampSeconds, Integer pageNumber) {
+        List<MediaRecordEntity> mediaRecordEntities = mediaRecordRepository
+                .findMediaRecordEntitiesByContentIds(List.of(contentId));
+        mediaRecordEntities.stream().findAny().orElseThrow(()-> new EntityNotFoundException("MediaRecord that includes content with the id "
+                + contentId + " not found"));
+        mediaRecordEntities.stream().map(MediaRecordEntity::getCourseIds).flatMap(List::stream)
+                .filter(courseId -> courseId.equals(thread.getForum().getCourseId())).findAny().orElseThrow(() ->
+                        new EntityNotFoundException("Content with the id " + contentId
+                                + " not in course " + thread.getForum().getCourseId()));
+        thread.setThreadContentReference(new ThreadContentReferenceEntity(thread, contentId, timeStampSeconds, pageNumber));
+    }
+
     public Post updatePost(InputPost post, PostEntity postEntity, UUID userId) throws AuthenticationException {
         if (!postEntity.getAuthorId().equals(userId)) {
             throw new AuthenticationException("User is not authorized to update this post");
         }
         postEntity.setContent(post.getContent());
+        postEntity.setEdited(true);
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }
 
     public Post deletePost(PostEntity post, LoggedInUser user) throws AuthenticationException {
-        if (!post.getAuthorId().equals(user.getId())) {
+        if (!post.getAuthorId().equals(user.getId())
+                && !(user.getRealmRoles().contains(LoggedInUser.RealmRole.COURSE_CREATOR)
+                || user.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER))) {
             throw new AuthenticationException("User is not authorized to update this post");
         }
         Post realPost = modelMapper.map(post, Post.class);
@@ -125,17 +152,30 @@ public class ForumService {
         thread.getPosts().remove(post);
         thread.setNumberOfPosts(thread.getNumberOfPosts() - 1);
         threadRepository.save(thread);
-        post.setThread(null);
         postRepository.delete(post);
         return realPost;
     }
 
-    public ThreadMediaRecordReference addThreadToMediaRecord(ThreadEntity thread, MediaRecordEntity mediaRecord, Integer timeStamp, Integer pageNumber) {
-        ThreadMediaRecordReferenceEntity threadMediaRecordReferenceEntity = new ThreadMediaRecordReferenceEntity(thread, mediaRecord, timeStamp, pageNumber);
-        threadMediaRecordReferenceRepository.save(threadMediaRecordReferenceEntity);
-        thread.setThreadMediaRecordReference(threadMediaRecordReferenceEntity);
+    public Thread deleteThread(ThreadEntity thread, LoggedInUser user) throws AuthenticationException {
+        if (!thread.getCreatorId().equals(user.getId())
+                && !(user.getRealmRoles().contains(LoggedInUser.RealmRole.COURSE_CREATOR)
+                || user.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER))) {
+            throw new AuthenticationException("User is not authorized to delete this thread");
+        }
+        Thread realThread = threadMapper.mapThread(thread);
+        ForumEntity forum = thread.getForum();
+        forum.getThreads().remove(thread);
+        threadRepository.delete(thread);
+        forumRepository.save(forum);
+        return realThread;
+    }
+
+    public ThreadContentReference addThreadToContent(ThreadEntity thread, UUID contentId, Integer timeStamp, Integer pageNumber) {
+        ThreadContentReferenceEntity threadContentReferenceEntity = new ThreadContentReferenceEntity(thread, contentId, timeStamp, pageNumber);
+        threadContentReferenceRepository.save(threadContentReferenceEntity);
+        thread.setThreadContentReference(threadContentReferenceEntity);
         threadRepository.save(thread);
-        return modelMapper.map(threadMediaRecordReferenceEntity, ThreadMediaRecordReference.class);
+        return modelMapper.map(threadContentReferenceEntity, ThreadContentReference.class);
     }
 
     public QuestionThread addAnserToQuestionThread(QuestionThreadEntity questionThread, PostEntity answer) {

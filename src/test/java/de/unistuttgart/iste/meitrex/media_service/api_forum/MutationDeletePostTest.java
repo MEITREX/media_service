@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.is;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class MutationDeletePostTest {
+class MutationDeletePostTest {
     @Autowired
     private ForumRepository forumRepository;
 
@@ -64,7 +64,7 @@ public class MutationDeletePostTest {
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())

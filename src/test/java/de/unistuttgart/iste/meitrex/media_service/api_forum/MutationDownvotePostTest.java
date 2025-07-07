@@ -7,12 +7,12 @@ import de.unistuttgart.iste.meitrex.generated.dto.Post;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
@@ -48,7 +48,7 @@ class MutationDownvotePostTest {
     private ThreadRepository threadRepository;
 
     @Test
-    void testAddPostToThread(final GraphQlTester tester) {
+    void testDownvotePost(final GraphQlTester tester) {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
@@ -65,7 +65,7 @@ class MutationDownvotePostTest {
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
@@ -91,6 +91,54 @@ class MutationDownvotePostTest {
                 .execute()
                 .path("downvotePost").entity(Post.class).get();
         assertThat(post.getDownvotedByUsers(), is(List.of(currentUser.getId())));
+        assertThat(post.getUpvotedByUsers(), hasSize(0));
+        assertThat(postRepository.findAll(), hasSize(1));
+    }
+
+    @Test
+    void testDownvotePostTwoTimes(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+        PostEntity questionEntity = PostEntity.builder()
+                .content("question Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .upvotedByUsers(new ArrayList<>(List.of(currentUser.getId())))
+                .downvotedByUsers(new ArrayList<>(List.of(currentUser.getId())))
+                .build();
+        QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
+                .forum(forumEntity)
+                .question(questionEntity)
+                .title("Thread Title")
+                .threadContentReferenceEntity(null)
+                .posts(new ArrayList<>())
+                .creatorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .numberOfPosts(0)
+                .build();
+        questionEntity.setThread(threadEntity);
+        questionEntity = postRepository.save(questionEntity);
+        threadRepository.save(threadEntity);
+        forumEntity.getThreads().add(threadEntity);
+        forumRepository.save(forumEntity);
+        final String query = """
+                mutation {
+                    downvotePost(
+                        postId: "%s"
+                    ) {
+                        id
+                        upvotedByUsers
+                        downvotedByUsers
+                    }
+                }
+                """.formatted(questionEntity.getId());
+        Post post = tester.document(query)
+                .execute()
+                .path("downvotePost").entity(Post.class).get();
+        assertThat(post.getDownvotedByUsers(), hasSize(0));
         assertThat(post.getUpvotedByUsers(), hasSize(0));
         assertThat(postRepository.findAll(), hasSize(1));
     }

@@ -5,8 +5,7 @@ import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Forum;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -77,7 +76,7 @@ class QueryForumByCourseIdTest {
                         }
                     }
                 }
-                """.formatted(forumEntity.getCourseId());
+                """.formatted(courseId1);
         Forum forum = tester.document(query)
                 .execute()
                 .path("forumByCourseId").entity(Forum.class).get();

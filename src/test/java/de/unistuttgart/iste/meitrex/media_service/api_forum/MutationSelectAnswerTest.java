@@ -8,12 +8,12 @@ import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.InfoThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
@@ -93,7 +93,7 @@ class MutationSelectAnswerTest {
                 .forum(forumEntity)
                 .info(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
@@ -154,7 +154,7 @@ class MutationSelectAnswerTest {
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
-                .threadMediaRecordReference(null)
+                .threadContentReferenceEntity(null)
                 .posts(new ArrayList<>())
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
