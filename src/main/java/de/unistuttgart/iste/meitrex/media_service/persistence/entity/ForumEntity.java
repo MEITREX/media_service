@@ -16,8 +16,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ForumEntity implements Serializable {
-    public ForumEntity(UUID courseID){
-        this.courseId = courseID;
+    public ForumEntity(UUID courseId){
+        this.courseId = courseId;
         threads = new ArrayList<>();
     }
     @Id

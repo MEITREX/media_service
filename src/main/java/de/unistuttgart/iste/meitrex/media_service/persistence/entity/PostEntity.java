@@ -3,7 +3,6 @@ package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
@@ -21,20 +20,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PostEntity implements Serializable {
-    public PostEntity(String content, UUID authorId, ThreadEntity thread) {
-        this.content = content;
-        this.authorId = authorId;
-        this.thread = thread;
-        downvotedByUsers = new ArrayList<>();
-        upvotedByUsers = new ArrayList<>();
-    }
-
-    public PostEntity(String content, UUID authorId) {
-        this.content = content;
-        this.authorId = authorId;
-        downvotedByUsers = new ArrayList<>();
-        upvotedByUsers = new ArrayList<>();
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -49,15 +34,34 @@ public class PostEntity implements Serializable {
     @Column(nullable = false)
     UUID authorId;
 
-    @ElementCollection
-    List<UUID> downvotedByUsers;
+    @Column
+    boolean edited;
 
     @ElementCollection
-    List<UUID> upvotedByUsers;
+    private List<UUID> downvotedByUsers;
+
+    @ElementCollection
+    private List<UUID> upvotedByUsers;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     ThreadEntity thread;
+
+    public PostEntity(String content, UUID authorId, ThreadEntity thread) {
+        this.content = content;
+        this.authorId = authorId;
+        this.thread = thread;
+        downvotedByUsers = new ArrayList<>();
+        upvotedByUsers = new ArrayList<>();
+        edited = false;
+    }
+
+    public PostEntity(String content, UUID authorId) {
+        this.content = content;
+        this.authorId = authorId;
+        downvotedByUsers = new ArrayList<>();
+        upvotedByUsers = new ArrayList<>();
+        edited = false;
+    }
 
     @Override
     public String toString() {

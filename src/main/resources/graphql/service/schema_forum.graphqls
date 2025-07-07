@@ -18,6 +18,8 @@ interface Thread {
     posts: [Post!]!
 
     numberOfPosts: Int!
+
+    threadContentReference: ThreadContentReference
 }
 
 type QuestionThread implements Thread {
@@ -36,6 +38,8 @@ type QuestionThread implements Thread {
     posts: [Post!]!
 
     numberOfPosts: Int!
+
+    threadContentReference: ThreadContentReference
 }
 
 type InfoThread implements Thread {
@@ -52,10 +56,12 @@ type InfoThread implements Thread {
     posts: [Post!]!
 
     numberOfPosts: Int!
+
+    threadContentReference: ThreadContentReference
 }
 
-type ThreadMediaRecordReference {
-    mediaRecordId: UUID!
+type ThreadContentReference {
+    contentId: UUID!
     threadId: UUID!
     timeStampSeconds: Int
     pageNumber: Int
@@ -69,6 +75,8 @@ type Post {
     creationTime: DateTime!
 
     authorId: UUID!
+
+    edited: Boolean!
 
     downvotedByUsers: [UUID]!
 
@@ -89,6 +97,8 @@ input InputQuestionThread {
     question: InputPost!
 
     answer: InputPost
+
+    threadContentReference: InputThreadContentReferenceOnCreate
 }
 
 input InputInfoThread {
@@ -97,11 +107,19 @@ input InputInfoThread {
     title: String!
 
     info: InputPost!
+
+    threadContentReference: InputThreadContentReferenceOnCreate
 }
 
-input InputThreadMediaRecordReference {
-    mediaRecordId: UUID!
+input InputThreadContentReference {
+    contentId: UUID!
     threadId: UUID!
+    timeStampSeconds: Int
+    pageNumber: Int
+}
+
+input InputThreadContentReferenceOnCreate {
+    contentId: UUID!
     timeStampSeconds: Int
     pageNumber: Int
 }

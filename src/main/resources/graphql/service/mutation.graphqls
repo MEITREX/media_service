@@ -74,9 +74,14 @@ type Mutation {
     deletePost(postId: UUID!): Post
 
     """
+    delete thread
+    """
+    deleteThread(threadId: UUID!): Thread
+
+    """
     add Thread to MediaRecord
     """
-    addThreadToMediaRecord(threadMediaRecordReference: InputThreadMediaRecordReference!): ThreadMediaRecordReference
+    addThreadToContent(threadContentReference: InputThreadContentReference!): ThreadContentReference
 
     """
     add Answer to QuestionThread
