@@ -39,6 +39,14 @@ public class ForumController {
     private final ThreadMapper threadMapper;
     private final QuestionThreadRepository questionThreadRepository;
 
+    @QueryMapping
+    public List<Thread> openQuestionByCourseId(@Argument UUID id,
+                                               @ContextValue final LoggedInUser currentUser) {
+        Forum forum = forumService.getForumByCourseId(id);
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,forum.getCourseId());
+        return forumService.openQuestions(forum);
+
+    }
 
     @QueryMapping
     public Forum forum(@Argument final UUID id,

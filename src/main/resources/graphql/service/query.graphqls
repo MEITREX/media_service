@@ -91,4 +91,9 @@ type Query {
     Returns thread
     """
     thread(id: UUID!): Thread
+
+    """
+    Returns open threads
+    """
+    openQuestionByCourseId(id: UUID!): [Thread!]!
 }
