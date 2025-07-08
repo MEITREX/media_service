@@ -71,4 +71,24 @@ type Query {
     Returns all media records which were created by the users.
     """
     mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
+
+    """
+    Returns the forum
+    """
+    forum(id: UUID!): Forum
+
+    """
+    Returns the forum of the course and creates new forum if it does not exist
+    """
+    forumByCourseId(id: UUID!): Forum
+
+    """
+    Returns thread for ContentId
+    """
+    threadsByContentId(id: UUID!): [Thread!]!
+
+    """
+    Returns thread
+    """
+    thread(id: UUID!): Thread
 }

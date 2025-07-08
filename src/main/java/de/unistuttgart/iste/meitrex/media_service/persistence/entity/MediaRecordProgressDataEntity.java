@@ -18,7 +18,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MediaRecordProgressDataEntity {
+public class MediaRecordProgressDataEntity implements Serializable {
 
     @EmbeddedId
     private PrimaryKey primaryKey;

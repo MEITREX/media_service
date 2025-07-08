@@ -4,7 +4,7 @@ import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import jakarta.persistence.*;
 import lombok.*;
 
-import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MediaRecordEntity implements IWithId<UUID> {
+public class MediaRecordEntity implements IWithId<UUID>, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
