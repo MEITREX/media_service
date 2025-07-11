@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
-
+import java.util.Comparator;
+import java.util.stream.Collectors;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
@@ -19,6 +20,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Collections;
+
 
 @Service
 @Slf4j
@@ -190,6 +193,31 @@ public class ForumService {
         return forum;
     }
 
+    public List<ForumActivityEntry> forumActivity(Forum forum) {
+        List<ForumActivityEntry> activities = new ArrayList<>();
+
+        List<Thread> threads = forum.getThreads();
+        if (threads == null) {
+            threads = Collections.emptyList();
+        }
+
+        for (Thread thread : threads) {
+            activities.add(new ForumActivityEntry(thread.getCreationTime(), thread, null));
+
+            List<Post> posts = thread.getPosts();
+            if (posts == null) {
+                posts = Collections.emptyList();
+            }
+
+            for (Post post : posts) {
+                activities.add(new ForumActivityEntry(post.getCreationTime(), thread, post));
+            }
+        }
+
+        activities.sort(Comparator.comparing(ForumActivityEntry::getCreationTime).reversed());
+        return activities.stream().limit(4).toList();
+    }
+
 
     public List<Thread> openQuestions(Forum forum) {
         double alpha = 0.6;
@@ -234,7 +262,7 @@ public class ForumService {
             E.g.: upvotes = -1 maxUpvotes = 10 -> upvoteScore = 0.0909
      */
     private double calculatePriorityScore(QuestionThread qt, int maxUpvotes, double alpha, double beta) {
-        long ageInDays = Duration.between(qt.getCreationTime(), Instant.now()).toDays();
+        long ageInDays = Duration.between(qt.getCreationTime().toInstant(), Instant.now()).toDays();
 
         double peakAge = 7.0;
         double spread = 15.0;

@@ -96,4 +96,10 @@ type Query {
     Returns open threads
     """
     openQuestionByCourseId(id: UUID!): [Thread!]!
+
+    """
+    Returns latest activities
+    """
+    forumActivity(id: UUID!): [ForumActivityEntry]
+
 }

@@ -83,6 +83,14 @@ type Post {
     upvotedByUsers: [UUID]!
 }
 
+type ForumActivityEntry {
+    creationTime: DateTime!
+
+    thread: Thread!
+
+    post: Post
+}
+
 input InputForum {
     id: UUID!
 

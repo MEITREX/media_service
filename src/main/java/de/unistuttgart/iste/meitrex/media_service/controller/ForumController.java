@@ -43,7 +43,14 @@ public class ForumController {
         Forum forum = forumService.getForumByCourseId(id);
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,forum.getCourseId());
         return forumService.openQuestions(forum);
+    }
 
+    @QueryMapping
+    public List<ForumActivityEntry> forumActivity(@Argument UUID id,
+                                               @ContextValue final LoggedInUser currentUser) {
+        Forum forum = forumService.getForumByCourseId(id);
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,forum.getCourseId());
+        return forumService.forumActivity(forum);
     }
 
     @QueryMapping
