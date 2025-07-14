@@ -54,6 +54,25 @@ public class ForumController {
     }
 
     @QueryMapping
+    public List<ForumActivityEntry> forumActivityByUserId(@Argument UUID id,
+                                                          @ContextValue final LoggedInUser currentUser) {
+        // TODO: Validate that only loggedInUser can access data -> kann ich hier einfach LoggedInUser.id verwenden? statt eine id zu übergeben?
+        return forumService.forumActivityByUserId(id);
+    }
+
+   /*
+      @QueryMapping
+    public List<ForumActivityEntry> otherUserForumActivityByUserId(@Argument UUID id,
+                                                                   @Argument UUID otherUserId,
+                                                          @ContextValue final LoggedInUser currentUser) {
+        // TODO: Validate that only loggedInUser can access data
+        return forumService.otherUserForumActivityByUserId(id, otherUserId);
+    }
+
+   */
+
+
+    @QueryMapping
     public Forum forum(@Argument final UUID id,
                               @ContextValue final LoggedInUser currentUser) {
         Forum forum = forumService.getForumById(id);

@@ -89,6 +89,8 @@ type ForumActivityEntry {
     thread: Thread!
 
     post: Post
+
+    courseId: UUID
 }
 
 input InputForum {

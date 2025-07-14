@@ -202,7 +202,7 @@ public class ForumService {
         }
 
         for (Thread thread : threads) {
-            activities.add(new ForumActivityEntry(thread.getCreationTime(), thread, null));
+            activities.add(new ForumActivityEntry(thread.getCreationTime(), thread, null, null));
 
             List<Post> posts = thread.getPosts();
             if (posts == null) {
@@ -210,7 +210,7 @@ public class ForumService {
             }
 
             for (Post post : posts) {
-                activities.add(new ForumActivityEntry(post.getCreationTime(), thread, post));
+                activities.add(new ForumActivityEntry(post.getCreationTime(), thread, post, null));
             }
         }
 
@@ -218,6 +218,49 @@ public class ForumService {
         return activities.stream().limit(4).toList();
     }
 
+    /*
+    public List<ForumActivityEntry> otherUserForumActivityByUserId(UUID userId, UUID otherUserId) {
+
+    }
+       */
+    /*
+     This is not very performant because we loop through each forum, thread and posts and search for matches
+     We should add a user list to each forum and go from there on!
+     */
+    public List<ForumActivityEntry> forumActivityByUserId(UUID userId) {
+        List<ForumActivityEntry> activities = new ArrayList<>();
+
+        List<ForumEntity> forumEntities = forumRepository.findAll();
+
+        for (ForumEntity forumEntity : forumEntities) {
+            Forum forum = forumMapper.forumEntityToForum(forumEntity);
+            UUID courseId = forum.getCourseId();
+
+            for (Thread thread : forum.getThreads()) {
+                if (thread.getCreatorId().equals(userId)) {
+                    activities.add(new ForumActivityEntry(
+                            thread.getCreationTime(),
+                            thread,
+                            null,
+                            courseId
+                    ));
+                }
+
+                for (Post post : thread.getPosts()) {
+                    if (post.getAuthorId().equals(userId)) {
+                        activities.add(new ForumActivityEntry(
+                                post.getCreationTime(),
+                                thread,
+                                post,
+                                courseId
+                        ));
+                    }
+                }
+            }
+        }
+        activities.sort(Comparator.comparing(ForumActivityEntry::getCreationTime).reversed());
+        return activities;
+    }
 
     public List<Thread> openQuestions(Forum forum) {
         double alpha = 0.6;
