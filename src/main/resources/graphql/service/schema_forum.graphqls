@@ -4,6 +4,8 @@ type Forum {
     threads: [Thread!]!
 
     courseId: UUID!
+
+    userIds: [UUID!]!
 }
 
 interface Thread {

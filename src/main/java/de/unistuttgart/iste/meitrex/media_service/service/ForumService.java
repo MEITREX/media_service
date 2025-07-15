@@ -39,6 +39,22 @@ public class ForumService {
     private final ForumMapper forumMapper;
     private final ThreadMapper threadMapper;
 
+    public Forum addUserToForum(UUID forumId, UUID userId) {
+        ForumEntity forum = forumRepository.findById(forumId).orElseThrow(() ->
+                new EntityNotFoundException("Forum with id: " + forumId + " not found!"));
+        forum.getUserIds().add(userId);
+        forum = forumRepository.saveAndFlush(forum);
+        return forumMapper.forumEntityToForum(forum);
+    }
+
+    public Forum addUserToForumCourseId(UUID courseId, UUID userId) {
+        ForumEntity forum = forumRepository.findByCourseId(courseId).orElseThrow(() ->
+                new EntityNotFoundException("Forum for the course with the id: " + courseId + " not found!"));
+        forum.getUserIds().add(userId);
+        forum = forumRepository.saveAndFlush(forum);
+        return forumMapper.forumEntityToForum(forum);
+    }
+
     public Forum getForumById(UUID id) {
         return forumMapper.forumEntityToForum(forumRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("Forum with the id " + id + " not found")));
@@ -230,7 +246,7 @@ public class ForumService {
     public List<ForumActivityEntry> forumActivityByUserId(UUID userId) {
         List<ForumActivityEntry> activities = new ArrayList<>();
 
-        List<ForumEntity> forumEntities = forumRepository.findAll();
+        List<ForumEntity> forumEntities = forumRepository.findAllByUserIdsContaining(userId);
 
         for (ForumEntity forumEntity : forumEntities) {
             Forum forum = forumMapper.forumEntityToForum(forumEntity);

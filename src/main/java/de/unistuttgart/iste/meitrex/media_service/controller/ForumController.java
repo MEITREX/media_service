@@ -54,10 +54,8 @@ public class ForumController {
     }
 
     @QueryMapping
-    public List<ForumActivityEntry> forumActivityByUserId(@Argument UUID id,
-                                                          @ContextValue final LoggedInUser currentUser) {
-        // TODO: Validate that only loggedInUser can access data -> kann ich hier einfach LoggedInUser.id verwenden? statt eine id zu übergeben?
-        return forumService.forumActivityByUserId(id);
+    public List<ForumActivityEntry> forumActivityByUserId(@ContextValue final LoggedInUser currentUser) {
+        return forumService.forumActivityByUserId(currentUser.getId());
     }
 
    /*
@@ -106,6 +104,27 @@ public class ForumController {
         Forum forum = forumService.getForumByCourseId(id);
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,forum.getCourseId());
         return forum;
+    }
+
+    @MutationMapping
+    public Forum createForum(@Argument final UUID courseId,
+                             @ContextValue final LoggedInUser currentUser) {
+        return forumService.getForumByCourseId(courseId);
+    }
+
+    @MutationMapping
+    public Forum addUserToForum(@Argument final UUID forumId,
+                                @ContextValue final LoggedInUser currentUser) {
+        Forum forum = forumService.getForumById(forumId);
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT,forum.getCourseId());
+        return forumService.addUserToForum(forumId, currentUser.getId());
+    }
+
+    @MutationMapping
+    public Forum addUserToForumCourse(@Argument final UUID courseId,
+                                @ContextValue final LoggedInUser currentUser) {
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT,courseId);
+        return forumService.addUserToForumCourseId(courseId, currentUser.getId());
     }
 
     @MutationMapping

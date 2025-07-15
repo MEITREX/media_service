@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity(name = "Forum")
@@ -29,4 +30,7 @@ public class ForumEntity implements Serializable {
 
     @Column(unique = true)
     UUID courseId;
+
+    @ElementCollection
+    Set<UUID> userIds;
 }

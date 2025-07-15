@@ -105,7 +105,7 @@ type Query {
     """
     Returns latest activities by User Id
     """
-    forumActivityByUserId(id: UUID!): [ForumActivityEntry!]!
+    forumActivityByUserId: [ForumActivityEntry!]!
 
     """
     Returns latest other user activities by User Id

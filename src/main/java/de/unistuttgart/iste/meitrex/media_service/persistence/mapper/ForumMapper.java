@@ -14,6 +14,7 @@ public class ForumMapper {
         return Forum.builder()
                 .setCourseId(entity.getCourseId())
                 .setId(entity.getId())
+                .setUserIds(entity.getUserIds().stream().toList())
                 .setThreads(entity.getThreads().stream().map(threadMapper::mapThread).toList())
                 .build();
     }

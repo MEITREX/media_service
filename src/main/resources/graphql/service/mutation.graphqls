@@ -39,6 +39,21 @@ type Mutation {
     setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
     """
+    create forum
+    """
+    createForum(courseId: UUID!): Forum
+
+    """
+    add user to forum
+    """
+    addUserToForum(forumId: UUID!): Forum
+
+    """
+    add user to forum for given courseId
+    """
+    addUserToForumCourse(courseId: UUID!): Forum
+
+    """
     create question thread
     """
     createQuestionThread(thread: InputQuestionThread!): QuestionThread
