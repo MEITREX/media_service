@@ -13,10 +13,7 @@ import org.modelmapper.ModelMapper;
 
 import javax.naming.AuthenticationException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -44,6 +41,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
         when(forumRepository.findById(forum.getId())).thenReturn(Optional.of(forum));
 
@@ -59,6 +57,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
         when(forumRepository.findByCourseId(forum.getCourseId())).thenReturn(Optional.of(forum));
 
@@ -77,6 +76,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
         final ThreadEntity thread = QuestionThreadEntity.builder()
                 .id(UUID.randomUUID())
@@ -102,6 +102,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
         final PostEntity question = PostEntity.builder()
                 .id(UUID.randomUUID())
@@ -133,6 +134,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
 
         final ThreadEntity threadEntity = QuestionThreadEntity.builder()
@@ -176,6 +178,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
 
         final ThreadEntity threadEntity = QuestionThreadEntity.builder()
@@ -219,6 +222,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
 
         final ThreadEntity threadEntity = QuestionThreadEntity.builder()
@@ -262,6 +266,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(new ArrayList<>())
+                .userIds(Set.of())
                 .build();
 
         final QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
@@ -315,6 +320,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(new ArrayList<>())
+                .userIds(Set.of())
                 .build();
 
         final InfoThreadEntity threadEntity = InfoThreadEntity.builder()
@@ -368,6 +374,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
 
         final ThreadEntity threadEntity = QuestionThreadEntity.builder()
@@ -399,6 +406,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
 
         final ThreadEntity threadEntity = QuestionThreadEntity.builder()
@@ -429,6 +437,7 @@ class ForumServiceTest {
                 .id(UUID.randomUUID())
                 .courseId(UUID.randomUUID())
                 .threads(List.of())
+                .userIds(Set.of())
                 .build();
 
         final ThreadEntity threadEntity = QuestionThreadEntity.builder()
