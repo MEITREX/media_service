@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Set;
 import java.util.Collections;
 
 
@@ -234,19 +235,49 @@ public class ForumService {
         return activities.stream().limit(4).toList();
     }
 
-    /*
+
     public List<ForumActivityEntry> otherUserForumActivityByUserId(UUID userId, UUID otherUserId) {
+        List<ForumEntity> forumEntitiesUser = forumRepository.findAllByUserIdsContaining(userId);
+        List<ForumEntity> forumEntitiesOtherUser = forumRepository.findAllByUserIdsContaining(otherUserId);
 
+        Set<UUID> userForumIds = forumEntitiesUser.stream()
+                .map(ForumEntity::getId)
+                .collect(Collectors.toSet());
+
+        List<ForumEntity> commonForums = forumEntitiesOtherUser.stream()
+                .filter(f -> userForumIds.contains(f.getId()))
+                .collect(Collectors.toList());
+
+        List<ForumActivityEntry> activities = extractForumActivitiesForUser(
+                commonForums,
+                otherUserId,
+                forumMapper
+        );
+
+        activities.sort(Comparator.comparing(ForumActivityEntry::getCreationTime).reversed());
+
+        return activities;
     }
-       */
-    /*
-     This is not very performant because we loop through each forum, thread and posts and search for matches
-     We should add a user list to each forum and go from there on!
-     */
-    public List<ForumActivityEntry> forumActivityByUserId(UUID userId) {
-        List<ForumActivityEntry> activities = new ArrayList<>();
 
+    public List<ForumActivityEntry> forumActivityByUserId(UUID userId) {
         List<ForumEntity> forumEntities = forumRepository.findAllByUserIdsContaining(userId);
+
+        List<ForumActivityEntry> activities = extractForumActivitiesForUser(
+                forumEntities,
+                userId,
+                forumMapper
+        );
+
+        activities.sort(Comparator.comparing(ForumActivityEntry::getCreationTime).reversed());
+        return activities;
+    }
+
+    public List<ForumActivityEntry> extractForumActivitiesForUser(
+            List<ForumEntity> forumEntities,
+            UUID userId,
+            ForumMapper forumMapper
+    ) {
+        List<ForumActivityEntry> activities = new ArrayList<>();
 
         for (ForumEntity forumEntity : forumEntities) {
             Forum forum = forumMapper.forumEntityToForum(forumEntity);
@@ -274,9 +305,10 @@ public class ForumService {
                 }
             }
         }
-        activities.sort(Comparator.comparing(ForumActivityEntry::getCreationTime).reversed());
+
         return activities;
     }
+
 
     public List<Thread> openQuestions(Forum forum) {
         double alpha = 0.6;
@@ -309,16 +341,9 @@ public class ForumService {
      Ranks question threads based on their age and popularity (upvotes)
      Formular: priorityScore = α × ageScore + β × upvoteScore
      Age Score (Gaussian distribution): favors questions around 7 days old, penalizes very new or very old ones
-        E.g.: 7 days -> ageScore = 1
-        E.g.: 0 days  -> ageScore = 0.804
-        E.g.: 22 days -> ageScore = 0.367
      Upvote Score:
         Positive votes scaled linearly between 0.1 and 1.0
         Negative votes penalized quadratically but never drop below 0.01
-            E.g.: upvotes = +10 maxUpvotes = 20 -> upvoteScore = 0.55
-            E.g.: upvotes = +1 maxUpvotes = 10 -> upvoteScore = 0.19
-            E.g.: upvotes = 0 maxUpvotes = 10 -> upvoteScore = 0.1
-            E.g.: upvotes = -1 maxUpvotes = 10 -> upvoteScore = 0.0909
      */
     private double calculatePriorityScore(QuestionThread qt, int maxUpvotes, double alpha, double beta) {
         long ageInDays = Duration.between(qt.getCreationTime().toInstant(), Instant.now()).toDays();

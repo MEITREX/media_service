@@ -110,5 +110,5 @@ type Query {
     """
     Returns latest other user activities by User Id
     """
-    otherUserForumActivityByUserId(userId: UUID!, otherUserId: UUID!): [ForumActivityEntry!]!
+    otherUserForumActivityByUserId(otherUserId: UUID!): [ForumActivityEntry!]!
 }

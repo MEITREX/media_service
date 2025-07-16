@@ -58,16 +58,13 @@ public class ForumController {
         return forumService.forumActivityByUserId(currentUser.getId());
     }
 
-   /*
+
       @QueryMapping
-    public List<ForumActivityEntry> otherUserForumActivityByUserId(@Argument UUID id,
-                                                                   @Argument UUID otherUserId,
+    public List<ForumActivityEntry> otherUserForumActivityByUserId(@Argument UUID otherUserId,
                                                           @ContextValue final LoggedInUser currentUser) {
-        // TODO: Validate that only loggedInUser can access data
-        return forumService.otherUserForumActivityByUserId(id, otherUserId);
+        return forumService.otherUserForumActivityByUserId(currentUser.getId(), otherUserId);
     }
 
-   */
 
 
     @QueryMapping
