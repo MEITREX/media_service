@@ -4,6 +4,8 @@ type Forum {
     threads: [Thread!]!
 
     courseId: UUID!
+
+    userIds: [UUID!]!
 }
 
 interface Thread {
@@ -81,6 +83,16 @@ type Post {
     downvotedByUsers: [UUID]!
 
     upvotedByUsers: [UUID]!
+}
+
+type ForumActivityEntry {
+    creationTime: DateTime!
+
+    thread: Thread!
+
+    post: Post
+
+    courseId: UUID
 }
 
 input InputForum {

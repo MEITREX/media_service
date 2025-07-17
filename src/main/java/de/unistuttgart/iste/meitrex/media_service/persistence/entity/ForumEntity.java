@@ -5,9 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity(name = "Forum")
 @Data
@@ -19,6 +17,7 @@ public class ForumEntity implements Serializable {
     public ForumEntity(UUID courseId){
         this.courseId = courseId;
         threads = new ArrayList<>();
+        userIds = new HashSet<>();
     }
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -29,4 +28,7 @@ public class ForumEntity implements Serializable {
 
     @Column(unique = true)
     UUID courseId;
+
+    @ElementCollection
+    Set<UUID> userIds;
 }

@@ -37,6 +37,35 @@ public class ForumController {
     private final QuestionThreadRepository questionThreadRepository;
     private final ThreadContentReferenceRepository threadContentReferenceRepository;
 
+    @QueryMapping
+    public List<Thread> openQuestionByCourseId(@Argument UUID id,
+                                               @ContextValue final LoggedInUser currentUser) {
+        Forum forum = forumService.getForumByCourseId(id);
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,forum.getCourseId());
+        return forumService.openQuestions(forum);
+    }
+
+    @QueryMapping
+    public List<ForumActivityEntry> forumActivity(@Argument UUID id,
+                                               @ContextValue final LoggedInUser currentUser) {
+        Forum forum = forumService.getForumByCourseId(id);
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,forum.getCourseId());
+        return forumService.forumActivity(forum);
+    }
+
+    @QueryMapping
+    public List<ForumActivityEntry> forumActivityByUserId(@ContextValue final LoggedInUser currentUser) {
+        return forumService.forumActivityByUserId(currentUser.getId());
+    }
+
+
+      @QueryMapping
+    public List<ForumActivityEntry> otherUserForumActivityByUserId(@Argument UUID otherUserId,
+                                                          @ContextValue final LoggedInUser currentUser) {
+        return forumService.otherUserForumActivityByUserId(currentUser.getId(), otherUserId);
+    }
+
+
 
     @QueryMapping
     public Forum forum(@Argument final UUID id,
@@ -72,6 +101,27 @@ public class ForumController {
         Forum forum = forumService.getForumByCourseId(id);
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT ,forum.getCourseId());
         return forum;
+    }
+
+    @MutationMapping
+    public Forum createForum(@Argument final UUID courseId,
+                             @ContextValue final LoggedInUser currentUser) {
+        return forumService.getForumByCourseId(courseId);
+    }
+
+    @MutationMapping
+    public Forum addUserToForum(@Argument final UUID forumId,
+                                @ContextValue final LoggedInUser currentUser) {
+        Forum forum = forumService.getForumById(forumId);
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT,forum.getCourseId());
+        return forumService.addUserToForum(forumId, currentUser.getId());
+    }
+
+    @MutationMapping
+    public Forum addUserToForumCourse(@Argument final UUID courseId,
+                                @ContextValue final LoggedInUser currentUser) {
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT,courseId);
+        return forumService.addUserToForumCourseId(courseId, currentUser.getId());
     }
 
     @MutationMapping
