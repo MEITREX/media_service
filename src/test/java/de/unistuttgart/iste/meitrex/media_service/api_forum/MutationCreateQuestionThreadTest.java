@@ -1,15 +1,16 @@
 package de.unistuttgart.iste.meitrex.media_service.api_forum;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
+import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadContentReferenceRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRepositoryUtil;
 import jakarta.transaction.Transactional;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -24,9 +26,10 @@ import java.util.UUID;
 
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
+@ContextConfiguration(classes = {MockTestPublisherConfiguration.class})
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
@@ -45,9 +48,14 @@ class MutationCreateQuestionThreadTest {
     private ThreadRepository threadRepository;
 
     @Autowired
+    private TopicPublisher topicPublisher;
+
+    @Autowired
     private MediaRecordRepository mediaRecordRepository;
     @Autowired
     private ThreadContentReferenceRepository threadContentReferenceRepository;
+    @Autowired
+    private PostRepository postRepository;
 
     @Test
     void testAddQuestionThreadToForum(final GraphQlTester tester) {
@@ -56,6 +64,9 @@ class MutationCreateQuestionThreadTest {
                 .threads(new ArrayList<>())
                 .build();
         forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(isA(ForumActivityEvent.class));
+
         final String query = """
                 mutation {
                     createQuestionThread(
@@ -69,12 +80,18 @@ class MutationCreateQuestionThreadTest {
                     }
                 }
                 """.formatted(forumEntity.getId());
+
         QuestionThread questionThread = tester.document(query)
                 .execute()
                 .path("createQuestionThread").entity(QuestionThread.class).get();
         assertThat(questionThread.getTitle(), is("Test title"));
         assertThat(questionThread.getQuestion().getContent(), is("Test Question"));
         assertThat(threadRepository.findAll(), hasSize(1));
+        assertThat(forumRepository.findAll(), hasSize(1));
+        assertThat(postRepository.findAll(), hasSize(1));
+
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.QUESTION));
     }
 
     @Test
@@ -86,6 +103,10 @@ class MutationCreateQuestionThreadTest {
                 .threads(new ArrayList<>())
                 .build();
         forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(isA(ForumActivityEvent.class));
+
+
         final String query = """
                 mutation {
                     createQuestionThread(
@@ -116,5 +137,10 @@ class MutationCreateQuestionThreadTest {
         assertThat(questionThread.getThreadContentReference().getPageNumber(), is(20));
         assertThat(threadRepository.findAll(), hasSize(1));
         assertThat(threadContentReferenceRepository.findAll(), hasSize(1));
+        assertThat(forumRepository.findAll(), hasSize(1));
+        assertThat(postRepository.findAll(), hasSize(1));
+
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.QUESTION));
     }
 }

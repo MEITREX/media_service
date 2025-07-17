@@ -1,7 +1,12 @@
 package de.unistuttgart.iste.meitrex.media_service.api_forum;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
+import de.unistuttgart.iste.meitrex.common.event.MediaRecordDeletedEvent;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
+import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Post;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
@@ -10,12 +15,14 @@ import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThr
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.PostRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ThreadRepository;
+import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -26,7 +33,10 @@ import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMem
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 
+@ContextConfiguration(classes = {MockTestPublisherConfiguration.class})
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
@@ -44,6 +54,8 @@ class MutationAddPostTest {
     private PostRepository postRepository;
     @Autowired
     private ThreadRepository threadRepository;
+    @Autowired
+    private TopicPublisher topicPublisher;
 
     @Test
     void testAddPostToThread(final GraphQlTester tester) {
@@ -69,9 +81,13 @@ class MutationAddPostTest {
                 .build();
         questionEntity.setThread(threadEntity);
         postRepository.save(questionEntity);
-        threadRepository.save(threadEntity);
+        threadEntity = threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
-        forumRepository.save(forumEntity);
+        forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.ANSWER));
+
         final String query = """
                 mutation {
                     addPost(
@@ -86,8 +102,13 @@ class MutationAddPostTest {
         Post post = tester.document(query)
                 .execute()
                 .path("addPost").entity(Post.class).get();
+
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.ANSWER));
+
         assertThat(post.getContent(), is("Test Content"));
         assertThat(post.getEdited(), is(false));
         assertThat(postRepository.findAll(), hasSize(2));
+        assertThat(threadRepository.findAll(), hasSize(1));
     }
 }

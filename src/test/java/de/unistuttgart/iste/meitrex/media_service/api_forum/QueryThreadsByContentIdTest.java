@@ -66,7 +66,7 @@ class QueryThreadsByContentIdTest {
                 .path("threadsByContentId")
                 .entityList(Thread.class).get();
         assertThat(threads, hasSize(0));
-        assertThat(mediaRecordRepository.findAll(), hasSize(0));
+        assertThat(threadRepository.findAll(), hasSize(0));
 
     }
 
@@ -150,5 +150,6 @@ class QueryThreadsByContentIdTest {
         assertThat(threadList.getFirst().getTitle(), is(threadEntity.getTitle()));
         assertThat(threadList.getFirst().getCreatorId(), is(threadEntity.getCreatorId()));
         assertThat(threadRepository.findAll(), hasSize(1));
+        assertThat(threadContentReferenceRepository.findAll(), hasSize(1));
     }
 }

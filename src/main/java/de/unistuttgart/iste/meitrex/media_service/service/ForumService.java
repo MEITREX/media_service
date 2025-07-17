@@ -1,5 +1,8 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
@@ -29,6 +32,7 @@ public class ForumService {
     private final PostRepository postRepository;
     private final ThreadContentReferenceRepository threadContentReferenceRepository;
     private final MediaRecordRepository mediaRecordRepository;
+    private final TopicPublisher topicPublisher;
 
     private final ForumMapper forumMapper;
     private final ThreadMapper threadMapper;
@@ -59,6 +63,18 @@ public class ForumService {
         thread.getPosts().add(postEntity);
         thread.setNumberOfPosts(thread.getNumberOfPosts() + 1);
         threadRepository.save(thread);
+        ForumActivityEvent event = ForumActivityEvent.builder()
+                .forumId(thread.getForum().getId())
+                .courseId(thread.getForum().getCourseId())
+                .userId(userId)
+                .build();
+        if (thread instanceof QuestionThreadEntity) {
+            event.setActivity(ForumActivity.ANSWER);
+        } else if (thread instanceof InfoThreadEntity){
+            event.setActivity(ForumActivity.INFO);
+        }
+
+        topicPublisher.notifyForumActivity(event);
         return modelMapper.map(postEntity, Post.class);
     }
 
@@ -96,6 +112,12 @@ public class ForumService {
         forum.getThreads().add(threadEntity);
         forumRepository.save(forum);
 
+        topicPublisher.notifyForumActivity(ForumActivityEvent.builder()
+                        .userId(userId)
+                        .forumId(forum.getId())
+                        .courseId(forum.getCourseId())
+                        .activity(ForumActivity.QUESTION)
+                .build());
         return modelMapper.map(threadEntity, QuestionThread.class);
     }
 
@@ -113,6 +135,13 @@ public class ForumService {
         threadEntity = threadRepository.save(threadEntity);
         forum.getThreads().add(threadEntity);
         forumRepository.save(forum);
+
+        topicPublisher.notifyForumActivity(ForumActivityEvent.builder()
+                .userId(userId)
+                .forumId(forum.getId())
+                .courseId(forum.getCourseId())
+                .activity(ForumActivity.THREAD)
+                .build());
 
         return modelMapper.map(threadEntity, InfoThread.class);
     }
@@ -142,13 +171,14 @@ public class ForumService {
         if (!post.getAuthorId().equals(user.getId())
                 && !(user.getRealmRoles().contains(LoggedInUser.RealmRole.COURSE_CREATOR)
                 || user.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER))) {
-            throw new AuthenticationException("User is not authorized to update this post");
+            throw new AuthenticationException("User is not authorized to delete this post");
         }
         Post realPost = modelMapper.map(post, Post.class);
         ThreadEntity thread = post.getThread();
         thread.getPosts().remove(post);
         thread.setNumberOfPosts(thread.getNumberOfPosts() - 1);
         threadRepository.save(thread);
+        post.setThread(null);
         postRepository.delete(post);
         return realPost;
     }

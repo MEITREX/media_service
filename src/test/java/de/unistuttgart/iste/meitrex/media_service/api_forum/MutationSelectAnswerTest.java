@@ -136,6 +136,7 @@ class MutationSelectAnswerTest {
                             threadEntity.getId() + " not found"));
                     assertThat(errors.getFirst().getErrorType(), is(DataFetchingException));
                 });
+        assertThat(threadRepository.findAll(), hasSize(1));
     }
 
     @Test
@@ -195,5 +196,6 @@ class MutationSelectAnswerTest {
         assertThat(questionThread.getSelectedAnswer().getAuthorId(), is(postEntity.getAuthorId()));
         assertThat(questionThread.getSelectedAnswer().getId(), is(postEntity.getId()));
         assertThat(postRepository.findAll(), hasSize(2));
+        assertThat(threadRepository.findAll(), hasSize(1));
     }
 }

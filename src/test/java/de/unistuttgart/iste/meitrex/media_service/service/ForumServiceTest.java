@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
@@ -31,12 +32,14 @@ class ForumServiceTest {
     private final ThreadContentReferenceRepository threadContentReferenceRepository = mock(ThreadContentReferenceRepository.class);
     private final MediaRecordRepository mediaRecordRepository = mock(MediaRecordRepository.class);
 
+    private final TopicPublisher topicPublisher = mock(TopicPublisher.class);
+
     private final ModelMapper modelMapper = new ModelMapper();
     private final ThreadMapper threadMapper = new ThreadMapper(modelMapper);
     private final ForumMapper forumMapper = new ForumMapper(threadMapper);
 
     private final ForumService forumService = new ForumService(modelMapper, forumRepository, threadRepository,
-            postRepository, threadContentReferenceRepository, mediaRecordRepository,forumMapper, threadMapper);
+            postRepository, threadContentReferenceRepository, mediaRecordRepository, topicPublisher, forumMapper, threadMapper);
 
     @Test
     void testGetForumById() {
