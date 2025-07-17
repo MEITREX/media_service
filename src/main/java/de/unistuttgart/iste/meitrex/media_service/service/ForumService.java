@@ -222,10 +222,6 @@ public class ForumService {
             activities.add(new ForumActivityEntry(thread.getCreationTime(), thread, null, null));
 
             List<Post> posts = thread.getPosts();
-            if (posts == null) {
-                posts = Collections.emptyList();
-            }
-
             for (Post post : posts) {
                 activities.add(new ForumActivityEntry(post.getCreationTime(), thread, post, null));
             }
