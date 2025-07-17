@@ -64,6 +64,7 @@ class QueryForumByCourseIdTest {
         ForumEntity forumEntity = ForumEntity.builder()
                 .courseId(courseId1)
                 .threads(new ArrayList<>())
+                .userIds(Set.of(currentUser.getId()))
                 .build();
         forumEntity = forumRepository.save(forumEntity);
         final String query = """
@@ -71,6 +72,7 @@ class QueryForumByCourseIdTest {
                     forumByCourseId(id: "%s") {
                         id
                         courseId
+                        userIds
                         threads {
                             id
                         }
