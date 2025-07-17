@@ -98,5 +98,6 @@ class MutationDeletePostTest {
                 .path("deletePost").entity(Post.class).get();
         assertThat(post.getContent(), is("Post Content"));
         assertThat(postRepository.findAll(), hasSize(1));
+        assertThat(threadRepository.findAll(), hasSize(1));
     }
 }
