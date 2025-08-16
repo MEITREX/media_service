@@ -27,6 +27,8 @@ import java.util.UUID;
 import java.util.Set;
 import java.util.Collections;
 
+import static de.unistuttgart.iste.meitrex.media_service.controller.ForumController.NOT_FOUND;
+
 
 @Service
 @Slf4j
@@ -44,6 +46,7 @@ public class ForumService {
 
     private final ForumMapper forumMapper;
     private final ThreadMapper threadMapper;
+    private final QuestionThreadRepository questionThreadRepository;
 
     public Forum addUserToForum(UUID forumId, UUID userId) {
         ForumEntity forum = forumRepository.findById(forumId).orElseThrow(() ->
@@ -229,9 +232,25 @@ public class ForumService {
         return modelMapper.map(threadContentReferenceEntity, ThreadContentReference.class);
     }
 
-    public QuestionThread addAnserToQuestionThread(QuestionThreadEntity questionThread, PostEntity answer) {
+    public QuestionThread addAnserToQuestionThread(UUID postId) {
+        PostEntity answer = postRepository.findById(postId).orElseThrow(
+                () -> new EntityNotFoundException("Post with the id " + postId + NOT_FOUND)
+        );
+        log.info(answer.getThread().toString());
+        QuestionThreadEntity questionThread = questionThreadRepository.findById(answer.getThread().getId()).orElseThrow(
+                () -> new EntityNotFoundException("QuestionThread with the id " + answer.getThread().getId() + NOT_FOUND));
         questionThread.setSelectedAnswer(answer);
+        ForumActivityEvent forumActivityEvent = ForumActivityEvent.builder()
+                .userId(answer.getAuthorId())
+                .forumId(questionThread.getForum().getId())
+                .courseId(questionThread.getForum().getCourseId())
+                .activity(ForumActivity.ANSWER_ACCEPTED)
+                .build();
+        topicPublisher.notifyForumActivity(forumActivityEvent);
         questionThread = threadRepository.save(questionThread);
+
+
+
         return modelMapper.map(questionThread, QuestionThread.class);
     }
 
