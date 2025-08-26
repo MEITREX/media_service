@@ -157,7 +157,7 @@ class MutationCreateQuestionThreadTest {
         final String query = """
                 mutation {
                     createQuestionThread(
-                        thread: {forumId: "%s", title: "Why does Java suck?", question: {content: "You suck!"}}
+                        thread: {forumId: "%s", title: "<p>Why does Java suck?</p>", question: {content: "<p>You suck!</p>"}}
                     ) {
                         id
                         title
@@ -171,8 +171,8 @@ class MutationCreateQuestionThreadTest {
         QuestionThread questionThread = tester.document(query)
                 .execute()
                 .path("createQuestionThread").entity(QuestionThread.class).get();
-        assertThat(questionThread.getTitle(), is("Why does Java ****?"));
-        assertThat(questionThread.getQuestion().getContent(), is("You ****!"));
+        assertThat(questionThread.getTitle(), is("<p>Why does Java ****?</p>"));
+        assertThat(questionThread.getQuestion().getContent(), is("<p>You ****!</p>"));
         assertThat(threadRepository.findAll(), hasSize(1));
         assertThat(forumRepository.findAll(), hasSize(1));
         assertThat(postRepository.findAll(), hasSize(1));

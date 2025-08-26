@@ -155,7 +155,7 @@ class MutationCreateInfoThreadTest {
         final String query = """
                 mutation {
                     createInfoThread(
-                        thread: {forumId: "%s", title: "Die Frage ist scheiße!", info: {content: "Du bist scheiße!"}}
+                        thread: {forumId: "%s", title: "<p>Die Frage ist scheiße!</p>", info: {content: "<p>Du bist scheiße!</p>"}}
                     ) {
                         id
                         title
@@ -168,8 +168,8 @@ class MutationCreateInfoThreadTest {
         InfoThread infoThread = tester.document(query)
                 .execute()
                 .path("createInfoThread").entity(InfoThread.class).get();
-        assertThat(infoThread.getTitle(), is("Die Frage ist *******!"));
-        assertThat(infoThread.getInfo().getContent(), is("Du bist *******!"));
+        assertThat(infoThread.getTitle(), is("<p>Die Frage ist *******!</p>"));
+        assertThat(infoThread.getInfo().getContent(), is("<p>Du bist *******!</p>"));
         assertThat(threadRepository.findAll(), hasSize(1));
         assertThat(forumRepository.findAll(), hasSize(1));
         assertThat(postRepository.findAll(), hasSize(1));

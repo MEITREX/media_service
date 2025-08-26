@@ -146,7 +146,7 @@ class MutationAddPostTest {
         final String query = """
                 mutation {
                     addPost(
-                        post: {content: "Du bist ein Arschloch!", threadId: "%s"}
+                        post: {content: "<p>Du bist ein Arschloch!</p>", threadId: "%s"}
                     ) {
                         id
                         content
@@ -161,7 +161,7 @@ class MutationAddPostTest {
         verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
                 courseId1, ForumActivity.ANSWER));
 
-        assertThat(post.getContent(), is("Du bist ein *********!"));
+        assertThat(post.getContent(), is("<p>Du bist ein *********!</p>"));
         assertThat(post.getEdited(), is(false));
         assertThat(postRepository.findAll(), hasSize(2));
         assertThat(threadRepository.findAll(), hasSize(1));

@@ -85,8 +85,10 @@ public class ForumService {
 
     public Post addPostToThread(InputPost post, ThreadEntity thread, UUID userId) {
         String censored_content = profanityFilter.censor(post.getContent());
+        log.info("Censored post content: {}", censored_content);
         PostEntity postEntity = new PostEntity(censored_content, userId, thread);
         postEntity = postRepository.save(postEntity);
+        log.info("Added Post to thread: {}", postEntity);
         thread.getPosts().add(postEntity);
         thread.setNumberOfPosts(thread.getNumberOfPosts() + 1);
         threadRepository.save(thread);

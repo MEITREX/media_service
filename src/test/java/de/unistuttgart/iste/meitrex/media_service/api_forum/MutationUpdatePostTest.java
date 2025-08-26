@@ -143,7 +143,7 @@ class MutationUpdatePostTest {
         final String query = """
                 mutation {
                     updatePost(
-                        post: {id: "%s", content: "You are an asshole!", threadId: "%s"}
+                        post: {id: "%s", content: "<p>You are an asshole!</p>", threadId: "%s"}
                     ) {
                         id
                         content
@@ -154,7 +154,7 @@ class MutationUpdatePostTest {
         Post post = tester.document(query)
                 .execute()
                 .path("updatePost").entity(Post.class).get();
-        assertThat(post.getContent(), is("You are an *******!"));
+        assertThat(post.getContent(), is("<p>You are an *******!</p>"));
         assertThat(post.getEdited(), is(true));
         assertThat(postRepository.findAll(), hasSize(2));
         assertThat(threadRepository.findAll(), hasSize(1));
