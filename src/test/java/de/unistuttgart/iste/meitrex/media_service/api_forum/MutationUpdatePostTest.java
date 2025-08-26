@@ -103,4 +103,60 @@ class MutationUpdatePostTest {
         assertThat(postRepository.findAll(), hasSize(2));
         assertThat(threadRepository.findAll(), hasSize(1));
     }
+
+    @Test
+    void testUpdatePostWithProfanityToThread(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+        PostEntity questionEntity = PostEntity.builder()
+                .content("question Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
+                .forum(forumEntity)
+                .question(questionEntity)
+                .title("Thread Title")
+                .threadContentReferenceEntity(null)
+                .posts(new ArrayList<>())
+                .creatorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .numberOfPosts(1)
+                .build();
+        PostEntity postEntity = PostEntity.builder()
+                .content("Post Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .thread(threadEntity)
+                .edited(false)
+                .build();
+        postEntity = postRepository.save(postEntity);
+        questionEntity.setThread(threadEntity);
+        postRepository.save(questionEntity);
+        threadEntity.getPosts().add(postEntity);
+        threadRepository.save(threadEntity);
+        forumEntity.getThreads().add(threadEntity);
+        forumRepository.save(forumEntity);
+        final String query = """
+                mutation {
+                    updatePost(
+                        post: {id: "%s", content: "You are an asshole!", threadId: "%s"}
+                    ) {
+                        id
+                        content
+                        edited
+                    }
+                }
+                """.formatted(postEntity.getId(), threadEntity.getId());
+        Post post = tester.document(query)
+                .execute()
+                .path("updatePost").entity(Post.class).get();
+        assertThat(post.getContent(), is("You are an *******!"));
+        assertThat(post.getEdited(), is(true));
+        assertThat(postRepository.findAll(), hasSize(2));
+        assertThat(threadRepository.findAll(), hasSize(1));
+    }
 }

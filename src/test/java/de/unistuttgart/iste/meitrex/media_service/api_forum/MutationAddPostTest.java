@@ -111,4 +111,59 @@ class MutationAddPostTest {
         assertThat(postRepository.findAll(), hasSize(2));
         assertThat(threadRepository.findAll(), hasSize(1));
     }
+
+    @Test
+    void testAddPostWithProfanityToThread(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+        PostEntity questionEntity = PostEntity.builder()
+                .content("question Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
+                .forum(forumEntity)
+                .question(questionEntity)
+                .title("Thread Title")
+                .threadContentReferenceEntity(null)
+                .posts(new ArrayList<>())
+                .creatorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .numberOfPosts(0)
+                .build();
+        questionEntity.setThread(threadEntity);
+        postRepository.save(questionEntity);
+        threadEntity = threadRepository.save(threadEntity);
+        forumEntity.getThreads().add(threadEntity);
+        forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.ANSWER));
+
+        final String query = """
+                mutation {
+                    addPost(
+                        post: {content: "Du bist ein Arschloch!", threadId: "%s"}
+                    ) {
+                        id
+                        content
+                        edited
+                    }
+                }
+                """.formatted(threadEntity.getId());
+        Post post = tester.document(query)
+                .execute()
+                .path("addPost").entity(Post.class).get();
+
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.ANSWER));
+
+        assertThat(post.getContent(), is("Du bist ein *********!"));
+        assertThat(post.getEdited(), is(false));
+        assertThat(postRepository.findAll(), hasSize(2));
+        assertThat(threadRepository.findAll(), hasSize(1));
+    }
 }

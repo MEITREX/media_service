@@ -143,4 +143,41 @@ class MutationCreateQuestionThreadTest {
         verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
                 courseId1, ForumActivity.QUESTION));
     }
+
+    @Test
+    void testAddQuestionThreadWithProfanityToForum(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(isA(ForumActivityEvent.class));
+
+        final String query = """
+                mutation {
+                    createQuestionThread(
+                        thread: {forumId: "%s", title: "Why does Java suck?", question: {content: "You suck!"}}
+                    ) {
+                        id
+                        title
+                        question {
+                            content
+                        }
+                    }
+                }
+                """.formatted(forumEntity.getId());
+
+        QuestionThread questionThread = tester.document(query)
+                .execute()
+                .path("createQuestionThread").entity(QuestionThread.class).get();
+        assertThat(questionThread.getTitle(), is("Why does Java ****?"));
+        assertThat(questionThread.getQuestion().getContent(), is("You ****!"));
+        assertThat(threadRepository.findAll(), hasSize(1));
+        assertThat(forumRepository.findAll(), hasSize(1));
+        assertThat(postRepository.findAll(), hasSize(1));
+
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.QUESTION));
+    }
 }
