@@ -31,10 +31,9 @@ public class ForumController {
     private final PostRepository postRepository;
     private final MediaRecordRepository mediaRecordRepository;
     private final ForumRepository forumRepository;
-    private static final String NOT_FOUND = " not found";
+    public static final String NOT_FOUND = " not found";
     private static final String THREAD = "Thread with id ";
     private final ThreadMapper threadMapper;
-    private final QuestionThreadRepository questionThreadRepository;
     private final ThreadContentReferenceRepository threadContentReferenceRepository;
 
     @QueryMapping
@@ -216,13 +215,7 @@ public class ForumController {
 
     @MutationMapping
     public QuestionThread selectAnswer(@Argument final UUID postId){
-        PostEntity post = postRepository.findById(postId).orElseThrow(
-                () -> new EntityNotFoundException("Post with the id " + postId + NOT_FOUND)
-        );
-        log.info(post.getThread().toString());
-        QuestionThreadEntity questionThread = questionThreadRepository.findById(post.getThread().getId()).orElseThrow(
-                () -> new EntityNotFoundException("QuestionThread with the id " + post.getThread().getId() + NOT_FOUND));
-        return forumService.addAnserToQuestionThread(questionThread, post);
+        return forumService.addAnserToQuestionThread(postId);
     }
 
     private PostEntity checkUserInCourse(@Argument UUID postId, @ContextValue LoggedInUser currentUser) {
