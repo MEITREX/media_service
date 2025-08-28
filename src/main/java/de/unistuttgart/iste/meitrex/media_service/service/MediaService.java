@@ -17,8 +17,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import io.dapr.client.DaprClient;
+import io.dapr.client.DaprClientBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.*;
 import java.security.InvalidKeyException;
@@ -74,6 +86,37 @@ public class MediaService {
      * Service used to convert files to standardized formats.
      */
     private final FileConversionService fileConversionService;
+
+    private static final String COURSE_SERVICE_GRAPHQL = "http://course-service:4001/graphql";
+
+    /** PubSub name configured in Dapr. */
+    private static final String PUBSUB_NAME = "meitrex";
+
+    private static final String NOTIFICATION_REQUESTED_TOPIC = "notification-requested";
+
+
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
+
+    @Value("${app.frontend.material-page-template:/courses/{courseId}/materials/{mediaRecordId}}")
+    private String materialPageTemplate;
+
+    /**
+     *
+     * @param courseId
+     * @param mediaRecordId
+     * @return Material url
+     */
+    private String buildMaterialPageLink(final UUID courseId, final UUID mediaRecordId) {
+        final String path = materialPageTemplate
+                .replace("{courseId}", courseId.toString())
+                .replace("{mediaRecordId}", mediaRecordId.toString());
+        return UriComponentsBuilder.fromHttpUrl(frontendBaseUrl)
+                .path(path.startsWith("/") ? path : "/" + path)
+                .build()
+                .toUriString();
+    }
+
 
     /**
      * Returns all media records.
@@ -817,6 +860,31 @@ public class MediaService {
 
     public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
         topicPublisher.notifyMediaRecordFileCreated(new MediaRecordFileCreatedEvent(mediaRecordId));
+
+        // Create Notification Dapr Event
+        final MediaRecordEntity entity = repository.getReferenceById(mediaRecordId);
+        final List<UUID> courseIds = entity.getCourseIds();
+        if (courseIds == null || courseIds.isEmpty()) {
+            return;
+        }
+
+        final String filename = (entity.getName() == null || entity.getName().isBlank())
+                ? "Unnamed File"
+                : entity.getName();
+        final String title = "New Material is uploaded!";
+        final String message = "material:" + filename;
+
+        for (final UUID courseId : courseIds) {
+            final String pageLink = buildMaterialPageLink(courseId, mediaRecordId);
+            topicPublisher.notificationEvent(
+                    courseId,
+                    null,
+                    ServerSource.MEDIA_SERVICE,
+                    pageLink,
+                    title,
+                    message
+            );
+        }
     }
 
     /**
