@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.profanity_filter.ProfanityFilter;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
@@ -37,9 +38,11 @@ class ForumServiceTest {
     private final ModelMapper modelMapper = new ModelMapper();
     private final ThreadMapper threadMapper = new ThreadMapper(modelMapper);
     private final ForumMapper forumMapper = new ForumMapper(threadMapper);
+    private final ProfanityFilter profanityFilter = mock(ProfanityFilter.class);
 
     private final ForumService forumService = new ForumService(modelMapper, forumRepository, threadRepository,
-            postRepository, threadContentReferenceRepository, mediaRecordRepository, topicPublisher, forumMapper, threadMapper, questionThreadRepository);
+            postRepository, threadContentReferenceRepository, mediaRecordRepository, topicPublisher, profanityFilter,
+            forumMapper, threadMapper, questionThreadRepository);
 
     @Test
     void testGetForumById() {
@@ -174,6 +177,7 @@ class ForumServiceTest {
 
         when(postRepository.save(pPostEntity)).thenReturn(returnPostEntity);
         when(threadRepository.save(threadEntity)).thenReturn(threadEntity);
+        when(profanityFilter.censor(postEntity.getContent())).thenReturn(postEntity.getContent());
 
         assertThat(modelMapper.map(forumService.addPostToThread(post,threadEntity,postEntity.getAuthorId()), PostEntity.class), is(finalPostEntity));
     }

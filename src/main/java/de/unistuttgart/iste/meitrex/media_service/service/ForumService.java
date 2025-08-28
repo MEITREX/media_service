@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
+import de.unistuttgart.iste.meitrex.common.profanity_filter.ProfanityFilter;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
@@ -43,6 +44,7 @@ public class ForumService {
     private final ThreadContentReferenceRepository threadContentReferenceRepository;
     private final MediaRecordRepository mediaRecordRepository;
     private final TopicPublisher topicPublisher;
+    private final ProfanityFilter profanityFilter;
 
     private final ForumMapper forumMapper;
     private final ThreadMapper threadMapper;
@@ -85,8 +87,11 @@ public class ForumService {
     }
 
     public Post addPostToThread(InputPost post, ThreadEntity thread, UUID userId) {
-        PostEntity postEntity = new PostEntity(post.getContent(), userId, thread);
+        String censored_content = profanityFilter.censor(post.getContent());
+        log.info("Censored post content: {}", censored_content);
+        PostEntity postEntity = new PostEntity(censored_content, userId, thread);
         postEntity = postRepository.save(postEntity);
+        log.info("Added Post to thread: {}", postEntity);
         thread.getPosts().add(postEntity);
         thread.setNumberOfPosts(thread.getNumberOfPosts() + 1);
         threadRepository.save(thread);
@@ -126,8 +131,10 @@ public class ForumService {
     }
 
     public QuestionThread createQuestionThread(InputQuestionThread thread, ForumEntity forum ,UUID userId) {
-        PostEntity questionEntity = new PostEntity(thread.getQuestion().getContent(), userId);
-        QuestionThreadEntity threadEntity = new QuestionThreadEntity(forum, userId, thread.getTitle(), questionEntity);
+        String question_censored = profanityFilter.censor(thread.getQuestion().getContent());
+        String title_censored = profanityFilter.censor(thread.getTitle());
+        PostEntity questionEntity = new PostEntity(question_censored, userId);
+        QuestionThreadEntity threadEntity = new QuestionThreadEntity(forum, userId, title_censored, questionEntity);
         questionEntity.setThread(threadEntity);
 
         if (thread.getThreadContentReference() != null){
@@ -149,8 +156,10 @@ public class ForumService {
     }
 
     public InfoThread createInfoThread(InputInfoThread thread, ForumEntity forum, UUID userId) {
-        PostEntity infoEntity = new PostEntity(thread.getInfo().getContent(), userId);
-        InfoThreadEntity threadEntity = new InfoThreadEntity(forum, userId, thread.getTitle(), infoEntity);
+        String info_censored = profanityFilter.censor(thread.getInfo().getContent());
+        String title_censored = profanityFilter.censor(thread.getTitle());
+        PostEntity infoEntity = new PostEntity(info_censored, userId);
+        InfoThreadEntity threadEntity = new InfoThreadEntity(forum, userId, title_censored, infoEntity);
         infoEntity.setThread(threadEntity);
 
         if (thread.getThreadContentReference() != null){
@@ -189,7 +198,8 @@ public class ForumService {
         if (!postEntity.getAuthorId().equals(userId)) {
             throw new AuthenticationException("User is not authorized to update this post");
         }
-        postEntity.setContent(post.getContent());
+        String content_censored = profanityFilter.censor(post.getContent());
+        postEntity.setContent(content_censored);
         postEntity.setEdited(true);
         return modelMapper.map(postRepository.save(postEntity), Post.class);
     }

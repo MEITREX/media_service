@@ -141,4 +141,39 @@ class MutationCreateInfoThreadTest {
         verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
                 courseId1, ForumActivity.THREAD));
     }
+
+    @Test
+    void testAddInfoThreadWithProfanityToForum(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(isA(ForumActivityEvent.class));
+
+        final String query = """
+                mutation {
+                    createInfoThread(
+                        thread: {forumId: "%s", title: "<p>Die Frage ist scheiße!</p>", info: {content: "<p>Du bist scheiße!</p>"}}
+                    ) {
+                        id
+                        title
+                        info {
+                            content
+                        }
+                    }
+                }
+                """.formatted(forumEntity.getId());
+        InfoThread infoThread = tester.document(query)
+                .execute()
+                .path("createInfoThread").entity(InfoThread.class).get();
+        assertThat(infoThread.getTitle(), is("<p>Die Frage ist *******!</p>"));
+        assertThat(infoThread.getInfo().getContent(), is("<p>Du bist *******!</p>"));
+        assertThat(threadRepository.findAll(), hasSize(1));
+        assertThat(forumRepository.findAll(), hasSize(1));
+        assertThat(postRepository.findAll(), hasSize(1));
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.THREAD));
+    }
 }
