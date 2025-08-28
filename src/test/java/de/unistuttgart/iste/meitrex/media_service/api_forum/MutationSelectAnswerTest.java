@@ -1,7 +1,11 @@
 package de.unistuttgart.iste.meitrex.media_service.api_forum;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
+import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
@@ -17,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -27,7 +32,9 @@ import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMem
 import static graphql.ErrorType.DataFetchingException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.verify;
 
+@ContextConfiguration(classes = {MockTestPublisherConfiguration.class})
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
@@ -47,6 +54,8 @@ class MutationSelectAnswerTest {
     private PostRepository postRepository;
     @Autowired
     private ThreadRepository threadRepository;
+    @Autowired
+    private TopicPublisher topicPublisher;
 
     @Test
     void testSelectAnswerWrongPostId(final GraphQlTester tester) {
@@ -197,5 +206,7 @@ class MutationSelectAnswerTest {
         assertThat(questionThread.getSelectedAnswer().getId(), is(postEntity.getId()));
         assertThat(postRepository.findAll(), hasSize(2));
         assertThat(threadRepository.findAll(), hasSize(1));
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.ANSWER_ACCEPTED));
     }
 }

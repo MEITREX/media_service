@@ -33,13 +33,16 @@ class ForumServiceTest {
 
     private final TopicPublisher topicPublisher = mock(TopicPublisher.class);
 
+    private final QuestionThreadRepository questionThreadRepository = mock(QuestionThreadRepository.class);
+
     private final ModelMapper modelMapper = new ModelMapper();
     private final ThreadMapper threadMapper = new ThreadMapper(modelMapper);
     private final ForumMapper forumMapper = new ForumMapper(threadMapper);
     private final ProfanityFilter profanityFilter = mock(ProfanityFilter.class);
 
     private final ForumService forumService = new ForumService(modelMapper, forumRepository, threadRepository,
-            postRepository, threadContentReferenceRepository, mediaRecordRepository, topicPublisher, profanityFilter, forumMapper, threadMapper);
+            postRepository, threadContentReferenceRepository, mediaRecordRepository, topicPublisher, profanityFilter,
+            forumMapper, threadMapper, questionThreadRepository);
 
     @Test
     void testGetForumById() {
