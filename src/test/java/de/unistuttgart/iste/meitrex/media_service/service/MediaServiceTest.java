@@ -90,7 +90,7 @@ class MediaServiceTest {
     }
 
     @Test
-    void TestNotification() {
+    void TestPublishMediaRecordFile() {
         UUID mediaId = UUID.randomUUID();
         UUID courseId = UUID.randomUUID();
         MediaRecordEntity e = MediaRecordEntity.builder()
@@ -107,5 +107,18 @@ class MediaServiceTest {
         verify(topicPublisher).notificationEvent(
                 eq(courseId), isNull(), eq(ServerSource.MEDIA),
                 eq(link), eq("New Material is uploaded!"), eq("material:Lecture.pdf"));
+    }
+
+    @Test
+    void TestPublishMediaRecordFile_unnamed() {
+        UUID mid = UUID.randomUUID(), cid = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder().id(mid).name(null)
+                .courseIds(List.of(cid)).contentIds(List.of()).creatorId(UUID.randomUUID())
+                .progressData(List.of()).build();
+        when(repository.getReferenceById(mid)).thenReturn(e);
+        service.publishMediaRecordFileCreatedEvent(mid);
+        String link = "/courses/" + cid + "/materials/" + mid;
+        verify(topicPublisher).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
+                eq(link), eq("New Material is uploaded!"), eq("material:Unnamed File"));
     }
 }
