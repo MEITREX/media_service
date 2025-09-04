@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.meitrex.common.event.MediaRecordWorkedOnEvent;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaRecord;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaRecordProgressData;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
@@ -64,6 +65,12 @@ public class MediaUserProgressDataService {
 
         final boolean wasAlreadyWorkedOnBefore = progressData.isWorkedOn();
         updateProgressDataEntity(progressData);
+
+        topicPublisher.notifyMediaRecordWorkedOn(MediaRecordWorkedOnEvent.builder()
+                .userId(userId)
+                .mediaRecordId(mediaRecordId)
+                .wasAlreadyWorkedOn(wasAlreadyWorkedOnBefore)
+                .build());
 
         // prevent multiple triggers of the content learned event
         if (!wasAlreadyWorkedOnBefore) {
