@@ -879,7 +879,7 @@ public class MediaService {
             topicPublisher.notificationEvent(
                     courseId,
                     null,
-                    ServerSource.MEDIA_SERVICE,
+                    ServerSource.MEDIA,
                     pageLink,
                     title,
                     message

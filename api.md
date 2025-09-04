@@ -44,13 +44,13 @@
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>mediaRecordsByIds</strong></td>
+<td colspan="2" valign="top"><strong id="query.mediarecordsbyids">mediaRecordsByIds</strong></td>
 <td valign="top">[<a href="#mediarecord">MediaRecord</a>!]!</td>
 <td>
-
 
 Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
 cannot be found.
+
 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
 
 </td>
@@ -61,29 +61,47 @@ cannot be found.
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>findMediaRecordsByIds</strong></td>
-<td valign="top">[<a href="#mediarecord">MediaRecord</a>]!</td>
-<td>
-
-
-Like mediaRecordsByIds() returns the media records with the given IDs, but instead of throwing an error if an ID
-cannot be found, it instead returns NULL for that media record.
-🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-
-</td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">ids</td>
-<td valign="top">[<a href="#uuid">UUID</a>!]!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>mediaRecords</strong> ⚠️</td>
+<td colspan="2" valign="top"><strong id="query._internal_noauth_mediarecordsbyids">_internal_noauth_mediaRecordsByIds</strong></td>
 <td valign="top">[<a href="#mediarecord">MediaRecord</a>!]!</td>
 <td>
 
+Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
+cannot be found.
+
+⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">ids</td>
+<td valign="top">[<a href="#uuid">UUID</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong id="query.findmediarecordsbyids">findMediaRecordsByIds</strong></td>
+<td valign="top">[<a href="#mediarecord">MediaRecord</a>]!</td>
+<td>
+
+Like mediaRecordsByIds() returns the media records with the given IDs, but instead of throwing an error if an ID
+cannot be found, it instead returns NULL for that media record.
+
+🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">ids</td>
+<td valign="top">[<a href="#uuid">UUID</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong id="query.mediarecords">mediaRecords</strong> ⚠️</td>
+<td valign="top">[<a href="#mediarecord">MediaRecord</a>!]!</td>
+<td>
 
 Returns all media records of the system.
+
 🔒 The user must be a super-user, otherwise an exception is thrown.
 
 <p>⚠️ <strong>DEPRECATED</strong></p>
@@ -95,25 +113,25 @@ In production there should probably be no way to get all media records of the sy
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>userMediaRecords</strong></td>
+<td colspan="2" valign="top"><strong id="query.usermediarecords">userMediaRecords</strong></td>
 <td valign="top">[<a href="#mediarecord">MediaRecord</a>!]!</td>
 <td>
 
-
 Returns all media records which the current user created.
+
 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>mediaRecordsByContentIds</strong></td>
+<td colspan="2" valign="top"><strong id="query.mediarecordsbycontentids">mediaRecordsByContentIds</strong></td>
 <td valign="top">[[<a href="#mediarecord">MediaRecord</a>!]!]!</td>
 <td>
 
-
 Returns the media records associated the given content IDs as a list of lists where each sublist contains
 the media records associated with the content ID at the same index in the input list
-🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+
+🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
 
 </td>
 </tr>
@@ -123,12 +141,30 @@ the media records associated with the content ID at the same index in the input 
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>mediaRecordsForCourses</strong></td>
+<td colspan="2" valign="top"><strong id="query._internal_noauth_mediarecordsbycontentids">_internal_noauth_mediaRecordsByContentIds</strong></td>
 <td valign="top">[[<a href="#mediarecord">MediaRecord</a>!]!]!</td>
 <td>
 
+Returns the media records associated the given content IDs as a list of lists where each sublist contains
+the media records associated with the content ID at the same index in the input list
+
+⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">contentIds</td>
+<td valign="top">[<a href="#uuid">UUID</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong id="query.mediarecordsforcourses">mediaRecordsForCourses</strong></td>
+<td valign="top">[[<a href="#mediarecord">MediaRecord</a>!]!]!</td>
+<td>
 
 Returns all media records for the given CourseIds
+
 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
 
 </td>
@@ -139,10 +175,26 @@ Returns all media records for the given CourseIds
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>mediaRecordsForUsers</strong></td>
+<td colspan="2" valign="top"><strong id="query._internal_noauth_mediarecordsforcourses">_internal_noauth_mediaRecordsForCourses</strong></td>
 <td valign="top">[[<a href="#mediarecord">MediaRecord</a>!]!]!</td>
 <td>
 
+Returns all media records for the given CourseIds
+
+⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+
+</td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">courseIds</td>
+<td valign="top">[<a href="#uuid">UUID</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong id="query.mediarecordsforusers">mediaRecordsForUsers</strong></td>
+<td valign="top">[[<a href="#mediarecord">MediaRecord</a>!]!]!</td>
+<td>
 
 Returns all media records which were created by the users.
 
@@ -168,10 +220,9 @@ Returns all media records which were created by the users.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>createMediaRecord</strong></td>
+<td colspan="2" valign="top"><strong id="mutation.createmediarecord">createMediaRecord</strong></td>
 <td valign="top"><a href="#mediarecord">MediaRecord</a>!</td>
 <td>
-
 
 Creates a new media record
 🔒 The user must have the "course-creator" role to perform this action.
@@ -185,10 +236,9 @@ Creates a new media record
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>updateMediaRecord</strong></td>
+<td colspan="2" valign="top"><strong id="mutation.updatemediarecord">updateMediaRecord</strong></td>
 <td valign="top"><a href="#mediarecord">MediaRecord</a>!</td>
 <td>
-
 
 Updates an existing media record with the given UUID
 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
@@ -201,10 +251,9 @@ Updates an existing media record with the given UUID
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>deleteMediaRecord</strong></td>
+<td colspan="2" valign="top"><strong id="mutation.deletemediarecord">deleteMediaRecord</strong></td>
 <td valign="top"><a href="#uuid">UUID</a>!</td>
 <td>
-
 
 Deletes the media record with the given UUID
 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
@@ -217,10 +266,9 @@ Deletes the media record with the given UUID
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>setLinkedMediaRecordsForContent</strong></td>
+<td colspan="2" valign="top"><strong id="mutation.setlinkedmediarecordsforcontent">setLinkedMediaRecordsForContent</strong></td>
 <td valign="top">[<a href="#mediarecord">MediaRecord</a>!]!</td>
 <td>
-
 
 For a given MediaContent, sets the linked media records of it to the ones with the given UUIDs.
 This means that for the content, all already linked media records are removed and replaced by the given ones.
@@ -239,18 +287,17 @@ This means that for the content, all already linked media records are removed an
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>logMediaRecordWorkedOn</strong></td>
+<td colspan="2" valign="top"><strong id="mutation.logmediarecordworkedon">logMediaRecordWorkedOn</strong></td>
 <td valign="top"><a href="#mediarecord">MediaRecord</a>!</td>
 <td>
 
+Logs that a media has been worked on by the current user.
+See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
 
-    Logs that a media has been worked on by the current user.
-    See https://meitrex.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
-
-    Possible side effects:
-    When all media records of a content have been worked on by a user,
-    a user-progress event is emitted for the content.
-    🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
+Possible side effects:
+When all media records of a content have been worked on by a user,
+a user-progress event is emitted for the content.
+🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
 
 </td>
 </tr>
@@ -260,10 +307,9 @@ This means that for the content, all already linked media records are removed an
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>setMediaRecordsForCourse</strong></td>
+<td colspan="2" valign="top"><strong id="mutation.setmediarecordsforcourse">setMediaRecordsForCourse</strong></td>
 <td valign="top">[<a href="#mediarecord">MediaRecord</a>!]!</td>
 <td>
-
 
 Add the MediaRecords with the given UUIDS to the Course with the given UUID.
 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
@@ -287,11 +333,6 @@ Add the MediaRecords with the given UUIDS to the Course with the given UUID.
 
 ### MediaRecord
 
- schema file of the microservice
- defines data types, queries and mutations
- this can be done in a separate files as long as they are in this folder and
- end with .graphqls
-
 <table>
 <thead>
 <tr>
@@ -303,90 +344,117 @@ Add the MediaRecords with the given UUIDS to the Course with the given UUID.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>id</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecord.id">id</strong></td>
 <td valign="top"><a href="#uuid">UUID</a>!</td>
 <td>
-
 
 ID of the media record
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>courseIds</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecord.courseids">courseIds</strong></td>
 <td valign="top">[<a href="#uuid">UUID</a>!]!</td>
 <td>
-
 
 Ids of the courses this MediaRecord is associated with
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>name</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecord.name">name</strong></td>
 <td valign="top"><a href="#string">String</a>!</td>
 <td>
-
 
 Name of the media record
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>creatorId</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecord.creatorid">creatorId</strong></td>
 <td valign="top"><a href="#uuid">UUID</a>!</td>
 <td>
-
 
 User ID of the creator of the media record.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>type</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecord.type">type</strong></td>
 <td valign="top"><a href="#mediatype">MediaType</a>!</td>
 <td>
-
 
 Type of the media record
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>contentIds</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecord.contentids">contentIds</strong></td>
 <td valign="top">[<a href="#uuid">UUID</a>!]!</td>
 <td>
-
 
 IDs of the MediaContents this media record is associated with
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>uploadUrl</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecord.uploadurl">uploadUrl</strong></td>
 <td valign="top"><a href="#string">String</a>!</td>
 <td>
-
 
 Temporary upload url for the media record
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>downloadUrl</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecord.downloadurl">downloadUrl</strong></td>
 <td valign="top"><a href="#string">String</a>!</td>
 <td>
-
 
 Temporary download url for the media record
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>userProgressData</strong></td>
-<td valign="top"><a href="#mediarecordprogressdata">MediaRecordProgressData</a>!</td>
+<td colspan="2" valign="top"><strong id="mediarecord.standardizeddownloadurl">standardizedDownloadUrl</strong></td>
+<td valign="top"><a href="#string">String</a></td>
 <td>
 
+Temporary download url for the media record where, if the media record is uploaded in a non-standardized format, a
+converted version of that file is served.
+
+For documents, this is a PDF version of the document.
+
+May be NULL if no standardized version is available.
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong id="mediarecord.internaluploadurl">internalUploadUrl</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+Temporary upload url for the media record which can only be used from within the system.
+(This is necessary because the MinIO pre-signed URLs cannot be changed, meaning we cannot use the same URL for both
+internal and external access because the hostname changes.)
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong id="mediarecord.internaldownloadurl">internalDownloadUrl</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td>
+
+Temporary download url for the media record which can only be used from within the system.
+(This is necessary because the MinIO pre-signed URLs cannot be changed, meaning we cannot use the same URL for both
+internal and external access because the hostname changes.)
+
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong id="mediarecord.userprogressdata">userProgressData</strong></td>
+<td valign="top"><a href="#mediarecordprogressdata">MediaRecordProgressData</a>!</td>
+<td>
 
 The progress data of the given user for this medium.
 
@@ -408,20 +476,18 @@ The progress data of the given user for this medium.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>workedOn</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecordprogressdata.workedon">workedOn</strong></td>
 <td valign="top"><a href="#boolean">Boolean</a>!</td>
 <td>
-
 
 Whether the medium has been worked on by the user.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>dateWorkedOn</strong></td>
+<td colspan="2" valign="top"><strong id="mediarecordprogressdata.dateworkedon">dateWorkedOn</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a></td>
 <td>
-
 
 Date on which the medium was worked on by the user.
 This is null if the medium has not been worked on by the user.
@@ -432,7 +498,6 @@ This is null if the medium has not been worked on by the user.
 </table>
 
 ### PaginationInfo
-
 
 Return type for information about paginated results.
 
@@ -447,50 +512,45 @@ Return type for information about paginated results.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>page</strong></td>
+<td colspan="2" valign="top"><strong id="paginationinfo.page">page</strong></td>
 <td valign="top"><a href="#int">Int</a>!</td>
 <td>
-
 
 The current page number.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>size</strong></td>
+<td colspan="2" valign="top"><strong id="paginationinfo.size">size</strong></td>
 <td valign="top"><a href="#int">Int</a>!</td>
 <td>
-
 
 The number of elements per page.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>totalElements</strong></td>
+<td colspan="2" valign="top"><strong id="paginationinfo.totalelements">totalElements</strong></td>
 <td valign="top"><a href="#int">Int</a>!</td>
 <td>
-
 
 The total number of elements across all pages.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>totalPages</strong></td>
+<td colspan="2" valign="top"><strong id="paginationinfo.totalpages">totalPages</strong></td>
 <td valign="top"><a href="#int">Int</a>!</td>
 <td>
-
 
 The total number of pages.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>hasNext</strong></td>
+<td colspan="2" valign="top"><strong id="paginationinfo.hasnext">hasNext</strong></td>
 <td valign="top"><a href="#boolean">Boolean</a>!</td>
 <td>
-
 
 Whether there is a next page.
 
@@ -513,30 +573,27 @@ Whether there is a next page.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>name</strong></td>
+<td colspan="2" valign="top"><strong id="createmediarecordinput.name">name</strong></td>
 <td valign="top"><a href="#string">String</a>!</td>
 <td>
-
 
 Name of the media record. Cannot be blank, maximum length 255 characters.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>type</strong></td>
+<td colspan="2" valign="top"><strong id="createmediarecordinput.type">type</strong></td>
 <td valign="top"><a href="#mediatype">MediaType</a>!</td>
 <td>
-
 
 Type of the media record.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>contentIds</strong></td>
+<td colspan="2" valign="top"><strong id="createmediarecordinput.contentids">contentIds</strong></td>
 <td valign="top">[<a href="#uuid">UUID</a>!]!</td>
 <td>
-
 
 IDs of the MediaContents this media record is associated with
 
@@ -546,7 +603,6 @@ IDs of the MediaContents this media record is associated with
 </table>
 
 ### DateTimeFilter
-
 
 Filter for date values.
 If multiple filters are specified, they are combined with AND.
@@ -561,20 +617,18 @@ If multiple filters are specified, they are combined with AND.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>after</strong></td>
+<td colspan="2" valign="top"><strong id="datetimefilter.after">after</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a></td>
 <td>
-
 
 If specified, filters for dates after the specified value.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>before</strong></td>
+<td colspan="2" valign="top"><strong id="datetimefilter.before">before</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a></td>
 <td>
-
 
 If specified, filters for dates before the specified value.
 
@@ -584,7 +638,6 @@ If specified, filters for dates before the specified value.
 </table>
 
 ### IntFilter
-
 
 Filter for integer values.
 If multiple filters are specified, they are combined with AND.
@@ -599,30 +652,27 @@ If multiple filters are specified, they are combined with AND.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>equals</strong></td>
+<td colspan="2" valign="top"><strong id="intfilter.equals">equals</strong></td>
 <td valign="top"><a href="#int">Int</a></td>
 <td>
-
 
 An integer value to match exactly.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>greaterThan</strong></td>
+<td colspan="2" valign="top"><strong id="intfilter.greaterthan">greaterThan</strong></td>
 <td valign="top"><a href="#int">Int</a></td>
 <td>
-
 
 If specified, filters for values greater than to the specified value.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>lessThan</strong></td>
+<td colspan="2" valign="top"><strong id="intfilter.lessthan">lessThan</strong></td>
 <td valign="top"><a href="#int">Int</a></td>
 <td>
-
 
 If specified, filters for values less than to the specified value.
 
@@ -632,7 +682,6 @@ If specified, filters for values less than to the specified value.
 </table>
 
 ### Pagination
-
 
 Specifies the page size and page number for paginated results.
 
@@ -646,10 +695,9 @@ Specifies the page size and page number for paginated results.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>page</strong></td>
+<td colspan="2" valign="top"><strong id="pagination.page">page</strong></td>
 <td valign="top"><a href="#int">Int</a>!</td>
 <td>
-
 
 The page number, starting at 0.
 If not specified, the default value is 0.
@@ -659,10 +707,9 @@ If this value is larger than the number of pages, an empty page is returned.
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>size</strong></td>
+<td colspan="2" valign="top"><strong id="pagination.size">size</strong></td>
 <td valign="top"><a href="#int">Int</a>!</td>
 <td>
-
 
 The number of elements per page.
 
@@ -672,7 +719,6 @@ The number of elements per page.
 </table>
 
 ### StringFilter
-
 
 Filter for string values.
 If multiple filters are specified, they are combined with AND.
@@ -687,30 +733,27 @@ If multiple filters are specified, they are combined with AND.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>equals</strong></td>
+<td colspan="2" valign="top"><strong id="stringfilter.equals">equals</strong></td>
 <td valign="top"><a href="#string">String</a></td>
 <td>
-
 
 A string value to match exactly.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>contains</strong></td>
+<td colspan="2" valign="top"><strong id="stringfilter.contains">contains</strong></td>
 <td valign="top"><a href="#string">String</a></td>
 <td>
-
 
 A string value that must be contained in the field that is being filtered.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>ignoreCase</strong></td>
+<td colspan="2" valign="top"><strong id="stringfilter.ignorecase">ignoreCase</strong></td>
 <td valign="top"><a href="#boolean">Boolean</a>!</td>
 <td>
-
 
 If true, the filter is case-insensitive.
 
@@ -731,40 +774,36 @@ If true, the filter is case-insensitive.
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>id</strong></td>
+<td colspan="2" valign="top"><strong id="updatemediarecordinput.id">id</strong></td>
 <td valign="top"><a href="#uuid">UUID</a>!</td>
 <td>
-
 
 ID of the media record which should be updated
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>name</strong></td>
+<td colspan="2" valign="top"><strong id="updatemediarecordinput.name">name</strong></td>
 <td valign="top"><a href="#string">String</a>!</td>
 <td>
-
 
 New name of the media record. Cannot be blank, maximum length 255 characters.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>type</strong></td>
+<td colspan="2" valign="top"><strong id="updatemediarecordinput.type">type</strong></td>
 <td valign="top"><a href="#mediatype">MediaType</a>!</td>
 <td>
-
 
 New type of the media record.
 
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>contentIds</strong></td>
+<td colspan="2" valign="top"><strong id="updatemediarecordinput.contentids">contentIds</strong></td>
 <td valign="top">[<a href="#uuid">UUID</a>!]!</td>
 <td>
-
 
 IDs of the MediaContents this media record is associated with
 
@@ -777,13 +816,14 @@ IDs of the MediaContents this media record is associated with
 
 ### MediaType
 
-
 The type of the media record
 
 <table>
 <thead>
+<tr>
 <th align="left">Value</th>
 <th align="left">Description</th>
+</tr>
 </thead>
 <tbody>
 <tr>
@@ -815,13 +855,14 @@ The type of the media record
 
 ### SortDirection
 
-
 Specifies the sort direction, either ascending or descending.
 
 <table>
 <thead>
+<tr>
 <th align="left">Value</th>
 <th align="left">Description</th>
+</tr>
 </thead>
 <tbody>
 <tr>
@@ -839,37 +880,25 @@ Specifies the sort direction, either ascending or descending.
 
 ### Boolean
 
-Built-in Boolean
+The `Boolean` scalar type represents `true` or `false`.
 
 ### Date
 
-An RFC-3339 compliant Full Date Scalar
-
 ### DateTime
-
-A slightly refined version of RFC-3339 compliant DateTime Scalar
 
 ### Int
 
-Built-in Int
+The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
 
 ### LocalTime
 
-24-hour clock time value string in the format `hh:mm:ss` or `hh:mm:ss.sss`.
-
 ### String
 
-Built-in String
+The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
 
 ### Time
 
-An RFC-3339 compliant Full Time Scalar
-
 ### UUID
 
-A universally unique identifier compliant UUID Scalar
-
 ### Url
-
-A Url scalar
 
