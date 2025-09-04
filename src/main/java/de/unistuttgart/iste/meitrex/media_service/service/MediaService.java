@@ -827,7 +827,7 @@ public class MediaService {
         final String message = "material:" + filename;
 
         for (final UUID courseId : courseIds) {
-            final String pageLink = "";
+            final String pageLink = "/courses/" + courseId + "/materials/" + mediaRecordId;
             topicPublisher.notificationEvent(
                     courseId,
                     null,
