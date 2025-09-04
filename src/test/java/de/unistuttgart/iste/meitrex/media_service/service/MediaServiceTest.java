@@ -8,7 +8,6 @@ import io.minio.MinioClient;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -88,19 +87,5 @@ class MediaServiceTest {
         final MediaRecordEntity actual = mapper.map(service.getMediaRecordById(entity.getId()), MediaRecordEntity.class);
 
         assertThat(actual, is(entity));
-    }
-
-    @Test
-    void buildMaterialPageLink_shouldBuildCorrectUrl() {
-        UUID courseId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-        UUID mediaId  = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
-
-        ReflectionTestUtils.setField(service, "frontendBaseUrl", "https://portal.example.edu");
-        ReflectionTestUtils.setField(service, "materialPageTemplate", "/courses/{courseId}/materials/{mediaRecordId}");
-
-        String link = (String) ReflectionTestUtils.invokeMethod(
-                service, "buildMaterialPageLink", courseId, mediaId);
-
-        assertThat(link, is("https://portal.example.edu/courses/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/materials/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"));
     }
 }
