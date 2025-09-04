@@ -71,4 +71,44 @@ type Query {
     Returns all media records which were created by the users.
     """
     mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
+
+    """
+    Returns the forum
+    """
+    forum(id: UUID!): Forum
+
+    """
+    Returns the forum of the course and creates new forum if it does not exist
+    """
+    forumByCourseId(id: UUID!): Forum
+
+    """
+    Returns thread for ContentId
+    """
+    threadsByContentId(id: UUID!): [Thread!]!
+
+    """
+    Returns thread
+    """
+    thread(id: UUID!): Thread
+
+    """
+    Returns open threads
+    """
+    openQuestionByCourseId(id: UUID!): [Thread!]!
+
+    """
+    Returns latest activities
+    """
+    forumActivity(id: UUID!): [ForumActivityEntry!]!
+
+    """
+    Returns latest activities by User Id
+    """
+    forumActivityByUserId: [ForumActivityEntry!]!
+
+    """
+    Returns latest other user activities by User Id
+    """
+    otherUserForumActivityByUserId(otherUserId: UUID!): [ForumActivityEntry!]!
 }

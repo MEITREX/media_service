@@ -32,6 +32,7 @@ services:
   #    - minio
   database:
     image: pgvector/pgvector:pg16
+    command: -c 'max_connections=500'
     restart: unless-stopped
     expose:
       - 5432

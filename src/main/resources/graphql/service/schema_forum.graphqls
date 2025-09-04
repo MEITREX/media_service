@@ -1,0 +1,145 @@
+type Forum {
+    id: UUID!
+
+    threads: [Thread!]!
+
+    courseId: UUID!
+
+    userIds: [UUID!]!
+}
+
+interface Thread {
+    id: UUID!
+
+    creatorId: UUID!
+
+    creationTime: DateTime
+
+    title: String!
+
+    posts: [Post!]!
+
+    numberOfPosts: Int!
+
+    threadContentReference: ThreadContentReference
+}
+
+type QuestionThread implements Thread {
+    id: UUID!
+
+    creatorId: UUID!
+
+    creationTime: DateTime!
+
+    title: String!
+
+    question: Post!
+
+    selectedAnswer: Post
+
+    posts: [Post!]!
+
+    numberOfPosts: Int!
+
+    threadContentReference: ThreadContentReference
+}
+
+type InfoThread implements Thread {
+    id: UUID!
+
+    title: String!
+
+    creatorId: UUID!
+
+    creationTime: DateTime!
+
+    info: Post!
+
+    posts: [Post!]!
+
+    numberOfPosts: Int!
+
+    threadContentReference: ThreadContentReference
+}
+
+type ThreadContentReference {
+    contentId: UUID!
+    threadId: UUID!
+    timeStampSeconds: Int
+    pageNumber: Int
+}
+
+type Post {
+    id: UUID!
+
+    content: String!
+
+    creationTime: DateTime!
+
+    authorId: UUID!
+
+    edited: Boolean!
+
+    downvotedByUsers: [UUID]!
+
+    upvotedByUsers: [UUID]!
+}
+
+type ForumActivityEntry {
+    creationTime: DateTime!
+
+    thread: Thread!
+
+    post: Post
+
+    courseId: UUID
+}
+
+input InputForum {
+    id: UUID!
+
+    courseId: UUID!
+}
+
+input InputQuestionThread {
+    forumId: UUID!
+
+    title: String!
+
+    question: InputPost!
+
+    answer: InputPost
+
+    threadContentReference: InputThreadContentReferenceOnCreate
+}
+
+input InputInfoThread {
+    forumId: UUID!
+
+    title: String!
+
+    info: InputPost!
+
+    threadContentReference: InputThreadContentReferenceOnCreate
+}
+
+input InputThreadContentReference {
+    contentId: UUID!
+    threadId: UUID!
+    timeStampSeconds: Int
+    pageNumber: Int
+}
+
+input InputThreadContentReferenceOnCreate {
+    contentId: UUID!
+    timeStampSeconds: Int
+    pageNumber: Int
+}
+
+input InputPost {
+    id: UUID
+
+    threadId: UUID
+
+    content: String!
+}
