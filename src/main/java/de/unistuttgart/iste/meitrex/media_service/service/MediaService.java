@@ -814,29 +814,29 @@ public class MediaService {
     public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
         topicPublisher.notifyMediaRecordFileCreated(new MediaRecordFileCreatedEvent(mediaRecordId));
         // Create Notification Dapr Event
-//        final MediaRecordEntity entity = repository.getReferenceById(mediaRecordId);
-//        final List<UUID> courseIds = entity.getCourseIds();
-//        if (courseIds == null || courseIds.isEmpty()) {
-//            return;
-//        }
-//
-//        final String filename = (entity.getName() == null || entity.getName().isBlank())
-//                ? "Unnamed File"
-//                : entity.getName();
-//        final String title = "New Material is uploaded!";
-//        final String message = "material:" + filename;
-//
-//        for (final UUID courseId : courseIds) {
-//            final String pageLink = "";
-//            topicPublisher.notificationEvent(
-//                    courseId,
-//                    null,
-//                    ServerSource.MEDIA,
-//                    pageLink,
-//                    title,
-//                    message
-//            );
-//        }
+        final MediaRecordEntity entity = repository.getReferenceById(mediaRecordId);
+        final List<UUID> courseIds = entity.getCourseIds();
+        if (courseIds == null || courseIds.isEmpty()) {
+            return;
+        }
+
+        final String filename = (entity.getName() == null || entity.getName().isBlank())
+                ? "Unnamed File"
+                : entity.getName();
+        final String title = "New Material is uploaded!";
+        final String message = "material:" + filename;
+
+        for (final UUID courseId : courseIds) {
+            final String pageLink = "";
+            topicPublisher.notificationEvent(
+                    courseId,
+                    null,
+                    ServerSource.MEDIA,
+                    pageLink,
+                    title,
+                    message
+            );
+        }
     }
 
     /**
