@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.ServerSource;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
@@ -16,8 +17,7 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class MediaServiceTest {
 
@@ -87,5 +87,38 @@ class MediaServiceTest {
         final MediaRecordEntity actual = mapper.map(service.getMediaRecordById(entity.getId()), MediaRecordEntity.class);
 
         assertThat(actual, is(entity));
+    }
+
+    @Test
+    void TestPublishMediaRecordFile() {
+        UUID mediaId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder()
+                .id(mediaId).name("Lecture.pdf")
+                .courseIds(List.of(courseId))
+                .contentIds(List.of()).creatorId(UUID.randomUUID())
+                .progressData(List.of()).build();
+        when(repository.getReferenceById(mediaId)).thenReturn(e);
+
+        service.publishMediaRecordFileCreatedEvent(mediaId);
+
+        String link = "/courses/" + courseId + "/materials/" + mediaId;
+        verify(topicPublisher).notifyMediaRecordFileCreated(any());
+        verify(topicPublisher).notificationEvent(
+                eq(courseId), isNull(), eq(ServerSource.MEDIA),
+                eq(link), eq("New Material is uploaded!"), eq("material:Lecture.pdf"));
+    }
+
+    @Test
+    void TestPublishMediaRecordFile_unnamed() {
+        UUID mid = UUID.randomUUID(), cid = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder().id(mid).name(null)
+                .courseIds(List.of(cid)).contentIds(List.of()).creatorId(UUID.randomUUID())
+                .progressData(List.of()).build();
+        when(repository.getReferenceById(mid)).thenReturn(e);
+        service.publishMediaRecordFileCreatedEvent(mid);
+        String link = "/courses/" + cid + "/materials/" + mid;
+        verify(topicPublisher).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
+                eq(link), eq("New Material is uploaded!"), eq("material:Unnamed File"));
     }
 }

@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class MediaService {
-
     /**
      * Map containing standardized mime types for each media type.
      * This is used to if, for a given media type, we want to convert all uploaded files to files of a standardized
@@ -59,7 +58,6 @@ public class MediaService {
     private final MinioClient minioExternalClient;
 
     private final TopicPublisher topicPublisher;
-
     /**
      * Database repository storing our media records.
      */
@@ -815,6 +813,30 @@ public class MediaService {
 
     public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
         topicPublisher.notifyMediaRecordFileCreated(new MediaRecordFileCreatedEvent(mediaRecordId));
+        // Create Notification Dapr Event
+        final MediaRecordEntity entity = repository.getReferenceById(mediaRecordId);
+        final List<UUID> courseIds = entity.getCourseIds();
+        if (courseIds == null || courseIds.isEmpty()) {
+            return;
+        }
+
+        final String filename = (entity.getName() == null || entity.getName().isBlank())
+                ? "Unnamed File"
+                : entity.getName();
+        final String title = "New Material is uploaded!";
+        final String message = "material:" + filename;
+
+        for (final UUID courseId : courseIds) {
+            final String pageLink = "/courses/" + courseId + "/materials/" + mediaRecordId;
+            topicPublisher.notificationEvent(
+                    courseId,
+                    null,
+                    ServerSource.MEDIA,
+                    pageLink,
+                    title,
+                    message
+            );
+        }
     }
 
     /**
