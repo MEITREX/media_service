@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
@@ -73,6 +74,9 @@ public class MediaService {
      * Service used to convert files to standardized formats.
      */
     private final FileConversionService fileConversionService;
+
+    @Value("${media.publish.delay-ms:5000}") // 默认5秒
+    private long publishDelayMs;
 
     /**
      * Returns all media records.
@@ -855,7 +859,7 @@ public class MediaService {
     public void publishMaterialPublishedEventWithDelay(UUID mediaRecordId) {
         CompletableFuture.runAsync(
                 () -> publishMaterialPublishedEvent(mediaRecordId),
-                CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS)
+                CompletableFuture.delayedExecutor(publishDelayMs, TimeUnit.MILLISECONDS)
         );
     }
 
