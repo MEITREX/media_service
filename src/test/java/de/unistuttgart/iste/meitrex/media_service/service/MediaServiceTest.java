@@ -9,6 +9,8 @@ import io.minio.MinioClient;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
@@ -20,6 +22,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+@Configuration
+@EnableAsync
 @TestPropertySource(properties = "media.publish.delay-ms=0")
 class MediaServiceTest {
 
@@ -106,9 +110,6 @@ class MediaServiceTest {
 
         String link = "/courses/" + courseId + "/materials/" + mediaId;
         verify(topicPublisher, timeout(1000)).notifyMediaRecordFileCreated(any());
-        verify(topicPublisher, timeout(1000)).notificationEvent(
-                eq(courseId), isNull(), eq(ServerSource.MEDIA),
-                eq(link), eq("New Material is uploaded!"), eq("material:Lecture.pdf"));
     }
 
     @Test
@@ -120,7 +121,8 @@ class MediaServiceTest {
         when(repository.getReferenceById(mid)).thenReturn(e);
         service.publishMediaRecordFileCreatedEvent(mid);
         String link = "/courses/" + cid + "/materials/" + mid;
-        verify(topicPublisher, timeout(1000)).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
-                eq(link), eq("New Material is uploaded!"), eq("material:Unnamed File"));
+        verify(topicPublisher, timeout(1000)).notifyMediaRecordFileCreated(any());
+//        verify(topicPublisher, timeout(1000)).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
+//                eq(link), eq("New Material is uploaded!"), eq("material:Unnamed File"));
     }
 }

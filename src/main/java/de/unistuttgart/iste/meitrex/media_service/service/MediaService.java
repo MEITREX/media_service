@@ -332,42 +332,6 @@ public class MediaService {
     }
 
     /**
-     * Publishes a "new material uploaded" notification for a media record that has been associated with one or more courses.
-     *
-     * @param mediaRecordId ID of the media record
-     */
-    public void publishMaterialPublishedEvent(UUID mediaRecordId) {
-        MediaRecordEntity entity = repository.findWithCoursesById(mediaRecordId)
-                .orElseThrow(() -> new IllegalArgumentException("MediaRecord not found: " + mediaRecordId));
-
-        List<UUID> courseIds = entity.getCourseIds();
-
-        if (courseIds == null || courseIds.isEmpty()) {
-            log.info("MediaRecord {} has no courseIds, skip notification.", mediaRecordId);
-            return;
-        }
-
-        String filename = (entity.getName() == null || entity.getName().isBlank())
-                ? "Unnamed File"
-                : entity.getName();
-        String title = "New Material is uploaded!";
-        String message = "material: " + filename;
-
-        for (UUID courseId : courseIds) {
-            String pageLink = "/courses/" + courseId;
-            topicPublisher.notificationEvent(
-                    courseId,
-                    null,
-                    ServerSource.MEDIA,
-                    pageLink,
-                    title,
-                    message
-            );
-            log.info("Published notification for mediaRecord={} to course={}", mediaRecordId, courseId);
-        }
-    }
-
-    /**
      * if there are fewer returned records than passed ids, that means that some ids could not be found in the
      * db. In that case, calculate the difference of the two lists and throw an exception listing which ids
      * could not be found
@@ -855,8 +819,50 @@ public class MediaService {
         }
     }
 
+    /**
+     * Publishes a "new material uploaded" notification for a media record that has been associated with one or more courses.
+     *
+     * @param mediaRecordId ID of the media record
+     */
+    public void publishMaterialPublishedEvent(UUID mediaRecordId) {
+        MediaRecordEntity entity = repository.findWithCoursesById(mediaRecordId)
+                .orElseThrow(() -> new IllegalArgumentException("MediaRecord not found: " + mediaRecordId));
+
+        List<UUID> courseIds = entity.getCourseIds();
+
+        if (courseIds == null || courseIds.isEmpty()) {
+            log.info("MediaRecord {} has no courseIds, skip notification.", mediaRecordId);
+            return;
+        }
+
+        String filename = (entity.getName() == null || entity.getName().isBlank())
+                ? "Unnamed File"
+                : entity.getName();
+        String title = "New Material is uploaded!";
+        String message = "material: " + filename;
+
+        for (UUID courseId : courseIds) {
+            String pageLink = "/courses/" + courseId;
+            topicPublisher.notificationEvent(
+                    courseId,
+                    null,
+                    ServerSource.MEDIA,
+                    pageLink,
+                    title,
+                    message
+            );
+            log.info("Published notification for mediaRecord={} to course={}", mediaRecordId, courseId);
+        }
+    }
+
+
+
     @Async
     public void publishMaterialPublishedEventWithDelay(UUID mediaRecordId) {
+        if (publishDelayMs <= 0) {
+            publishMaterialPublishedEvent(mediaRecordId);
+            return;
+        }
         CompletableFuture.runAsync(
                 () -> publishMaterialPublishedEvent(mediaRecordId),
                 CompletableFuture.delayedExecutor(publishDelayMs, TimeUnit.MILLISECONDS)
@@ -866,7 +872,6 @@ public class MediaService {
     public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
         topicPublisher.notifyMediaRecordFileCreated(new MediaRecordFileCreatedEvent(mediaRecordId));
         publishMaterialPublishedEventWithDelay(mediaRecordId);
-
     }
 
     /**
