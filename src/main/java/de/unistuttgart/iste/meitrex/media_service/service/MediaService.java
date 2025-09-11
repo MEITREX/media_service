@@ -19,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -318,9 +321,46 @@ public class MediaService {
             repository.save(entity);
         }
 
+
         return removeExpiredUrlsFromMediaRecords(mediaRecordsToAddCourse.stream()
                 .map(x -> modelMapper.map(x, MediaRecord.class))
                 .toList());
+    }
+
+    /**
+     * Publishes a "new material uploaded" notification for a media record that has been associated with one or more courses.
+     *
+     * @param mediaRecordId ID of the media record
+     */
+    public void publishMaterialPublishedEvent(UUID mediaRecordId) {
+        MediaRecordEntity entity = repository.findWithCoursesById(mediaRecordId)
+                .orElseThrow(() -> new IllegalArgumentException("MediaRecord not found: " + mediaRecordId));
+
+        List<UUID> courseIds = entity.getCourseIds();
+
+        if (courseIds == null || courseIds.isEmpty()) {
+            log.info("MediaRecord {} has no courseIds, skip notification.", mediaRecordId);
+            return;
+        }
+
+        String filename = (entity.getName() == null || entity.getName().isBlank())
+                ? "Unnamed File"
+                : entity.getName();
+        String title = "New Material is uploaded!";
+        String message = "material: " + filename;
+
+        for (UUID courseId : courseIds) {
+            String pageLink = "/courses/" + courseId;
+            topicPublisher.notificationEvent(
+                    courseId,
+                    null,
+                    ServerSource.MEDIA,
+                    pageLink,
+                    title,
+                    message
+            );
+            log.info("Published notification for mediaRecord={} to course={}", mediaRecordId, courseId);
+        }
     }
 
     /**
@@ -811,32 +851,18 @@ public class MediaService {
         }
     }
 
+    @Async
+    public void publishMaterialPublishedEventWithDelay(UUID mediaRecordId) {
+        CompletableFuture.runAsync(
+                () -> publishMaterialPublishedEvent(mediaRecordId),
+                CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS)
+        );
+    }
+
     public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
         topicPublisher.notifyMediaRecordFileCreated(new MediaRecordFileCreatedEvent(mediaRecordId));
-        // Create Notification Dapr Event
-        final MediaRecordEntity entity = repository.getReferenceById(mediaRecordId);
-        final List<UUID> courseIds = entity.getCourseIds();
-        if (courseIds == null || courseIds.isEmpty()) {
-            return;
-        }
+        publishMaterialPublishedEventWithDelay(mediaRecordId);
 
-        final String filename = (entity.getName() == null || entity.getName().isBlank())
-                ? "Unnamed File"
-                : entity.getName();
-        final String title = "New Material is uploaded!";
-        final String message = "material:" + filename;
-
-        for (final UUID courseId : courseIds) {
-            final String pageLink = "/courses/" + courseId + "/materials/" + mediaRecordId;
-            topicPublisher.notificationEvent(
-                    courseId,
-                    null,
-                    ServerSource.MEDIA,
-                    pageLink,
-                    title,
-                    message
-            );
-        }
     }
 
     /**
