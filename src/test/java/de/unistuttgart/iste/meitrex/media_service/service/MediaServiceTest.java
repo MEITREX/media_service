@@ -103,8 +103,8 @@ class MediaServiceTest {
         service.publishMediaRecordFileCreatedEvent(mediaId);
 
         String link = "/courses/" + courseId + "/materials/" + mediaId;
-        verify(topicPublisher).notifyMediaRecordFileCreated(any());
-        verify(topicPublisher).notificationEvent(
+        verify(topicPublisher, timeout(6000)).notifyMediaRecordFileCreated(any());
+        verify(topicPublisher, timeout(6000)).notificationEvent(
                 eq(courseId), isNull(), eq(ServerSource.MEDIA),
                 eq(link), eq("New Material is uploaded!"), eq("material:Lecture.pdf"));
     }
@@ -118,7 +118,7 @@ class MediaServiceTest {
         when(repository.getReferenceById(mid)).thenReturn(e);
         service.publishMediaRecordFileCreatedEvent(mid);
         String link = "/courses/" + cid + "/materials/" + mid;
-        verify(topicPublisher).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
+        verify(topicPublisher, timeout(6000)).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
                 eq(link), eq("New Material is uploaded!"), eq("material:Unnamed File"));
     }
 }
