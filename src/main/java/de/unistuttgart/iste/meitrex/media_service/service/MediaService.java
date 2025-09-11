@@ -75,22 +75,6 @@ public class MediaService {
      */
     private final FileConversionService fileConversionService;
 
-    @Value("${media.publish.delay-ms:5000}") // 默认5秒
-    private int publishDelayMs;
-
-    public MediaService(MinioClient internal, MinioClient external,
-                        TopicPublisher publisher, MediaRecordRepository repo,
-                        ModelMapper mapper, FileConversionService fcs,
-                        int publishDelayMs) {
-        this.minioInternalClient = internal;
-        this.minioExternalClient = external;
-        this.topicPublisher = publisher;
-        this.repository = repo;
-        this.modelMapper = mapper;
-        this.fileConversionService = fcs;
-        this.publishDelayMs = publishDelayMs;
-    }
-
     /**
      * Returns all media records.
      *
@@ -872,13 +856,9 @@ public class MediaService {
 
     @Async
     public void publishMaterialPublishedEventWithDelay(UUID mediaRecordId) {
-        if (publishDelayMs <= 0) {
-            publishMaterialPublishedEvent(mediaRecordId);
-            return;
-        }
         CompletableFuture.runAsync(
                 () -> publishMaterialPublishedEvent(mediaRecordId),
-                CompletableFuture.delayedExecutor(publishDelayMs, TimeUnit.MILLISECONDS)
+                CompletableFuture.delayedExecutor(5000, TimeUnit.MILLISECONDS)
         );
     }
 

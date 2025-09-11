@@ -37,7 +37,7 @@ class MediaServiceTest {
     private final FileConversionService fileConversionService = mock(FileConversionService.class);
 
     private final MediaService service = new MediaService(mockMinIoClient, mockMinIoClient, topicPublisher, repository,
-            mapper, fileConversionService, 0);
+            mapper, fileConversionService);
 
 
     MediaServiceTest() throws Exception {
@@ -105,7 +105,7 @@ class MediaServiceTest {
                 .progressData(List.of()).build();
         when(repository.getReferenceById(mediaId)).thenReturn(e);
 
-        service.publishMediaRecordFileCreatedEvent(mediaId);
+        service.publishMaterialPublishedEvent(mediaId);
 
         String link = "/courses/" + courseId + "/materials/" + mediaId;
         verify(topicPublisher, timeout(1000)).notifyMediaRecordFileCreated(any());
@@ -118,10 +118,11 @@ class MediaServiceTest {
                 .courseIds(List.of(cid)).contentIds(List.of()).creatorId(UUID.randomUUID())
                 .progressData(List.of()).build();
         when(repository.getReferenceById(mid)).thenReturn(e);
-        service.publishMediaRecordFileCreatedEvent(mid);
+        service.publishMaterialPublishedEvent(mid);
         String link = "/courses/" + cid + "/materials/" + mid;
+
         verify(topicPublisher, timeout(1000)).notifyMediaRecordFileCreated(any());
-//        verify(topicPublisher, timeout(1000)).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
-//                eq(link), eq("New Material is uploaded!"), eq("material:Unnamed File"));
+        verify(topicPublisher, timeout(1000)).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
+                eq(link), eq("New Material is uploaded!"), eq("material:Unnamed File"));
     }
 }
