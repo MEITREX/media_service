@@ -24,7 +24,6 @@ import static org.mockito.Mockito.*;
 
 @Configuration
 @EnableAsync
-@TestPropertySource(properties = "media.publish.delay-ms=0")
 class MediaServiceTest {
 
     private final MediaRecordRepository repository = mock(MediaRecordRepository.class);
@@ -38,7 +37,7 @@ class MediaServiceTest {
     private final FileConversionService fileConversionService = mock(FileConversionService.class);
 
     private final MediaService service = new MediaService(mockMinIoClient, mockMinIoClient, topicPublisher, repository,
-            mapper, fileConversionService);
+            mapper, fileConversionService, 0);
 
 
     MediaServiceTest() throws Exception {
