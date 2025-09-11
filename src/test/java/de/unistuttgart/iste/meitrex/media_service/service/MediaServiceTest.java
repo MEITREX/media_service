@@ -93,7 +93,6 @@ class MediaServiceTest {
 
         assertThat(actual, is(entity));
     }
-
     @Test
     void TestPublishMediaRecordFile() {
         UUID mediaId = UUID.randomUUID();
@@ -103,12 +102,17 @@ class MediaServiceTest {
                 .courseIds(List.of(courseId))
                 .contentIds(List.of()).creatorId(UUID.randomUUID())
                 .progressData(List.of()).build();
-        when(repository.getReferenceById(mediaId)).thenReturn(e);
+
+        when(repository.findWithCoursesById(mediaId)).thenReturn(Optional.of(e));
 
         service.publishMaterialPublishedEvent(mediaId);
 
-        String link = "/courses/" + courseId + "/materials/" + mediaId;
-        verify(topicPublisher, timeout(1000)).notifyMediaRecordFileCreated(any());
+        verify(topicPublisher).notificationEvent(
+                eq(courseId), isNull(), eq(ServerSource.MEDIA),
+                eq("/courses/" + courseId),
+                eq("New Material is uploaded!"),
+                eq("material: Lecture.pdf")
+        );
     }
 
     @Test
@@ -117,12 +121,17 @@ class MediaServiceTest {
         MediaRecordEntity e = MediaRecordEntity.builder().id(mid).name(null)
                 .courseIds(List.of(cid)).contentIds(List.of()).creatorId(UUID.randomUUID())
                 .progressData(List.of()).build();
-        when(repository.getReferenceById(mid)).thenReturn(e);
-        service.publishMaterialPublishedEvent(mid);
-        String link = "/courses/" + cid + "/materials/" + mid;
 
-        verify(topicPublisher, timeout(1000)).notifyMediaRecordFileCreated(any());
-        verify(topicPublisher, timeout(1000)).notificationEvent(eq(cid), isNull(), eq(ServerSource.MEDIA),
-                eq(link), eq("New Material is uploaded!"), eq("material:Unnamed File"));
+        when(repository.findWithCoursesById(mid)).thenReturn(Optional.of(e));
+
+        service.publishMaterialPublishedEvent(mid);
+
+        verify(topicPublisher).notificationEvent(
+                eq(cid), isNull(), eq(ServerSource.MEDIA),
+                eq("/courses/" + cid),
+                eq("New Material is uploaded!"),
+                eq("material: Unnamed File")
+        );
     }
+
 }
