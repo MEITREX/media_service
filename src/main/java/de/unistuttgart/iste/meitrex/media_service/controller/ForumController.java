@@ -3,7 +3,11 @@ package de.unistuttgart.iste.meitrex.media_service.controller;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.PostEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ThreadContentReferenceEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.media.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.media_service.service.ForumService;
@@ -215,7 +219,7 @@ public class ForumController {
 
     @MutationMapping
     public QuestionThread selectAnswer(@Argument final UUID postId){
-        return forumService.addAnserToQuestionThread(postId);
+        return forumService.addAnswerToQuestionThread(postId);
     }
 
     private PostEntity checkUserInCourse(@Argument UUID postId, @ContextValue LoggedInUser currentUser) {

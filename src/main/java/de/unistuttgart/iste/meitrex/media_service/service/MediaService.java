@@ -7,7 +7,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.CreateMediaRecordInput;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaRecord;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaType;
 import de.unistuttgart.iste.meitrex.generated.dto.UpdateMediaRecordInput;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.media.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;

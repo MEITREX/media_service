@@ -4,7 +4,7 @@ import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.profanity_filter.ProfanityFilter;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;

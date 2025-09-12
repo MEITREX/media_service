@@ -1,6 +1,6 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.repository;
 
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ForumEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

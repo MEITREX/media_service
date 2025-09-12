@@ -4,7 +4,7 @@ import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Forum;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ForumEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ForumRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import jakarta.transaction.Transactional;

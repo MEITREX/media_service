@@ -2,10 +2,10 @@ package de.unistuttgart.iste.meitrex.media_service.mapper;
 
 import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.InfoThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.InfoThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.PostEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.QuestionThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;

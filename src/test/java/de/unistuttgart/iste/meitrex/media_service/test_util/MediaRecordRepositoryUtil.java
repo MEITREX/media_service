@@ -1,6 +1,6 @@
 package de.unistuttgart.iste.meitrex.media_service.test_util;
 
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.media.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 
 import java.util.ArrayList;
