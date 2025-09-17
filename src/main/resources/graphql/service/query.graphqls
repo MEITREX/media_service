@@ -111,4 +111,14 @@ type Query {
     Returns latest other user activities by User Id
     """
     otherUserForumActivityByUserId(otherUserId: UUID!): [ForumActivityEntry!]!
+
+    """
+    Returns the exercise and the submission by the user
+    """
+    submissionExerciseByUser(exerciseId: UUID!): SubmissionExercise!
+
+    """
+    Returns the exercise with all submissions by all users
+    """
+    submissionExerciseForLecturer(exerciseId: UUID!): SubmissionExercise!
 }

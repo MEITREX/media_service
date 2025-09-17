@@ -1,0 +1,66 @@
+type SubmissionExercise {
+    id: UUID
+    courseId: UUID!
+    startTime: DateTime!
+    endTime: DateTime!
+    maxScore: Int!
+    files: [File!]!
+    solutions: [SubmissionSolution!]!
+    tasks: [Task!]!
+}
+
+type File {
+    id: UUID!
+    uploadUrl: String!
+    downloadUrl: String!
+    name: String!
+}
+
+type Task {
+    id: UUID!
+    maxScore: Int!
+}
+
+type SubmissionSolution {
+    id: UUID
+    userId: UUID!
+    submissionDate: DateTime!
+    files: [File!]!
+    result: Result!
+}
+
+type Result {
+    id: UUID
+    status: Status!
+    score: Int!
+}
+
+enum Status {
+    pending,
+    passed,
+    failed
+}
+
+input InputResult {
+    id: UUID
+    courseId: UUID!
+    status: Status!
+    score: Int!
+}
+
+input InputSubmissionSolution {
+    courseId: UUID!
+    submissionExerciseId: UUID!
+}
+
+input InputSubmissionExercise {
+    courseId: UUID!
+    startTime: DateTime!
+    endTime: DateTime!
+    maxScore: Int!
+    tasks: [InputTask]
+}
+
+input InputTask {
+    maxScore: Int!
+}

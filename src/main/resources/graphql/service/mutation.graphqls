@@ -102,4 +102,29 @@ type Mutation {
     add Answer to QuestionThread
     """
     selectAnswer(postId: UUID!): QuestionThread!
+
+    """
+    creates a submission exercise and returns the exercise with the upload and download urls for the files
+    """
+    createSubmissionExercise(submissionExercise: InputSubmissionExercise!): SubmissionExercise!
+
+    """
+    creates a solution for an exercise and returns the solution with the upload and download urls for the files
+    """
+    uploadSolution(solution: InputSubmissionSolution!): SubmissionSolution!
+
+    """
+    updates the result for a solution
+    """
+    updateResult(result: InputResult!): Result!
+
+    """
+    creates the upload an download links for a file for an exercise to upload data
+    """
+    createExerciseFile(name: String!, exerciseId: UUID!): File
+
+    """
+    create the upload and download links for a file for an solution to an exercise
+    """
+    createSolutionFile(name: String!, solutionId: UUID!): File
 }

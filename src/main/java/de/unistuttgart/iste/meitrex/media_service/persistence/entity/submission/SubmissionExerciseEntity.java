@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission;
 
+import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,14 +14,12 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExerciseEntity {
+public class SubmissionExerciseEntity implements IWithId<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private UUID userId;
-
-    private UUID submissionId;
+    private UUID courseId;
 
     private OffsetDateTime startTime;
 
@@ -31,9 +30,9 @@ public class ExerciseEntity {
     @OneToMany(cascade = CascadeType.ALL)
     private List<FileEntity> files;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<ExerciseSolutionEntity> solutions;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<TaskEntity> tasks;
 }
