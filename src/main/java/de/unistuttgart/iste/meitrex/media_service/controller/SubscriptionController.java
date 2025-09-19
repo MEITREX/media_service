@@ -2,7 +2,9 @@ package de.unistuttgart.iste.meitrex.media_service.controller;
 
 
 import de.unistuttgart.iste.meitrex.common.event.ContentChangeEvent;
+import de.unistuttgart.iste.meitrex.common.event.CourseChangeEvent;
 import de.unistuttgart.iste.meitrex.media_service.service.MediaService;
+import de.unistuttgart.iste.meitrex.media_service.service.SubmissionService;
 import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import java.util.Map;
 public class SubscriptionController {
 
     private final MediaService mediaService;
+    private final SubmissionService submissionService;
 
     @Topic(name = "content-changed", pubsubName = "gits")
     @PostMapping(path = "/media-service/content-changed-pubsub")
@@ -36,6 +39,25 @@ public class SubscriptionController {
                 log.error("Error while processing content-changes event. {}", e.getMessage());
             }
         });
+    }
+
+    /**
+     * Event handler for when a course is deleted
+     *
+     * @param cloudEvent the cloud event
+     */
+    @Topic(name = "course-changed", pubsubName = "gits")
+    @PostMapping(path = "/reward-service/course-changed-pubsub")
+    public Mono<Void> updateAssociation(@RequestBody final CloudEvent<CourseChangeEvent> cloudEvent) {
+
+        return Mono.fromRunnable(
+                () -> {
+                    try {
+                        submissionService.deleteCourse(cloudEvent.getData());
+                    } catch (final Exception e) {
+                        log.error(e.getMessage());
+                    }
+                });
     }
 
 }

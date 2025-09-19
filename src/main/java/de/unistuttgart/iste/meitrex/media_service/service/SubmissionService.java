@@ -1,5 +1,8 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
+import de.unistuttgart.iste.meitrex.common.event.CourseChangeEvent;
+import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
+import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.ExerciseSolutionEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.FileEntity;
@@ -11,6 +14,9 @@ import de.unistuttgart.iste.meitrex.media_service.persistence.repository.Submiss
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionResultRepository;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
+import io.minio.errors.*;
 import io.minio.http.Method;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +42,7 @@ public class SubmissionService {
     private final SubmissionResultRepository resultRepository;
     private final ModelMapper modelMapper;
 
+    private final MinioClient minioInternalClient;
     private final MinioClient minioExternalClient;
 
     public SubmissionExercise getSubmissionExerciseByUserId(UUID exerciseId, UUID userId) {
@@ -105,6 +112,61 @@ public class SubmissionService {
         exerciseSolutionEntity.getFiles().add(fileEntity);
         submissionExerciseSolutionRepository.save(exerciseSolutionEntity);
         return modelMapper.map(fileEntity, File.class);
+    }
+
+    /**
+     * Method that receives Course Change Event and handles DELETE events.
+     * All submission exercises are then deleted that are connected to deleted course
+     *
+     * @param changeEvent a Course Change Event received over dapr
+     * @throws IncompleteEventMessageException if the received message is incomplete
+     */
+    public void deleteCourse(final CourseChangeEvent changeEvent) throws IncompleteEventMessageException{
+        // evaluate course Update message
+        if (changeEvent.getCourseId() == null || changeEvent.getOperation() == null) {
+            throw new IncompleteEventMessageException("Incomplete message received: all fields of a message must be non-null");
+        }
+        // only consider DELETE events
+        if (changeEvent.getOperation() != CrudOperation.DELETE) {
+            return;
+        }
+
+        List<SubmissionExerciseEntity> submissionExerciseEntities = submissionExerciseRepository.findAllByCourseId(changeEvent.getCourseId());
+        submissionExerciseEntities.forEach(submissionExerciseEntity -> {
+            submissionExerciseEntity.getFiles().forEach(this::deleteFile);
+            submissionExerciseEntity.getSolutions().forEach(exerciseSolutionEntity ->
+                    exerciseSolutionEntity.getFiles().forEach(this::deleteFile));
+        });
+        submissionExerciseRepository.deleteAll(submissionExerciseEntities);
+    }
+
+    @SneakyThrows
+    private void deleteFile(final FileEntity fileEntity) {
+        String filename = fileEntity.getId().toString();
+
+        if (doesObjectExist(filename)) {
+            minioInternalClient.removeObject(
+                    RemoveObjectArgs
+                            .builder()
+                            .bucket(BUCKET_ID)
+                            .object(filename)
+                            .build());
+        }
+    }
+
+    private boolean doesObjectExist(final String name) {
+        try {
+            minioInternalClient.statObject(StatObjectArgs.builder()
+                    .bucket(SubmissionService.BUCKET_ID)
+                    .object(name).build());
+            return true;
+        } catch (final ErrorResponseException e) {
+            log.error("Object not found", e);
+            return false;
+        } catch (final Exception e) {
+            log.error("Error while checking if object exists", e);
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     private ResultEntity initialResultEntity() {
