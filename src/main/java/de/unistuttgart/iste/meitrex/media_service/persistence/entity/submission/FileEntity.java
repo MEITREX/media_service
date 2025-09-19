@@ -1,10 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission;
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +17,12 @@ public class FileEntity implements IWithId<UUID> {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 500)
     private String uploadUrl;
 
+    @Column(length = 500)
     private String downloadUrl;
 
+    @Column
     private String name;
 }

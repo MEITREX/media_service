@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 public class SubmissionService {
-    private static final String BUCKET_ID = "submissionBucket";
+    private static final String BUCKET_ID = "submission-bucket";
 
     private final SubmissionExerciseRepository submissionExerciseRepository;
     private final SubmissionFileRepository fileRepository;
