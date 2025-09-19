@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 public class SubmissionService {
-    private static final String BUCKET_ID = "submission-bucket";
+    public static final String BUCKET_ID = "submission-bucket";
 
     private final SubmissionExerciseRepository submissionExerciseRepository;
     private final SubmissionFileRepository fileRepository;
@@ -48,6 +48,8 @@ public class SubmissionService {
     public SubmissionExercise getSubmissionExerciseByUserId(UUID exerciseId, UUID userId) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(exerciseId).orElseThrow(() ->
                 new EntityNotFoundException("Exercise with id: " + exerciseId + " not found"));
+        updateSubmissionUrls(submissionExercise);
+        submissionExerciseRepository.save(submissionExercise);
         List<ExerciseSolutionEntity> solution = submissionExercise.getSolutions().stream().filter(exerciseSolutionEntity -> exerciseSolutionEntity.getUserId().equals(userId)).toList();
         submissionExercise.setSolutions(solution);
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
@@ -56,7 +58,15 @@ public class SubmissionService {
     public SubmissionExercise getSubmissionExerciseForLecturer(UUID exerciseId) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(exerciseId).orElseThrow(() ->
                 new EntityNotFoundException("Exercise with id: " + exerciseId + " not found"));
+        updateSubmissionUrls(submissionExercise);
+        submissionExerciseRepository.save(submissionExercise);
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
+    }
+
+    private void updateSubmissionUrls(SubmissionExerciseEntity submissionExercise) {
+        submissionExercise.getFiles().forEach(this::createUploadAndDownloadUrl);
+        submissionExercise.getSolutions().forEach(exerciseSolutionEntity ->
+        {exerciseSolutionEntity.getFiles().forEach(this::createUploadAndDownloadUrl);});
     }
 
     public SubmissionExercise createSubmissionExercise(InputSubmissionExercise submissionExercise) {
@@ -178,7 +188,7 @@ public class SubmissionService {
 
     private FileEntity createFile(String name) {
         FileEntity fileEntity = new FileEntity();
-        fileEntity.setName(name);
+        fileEntity.setName(name + "_submission");
         fileRepository.saveAndFlush(fileEntity);
         return fileEntity;
     }

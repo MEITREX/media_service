@@ -41,6 +41,11 @@ public class WebhookController {
             return;
         }
 
+        if(fileName.endsWith("_submission")) {
+            //ignore files for submissions
+            return;
+        }
+
         UUID mediaRecordId = UUID.fromString(fileName);
 
         // check if this file needs to be converted to a standardized format and do so if it needs to be
