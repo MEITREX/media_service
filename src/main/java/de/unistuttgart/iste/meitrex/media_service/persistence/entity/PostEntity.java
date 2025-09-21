@@ -37,6 +37,9 @@ public class PostEntity implements Serializable {
     @Column
     boolean edited;
 
+    @Column
+    UUID referenceId;
+
     @ElementCollection
     private List<UUID> downvotedByUsers;
 
@@ -50,6 +53,7 @@ public class PostEntity implements Serializable {
         this.content = content;
         this.authorId = authorId;
         this.thread = thread;
+        referenceId = null;
         downvotedByUsers = new ArrayList<>();
         upvotedByUsers = new ArrayList<>();
         edited = false;
