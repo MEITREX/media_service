@@ -27,25 +27,25 @@ public class SubmissionController {
     private final SubmissionExerciseRepository submissionExerciseRepository;
 
     @QueryMapping
-    public SubmissionExercise submissionExerciseByUser(@Argument UUID exerciseId,
+    public SubmissionExercise submissionExerciseByUser(@Argument UUID assessmentId,
                                                        @ContextValue final LoggedInUser currentUser) {
-        return submissionService.getSubmissionExerciseByUserId(exerciseId, currentUser.getId());
+        return submissionService.getSubmissionExerciseByUserId(assessmentId, currentUser.getId());
     }
 
     @QueryMapping
-    public SubmissionExercise submissionExerciseForLecturer(@Argument UUID exerciseId,
+    public SubmissionExercise submissionExerciseForLecturer(@Argument UUID assessmentId,
                                                             @ContextValue final LoggedInUser currentUser) {
-        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(exerciseId).orElseThrow(() ->
-                new EntityNotFoundException("Exercise with id: " + exerciseId + " not found"));
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(() ->
+                new EntityNotFoundException("Exercise with id: " + assessmentId + " not found"));
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, submissionExercise.getCourseId());
-        return submissionService.getSubmissionExerciseForLecturer(exerciseId);
+        return submissionService.getSubmissionExerciseForLecturer(assessmentId);
     }
 
-    @MutationMapping
-    public SubmissionExercise createSubmissionExercise(@Argument InputSubmissionExercise submissionExercise,
-                                                       @ContextValue final LoggedInUser currentUser) {
-        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, submissionExercise.getCourseId());
-        return submissionService.createSubmissionExercise(submissionExercise);
+    @MutationMapping(name = "_internal_noauth_createSubmissionExercise")
+    public SubmissionExercise createSubmissionExercise(@Argument InputSubmissionExercise input,
+                                                       @Argument UUID courseId,
+                                                       @Argument UUID assessmentId) {
+        return submissionService.createSubmissionExercise(input, assessmentId, courseId);
     }
 
     @MutationMapping
@@ -64,10 +64,10 @@ public class SubmissionController {
 
     @MutationMapping
     public File createExerciseFile(@Argument String name,
-                                   @Argument UUID exerciseId,
+                                   @Argument UUID assessmentId,
                                    @ContextValue final LoggedInUser currentUser) {
-        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(exerciseId).orElseThrow(() ->
-                new EntityNotFoundException("Exercise with id: " + exerciseId + " not found"));
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(() ->
+                new EntityNotFoundException("Exercise with id: " + assessmentId + " not found"));
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, submissionExercise.getCourseId());
         return submissionService.createFileForExercise(name, submissionExercise);
     }

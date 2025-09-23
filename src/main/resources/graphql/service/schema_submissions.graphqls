@@ -1,8 +1,6 @@
 type SubmissionExercise {
-    id: UUID
+    assessmentId: UUID
     courseId: UUID!
-    startTime: DateTime!
-    endTime: DateTime!
     maxScore: Int!
     files: [File!]!
     solutions: [SubmissionSolution!]!
@@ -43,6 +41,7 @@ enum Status {
 
 input InputResult {
     id: UUID
+    assessmentId: UUID!
     courseId: UUID!
     status: Status!
     score: Int!
@@ -54,13 +53,11 @@ input InputSubmissionSolution {
 }
 
 input InputSubmissionExercise {
-    courseId: UUID!
-    startTime: DateTime!
-    endTime: DateTime!
     maxScore: Int!
     tasks: [InputTask]
 }
 
 input InputTask {
+    assessmentId: UUID!
     maxScore: Int!
 }

@@ -45,9 +45,9 @@ public class SubmissionService {
     private final MinioClient minioInternalClient;
     private final MinioClient minioExternalClient;
 
-    public SubmissionExercise getSubmissionExerciseByUserId(UUID exerciseId, UUID userId) {
-        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(exerciseId).orElseThrow(() ->
-                new EntityNotFoundException("Exercise with id: " + exerciseId + " not found"));
+    public SubmissionExercise getSubmissionExerciseByUserId(UUID assessmentId, UUID userId) {
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(() ->
+                new EntityNotFoundException("Exercise with id: " + assessmentId + " not found"));
         updateSubmissionUrls(submissionExercise);
         submissionExerciseRepository.save(submissionExercise);
         List<ExerciseSolutionEntity> solution = submissionExercise.getSolutions().stream().filter(exerciseSolutionEntity -> exerciseSolutionEntity.getUserId().equals(userId)).toList();
@@ -55,9 +55,9 @@ public class SubmissionService {
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
-    public SubmissionExercise getSubmissionExerciseForLecturer(UUID exerciseId) {
-        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(exerciseId).orElseThrow(() ->
-                new EntityNotFoundException("Exercise with id: " + exerciseId + " not found"));
+    public SubmissionExercise getSubmissionExerciseForLecturer(UUID assessmentId) {
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(() ->
+                new EntityNotFoundException("Exercise with id: " + assessmentId + " not found"));
         updateSubmissionUrls(submissionExercise);
         submissionExerciseRepository.save(submissionExercise);
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
@@ -69,11 +69,10 @@ public class SubmissionService {
         {exerciseSolutionEntity.getFiles().forEach(this::createUploadAndDownloadUrl);});
     }
 
-    public SubmissionExercise createSubmissionExercise(InputSubmissionExercise submissionExercise) {
+    public SubmissionExercise createSubmissionExercise(InputSubmissionExercise submissionExercise, UUID assessmentId, UUID courseId) {
         SubmissionExerciseEntity submissionExerciseEntity = new SubmissionExerciseEntity();
-        submissionExerciseEntity.setCourseId(submissionExercise.getCourseId());
-        submissionExerciseEntity.setStartTime(submissionExercise.getStartTime());
-        submissionExerciseEntity.setEndTime(submissionExercise.getEndTime());
+        submissionExerciseEntity.setAssessmentId(assessmentId);
+        submissionExerciseEntity.setCourseId(courseId);
         submissionExerciseEntity.setMaxScore(submissionExercise.getMaxScore());
         submissionExerciseEntity.setFiles(new ArrayList<>());
         submissionExerciseEntity.setSolutions(new ArrayList<>());

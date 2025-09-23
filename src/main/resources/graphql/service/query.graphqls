@@ -115,10 +115,10 @@ type Query {
     """
     Returns the exercise and the submission by the user
     """
-    submissionExerciseByUser(exerciseId: UUID!): SubmissionExercise!
+    submissionExerciseByUser(assessmentId: UUID!): SubmissionExercise!
 
     """
     Returns the exercise with all submissions by all users
     """
-    submissionExerciseForLecturer(exerciseId: UUID!): SubmissionExercise!
+    submissionExerciseForLecturer(assessmentId: UUID!): SubmissionExercise!
 }

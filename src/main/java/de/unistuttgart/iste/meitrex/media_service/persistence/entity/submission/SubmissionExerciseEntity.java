@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,14 +15,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SubmissionExerciseEntity implements IWithId<UUID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private UUID assessmentId;
 
     private UUID courseId;
-
-    private OffsetDateTime startTime;
-
-    private OffsetDateTime endTime;
 
     private int maxScore;
 
@@ -35,4 +29,9 @@ public class SubmissionExerciseEntity implements IWithId<UUID> {
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<TaskEntity> tasks;
+
+    @Override
+    public UUID getId() {
+        return assessmentId;
+    }
 }
