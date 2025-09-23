@@ -104,6 +104,13 @@ type Mutation {
     selectAnswer(postId: UUID!): QuestionThread!
 
     """
+    Create a new SubmissionExercise.
+    ⚠️ This query is only accessible internally in the system and allows the caller to create a Quiz without
+    any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+    """
+    _internal_noauth_createSubmissionExercise(courseId: UUID!, assessmentId: UUID!, input: InputSubmissionExercise!): SubmissionExercise!
+
+    """
     creates a submission exercise and returns the exercise with the upload and download urls for the files
     """
     createSubmissionExercise(submissionExercise: InputSubmissionExercise!): SubmissionExercise!
