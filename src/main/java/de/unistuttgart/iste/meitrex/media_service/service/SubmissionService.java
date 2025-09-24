@@ -1,13 +1,10 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
-import de.unistuttgart.iste.meitrex.common.event.CourseChangeEvent;
-import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.*;
 import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.ExerciseSolutionEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.FileEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.ResultEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.SubmissionExerciseEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseSolutionRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionFileRepository;
@@ -29,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Slf4j
@@ -41,6 +39,8 @@ public class SubmissionService {
     private final SubmissionExerciseSolutionRepository submissionExerciseSolutionRepository;
     private final SubmissionResultRepository resultRepository;
     private final ModelMapper modelMapper;
+
+    private final TopicPublisher topicPublisher;
 
     private final MinioClient minioInternalClient;
     private final MinioClient minioExternalClient;
@@ -66,7 +66,7 @@ public class SubmissionService {
     private void updateSubmissionUrls(SubmissionExerciseEntity submissionExercise) {
         submissionExercise.getFiles().forEach(this::createUploadAndDownloadUrl);
         submissionExercise.getSolutions().forEach(exerciseSolutionEntity ->
-        {exerciseSolutionEntity.getFiles().forEach(this::createUploadAndDownloadUrl);});
+                exerciseSolutionEntity.getFiles().forEach(this::createUploadAndDownloadUrl));
     }
 
     public SubmissionExercise createSubmissionExercise(InputSubmissionExercise submissionExercise, UUID assessmentId, UUID courseId) {
@@ -87,7 +87,7 @@ public class SubmissionService {
         ExerciseSolutionEntity exerciseSolutionEntity = new ExerciseSolutionEntity();
         exerciseSolutionEntity.setUserId(userId);
         exerciseSolutionEntity.setFiles(new ArrayList<>());
-        exerciseSolutionEntity.setResult(initialResultEntity());
+        exerciseSolutionEntity.setResult(initialResultEntity(userId, submissionExercise.getTasks()));
         submissionExercise.getSolutions().add(exerciseSolutionEntity);
         submissionExerciseRepository.save(submissionExercise);
         return  modelMapper.map(solution, SubmissionSolution.class);
@@ -96,8 +96,37 @@ public class SubmissionService {
     public Result updateResult(InputResult result) {
         ResultEntity resultEntity = resultRepository.findById(result.getId()).orElseThrow(() ->
                 new  EntityNotFoundException("Result with id: " + result.getId() + " not found"));
-        resultEntity.setScore(result.getScore());
         resultEntity.setStatus(modelMapper.map(result.getStatus(), ResultEntity.Status.class));
+        result.getResults().forEach(taskResult -> resultEntity.getResults().stream()
+                .filter(taskResultEntity -> taskResultEntity.getTaskId()
+                .equals(taskResult.getTaskId())).findFirst()
+                .ifPresent( taskResultEntity -> taskResultEntity.setScore(taskResult.getScore())));
+        List<Response> responses = new ArrayList<>();
+        AtomicInteger requiredScore = new AtomicInteger();
+        AtomicInteger achievedScore = new AtomicInteger();
+        resultEntity.getResults().forEach(taskResult -> {
+            requiredScore.addAndGet(taskResult.getRequiredScore());
+            achievedScore.addAndGet(taskResult.getScore());
+            Response response = new Response(taskResult.getTaskId(), (float) taskResult.getRequiredScore() / taskResult.getScore());
+            responses.add(response);
+        });
+
+        double correctness = (double)requiredScore.get() / (double)achievedScore.get();
+
+        final ContentProgressedEvent userProgressLogEvent = ContentProgressedEvent.builder()
+                .userId(resultEntity.getUserId())
+                .contentId(result.getAssessmentId())
+                .hintsUsed(0)
+                .success(resultEntity.getStatus().equals(ResultEntity.Status.passed))
+                .timeToComplete(null)
+                .contentType(ContentProgressedEvent.ContentType.OTHER)
+                .correctness(correctness)
+                .responses(responses)
+                .build();
+
+        // publish new user progress event message
+        topicPublisher.notifyUserWorkedOnContent(userProgressLogEvent);
+
         resultRepository.save(resultEntity);
         return modelMapper.map(resultEntity, Result.class);
     }
@@ -178,16 +207,19 @@ public class SubmissionService {
         }
     }
 
-    private ResultEntity initialResultEntity() {
+    private ResultEntity initialResultEntity(UUID userId, List<TaskEntity> tasks) {
         ResultEntity resultEntity = new ResultEntity();
         resultEntity.setStatus(ResultEntity.Status.pending);
-        resultEntity.setScore(0);
+        resultEntity.setResults(new ArrayList<>());
+        resultEntity.setUserId(userId);
+        tasks.forEach(taskEntity -> resultEntity.getResults()
+                .add(new TaskResultEntity(taskEntity.getId(), taskEntity.getMaxScore(), 0)));
         return resultEntity;
     }
 
     private FileEntity createFile(String name) {
         FileEntity fileEntity = new FileEntity();
-        fileEntity.setName(name + "_submission");
+        fileEntity.setName(name);
         fileRepository.saveAndFlush(fileEntity);
         return fileEntity;
     }

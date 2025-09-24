@@ -30,6 +30,11 @@ type SubmissionSolution {
 type Result {
     id: UUID
     status: Status!
+    results: [TaskResult!]!
+}
+
+type TaskResult {
+    taskId: UUID!
     score: Int!
 }
 
@@ -40,10 +45,15 @@ enum Status {
 }
 
 input InputResult {
-    id: UUID
+    id: UUID!
     assessmentId: UUID!
     courseId: UUID!
     status: Status!
+    results: [InputTaskResult!]!
+}
+
+input InputTaskResult {
+    taskId: UUID!
     score: Int!
 }
 

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.checkerframework.checker.units.qual.C;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "Result")
@@ -26,8 +27,11 @@ public class ResultEntity implements IWithId<UUID> {
     private UUID id;
 
     @Column
-    private Status status;
+    private UUID userId;
 
     @Column
-    private int score;
+    private Status status;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<TaskResultEntity> results;
 }
