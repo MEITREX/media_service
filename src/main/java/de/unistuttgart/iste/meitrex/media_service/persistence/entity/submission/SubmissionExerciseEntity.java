@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class SubmissionExerciseEntity implements IWithId<UUID> {
 
     private UUID courseId;
 
-    private int maxScore;
+    private OffsetDateTime endDate;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<FileEntity> files;

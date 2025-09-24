@@ -1,7 +1,7 @@
 type SubmissionExercise {
     assessmentId: UUID
     courseId: UUID!
-    maxScore: Int!
+    endDate: DateTime!
     files: [File!]!
     solutions: [SubmissionSolution!]!
     tasks: [Task!]!
@@ -63,7 +63,7 @@ input InputSubmissionSolution {
 }
 
 input InputSubmissionExercise {
-    maxScore: Int!
+    endDate: DateTime!
     tasks: [InputTask]
 }
 

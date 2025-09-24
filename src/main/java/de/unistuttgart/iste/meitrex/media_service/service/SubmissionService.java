@@ -73,7 +73,7 @@ public class SubmissionService {
         SubmissionExerciseEntity submissionExerciseEntity = new SubmissionExerciseEntity();
         submissionExerciseEntity.setAssessmentId(assessmentId);
         submissionExerciseEntity.setCourseId(courseId);
-        submissionExerciseEntity.setMaxScore(submissionExercise.getMaxScore());
+        submissionExerciseEntity.setEndDate(submissionExercise.getEndDate());
         submissionExerciseEntity.setFiles(new ArrayList<>());
         submissionExerciseEntity.setSolutions(new ArrayList<>());
         submissionExerciseEntity.setTasks(new ArrayList<>());
