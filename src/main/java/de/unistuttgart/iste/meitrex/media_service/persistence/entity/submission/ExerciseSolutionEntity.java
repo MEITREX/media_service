@@ -25,7 +25,7 @@ public class ExerciseSolutionEntity implements IWithId<UUID> {
 
     private OffsetDateTime submissionDate;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,   orphanRemoval = true)
     private List<FileEntity> files;
 
     @OneToOne(cascade = CascadeType.ALL)

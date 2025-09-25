@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity(name = "File")
@@ -25,4 +26,10 @@ public class FileEntity implements IWithId<UUID> {
 
     @Column
     private String name;
+
+    @Column
+    private Instant uploadUrlExpiresAt;
+
+    @Column
+    private Instant downloadUrlExpiresAt;
 }

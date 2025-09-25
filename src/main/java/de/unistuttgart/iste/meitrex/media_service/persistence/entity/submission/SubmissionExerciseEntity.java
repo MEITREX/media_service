@@ -22,7 +22,7 @@ public class SubmissionExerciseEntity implements IWithId<UUID> {
 
     private OffsetDateTime endDate;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FileEntity> files;
 
     @OneToMany(cascade = CascadeType.ALL)
