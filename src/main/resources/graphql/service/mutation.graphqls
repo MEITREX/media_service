@@ -111,7 +111,12 @@ type Mutation {
     _internal_noauth_createSubmissionExercise(courseId: UUID!, assessmentId: UUID!, input: InputSubmissionExercise!): SubmissionExercise!
 
     """
-    creates a solution for an exercise and returns the solution with the upload and download urls for the files
+    adds a task to an assessment
+    """
+    addTask(assessmentId: UUID!, task: InputTask!): Task!
+
+    """
+    creates a solution for an exercise and returns the solution
     """
     uploadSolution(solution: InputSubmissionSolution!): SubmissionSolution!
 

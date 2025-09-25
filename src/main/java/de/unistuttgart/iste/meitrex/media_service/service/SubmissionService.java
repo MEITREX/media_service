@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -107,11 +108,13 @@ public class SubmissionService {
                 -> new  EntityNotFoundException("Solution with id: " + solution.getSubmissionExerciseId() + " not found"));
         ExerciseSolutionEntity exerciseSolutionEntity = new ExerciseSolutionEntity();
         exerciseSolutionEntity.setUserId(userId);
+        exerciseSolutionEntity.setSubmissionDate(OffsetDateTime.now());
         exerciseSolutionEntity.setFiles(new ArrayList<>());
         exerciseSolutionEntity.setResult(initialResultEntity(userId, submissionExercise.getTasks()));
         submissionExercise.getSolutions().add(exerciseSolutionEntity);
+        submissionExerciseSolutionRepository.save(exerciseSolutionEntity);
         submissionExerciseRepository.save(submissionExercise);
-        return  modelMapper.map(solution, SubmissionSolution.class);
+        return  modelMapper.map(exerciseSolutionEntity, SubmissionSolution.class);
     }
 
     public Result updateResult(InputResult result) {
