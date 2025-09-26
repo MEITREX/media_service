@@ -18,9 +18,14 @@ public class SubmissionExerciseEntity implements IWithId<UUID> {
     @Id
     private UUID assessmentId;
 
+    @Column
     private UUID courseId;
 
+    @Column
     private OffsetDateTime endDate;
+
+    @Column
+    private String name;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FileEntity> files;

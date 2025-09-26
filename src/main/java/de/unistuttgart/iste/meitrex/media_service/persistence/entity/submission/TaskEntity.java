@@ -18,6 +18,9 @@ public class TaskEntity implements IWithId<UUID> {
     private UUID itemId;
 
     @Column
+    private String name;
+
+    @Column
     private int maxScore;
 
     @Override
