@@ -8,10 +8,7 @@ import de.unistuttgart.iste.meitrex.media_service.service.SubmissionService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.ContextValue;
-import org.springframework.graphql.data.method.annotation.MutationMapping;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
 
 import java.util.UUID;
@@ -25,6 +22,8 @@ import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccess
 public class SubmissionController {
     private final SubmissionService submissionService;
     private final SubmissionExerciseRepository submissionExerciseRepository;
+
+    private static final String SUBMISSION_MUTATION_NAME = "SubmissionMutation";
 
     @QueryMapping
     public SubmissionExercise submissionExerciseByUser(@Argument UUID assessmentId,
@@ -77,5 +76,29 @@ public class SubmissionController {
                                    @Argument UUID solutionId,
                                    @ContextValue final LoggedInUser currentUser) {
          return submissionService.createSolutionFile(currentUser.getId(), solutionId, name);
+    }
+
+    @MutationMapping
+    public SubmissionMutation mutateSubmission(@Argument final UUID assessmentId,
+                                               @ContextValue final LoggedInUser currentUser) {
+        final SubmissionExerciseEntity submissionExercise = submissionService.requireSubmissionExerciseExists(assessmentId);
+        validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, submissionExercise.getCourseId());
+
+        return new SubmissionMutation(assessmentId);
+    }
+
+    @SchemaMapping(typeName = SUBMISSION_MUTATION_NAME)
+    public Task _internal_noauth_addTask(@Argument final InputTask input, final SubmissionMutation submissionMutation){
+        return submissionService.addTask(submissionMutation.getAssessmentId(), input);
+    }
+
+    @SchemaMapping(typeName = SUBMISSION_MUTATION_NAME)
+    public Task _internal_noauth_updateTask(@Argument final InputTask input, final SubmissionMutation submissionMutation){
+        return submissionService.updateTask(submissionMutation.getAssessmentId(), input);
+    }
+
+    @SchemaMapping(typeName = SUBMISSION_MUTATION_NAME)
+    public SubmissionExercise removeTask(@Argument final UUID itemId, final SubmissionMutation submissionMutation){
+        return submissionService.deleteTask(submissionMutation.getAssessmentId(), itemId);
     }
 }

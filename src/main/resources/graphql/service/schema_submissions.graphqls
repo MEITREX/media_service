@@ -15,7 +15,7 @@ type File {
 }
 
 type Task {
-    id: UUID!
+    itemId: UUID!
     maxScore: Int!
 }
 
@@ -68,6 +68,32 @@ input InputSubmissionExercise {
 }
 
 input InputTask {
-    assessmentId: UUID!
+    itemId: UUID!
     maxScore: Int!
+}
+
+type SubmissionMutation {
+    """
+    Id of the Submission to modify.
+    """
+    assessmentId: UUID!
+
+    """
+    Add a task to the Submission.
+    ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
+    any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+    """
+    _internal_noauth_addTask(input: InputTask!): Task!
+
+    """
+    Updates a task to the Submission.
+    ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
+    any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+    """
+    _internal_noauth_updateTask(input: InputTask!): Task!
+
+    """
+    removes Task with the given id
+    """
+    removeTask(itemId: UUID!): SubmissionExercise
 }

@@ -113,7 +113,7 @@ type Mutation {
     """
     adds a task to an assessment
     """
-    addTask(assessmentId: UUID!, task: InputTask!): Task!
+    mutateSubmission(assessmentId: UUID!): SubmissionMutation!
 
     """
     creates a solution for an exercise and returns the solution

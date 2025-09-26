@@ -5,10 +5,7 @@ import de.unistuttgart.iste.meitrex.common.event.*;
 import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.*;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseSolutionRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionFileRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionResultRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.RemoveObjectArgs;
@@ -54,6 +51,7 @@ public class SubmissionService {
 
     private final MinioClient minioInternalClient;
     private final MinioClient minioExternalClient;
+    private final TaskRepository taskRepository;
 
     public SubmissionExercise getSubmissionExerciseByUserId(UUID assessmentId, UUID userId) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(() ->
@@ -200,6 +198,49 @@ public class SubmissionService {
                     exerciseSolutionEntity.getFiles().forEach(this::deleteFile));
         });
         submissionExerciseRepository.deleteAll(submissionExerciseEntities);
+    }
+
+    /**
+     * Returns the submission with the given id or throws an exception if the submission does not exist.
+     *
+     * @param id the id of the submission
+     * @return the submission entity
+     * @throws EntityNotFoundException if the quiz does not exist
+     */
+    public SubmissionExerciseEntity requireSubmissionExerciseExists(final UUID id) {
+        return submissionExerciseRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + id + " not found"));
+    }
+
+    public Task addTask(final UUID assessmentId, final InputTask inputTask) {
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId)
+                .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
+        TaskEntity taskEntity = new TaskEntity(inputTask.getItemId(), inputTask.getMaxScore());
+        submissionExercise.getTasks().add(taskEntity);
+        submissionExerciseRepository.save(submissionExercise);
+        return modelMapper.map(taskEntity, Task.class);
+    }
+
+    public Task updateTask(final UUID assessmentId, final InputTask inputTask) {
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId)
+                .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
+        TaskEntity taskEntity = submissionExercise.getTasks().stream().filter(taskEntity1 -> taskEntity1.getId().equals(inputTask.getItemId())).findFirst().orElseThrow(
+                () -> new EntityNotFoundException("Task with id " + inputTask.getItemId() + " not found")
+        );
+        taskEntity.setMaxScore(inputTask.getMaxScore());
+        taskEntity = taskRepository.save(taskEntity);
+        return modelMapper.map(taskEntity, Task.class);
+    }
+
+    public SubmissionExercise deleteTask(final UUID assessmentId, final UUID itemId) {
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId)
+                .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
+        TaskEntity taskEntity = submissionExercise.getTasks().stream().filter(taskEntity1 -> taskEntity1.getId().equals(itemId)).findFirst().orElseThrow(
+                () -> new EntityNotFoundException("Task with id " + itemId + " not found")
+        );
+        submissionExercise.getTasks().remove(taskEntity);
+        taskRepository.delete(taskEntity);
+        return modelMapper.map(submissionExerciseRepository.save(submissionExercise), SubmissionExercise.class);
     }
 
     @Scheduled(cron = "0 0 * * * *", zone = "Europe/Berlin") // every hour
