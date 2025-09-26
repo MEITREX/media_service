@@ -17,7 +17,7 @@ public class TaskResultEntity {
     private UUID id;
 
     @Column
-    private UUID taskId;
+    private UUID itemId;
 
     @Column
     private Integer requiredScore;
@@ -25,8 +25,8 @@ public class TaskResultEntity {
     @Column
     private Integer score;
 
-    public TaskResultEntity(UUID taskId, int requiredScore, int score) {
-        this.taskId = taskId;
+    public TaskResultEntity(UUID itemId, int requiredScore, int score) {
+        this.itemId = itemId;
         this.requiredScore = requiredScore;
         this.score = score;
     }

@@ -36,7 +36,7 @@ type Result {
 }
 
 type TaskResult {
-    taskId: UUID!
+    itemId: UUID!
     number: Int!
     score: Int!
 }
@@ -56,7 +56,7 @@ input InputResult {
 }
 
 input InputTaskResult {
-    taskId: UUID!
+    itemId: UUID!
     score: Int!
 }
 

@@ -100,7 +100,7 @@ public class MutationUpdateResultTest {
                             status: %s,
                             results: [
                                 {
-                                    taskId: "%s",
+                                    itemId: "%s",
                                     score: %s
                                 }
                             ]
@@ -108,7 +108,7 @@ public class MutationUpdateResultTest {
                         id,
                         status,
                         results {
-                            taskId,
+                            itemId,
                             score
                         }
                     }
@@ -121,7 +121,7 @@ public class MutationUpdateResultTest {
         assertThat(result.getStatus(), is(Status.passed));
         assertThat(result.getResults().size(), is(1));
         assertThat(result.getResults().get(0).getScore(), is(100));
-        assertThat(result.getResults().get(0).getTaskId(), is(submissionExerciseEntity.getTasks().get(0).getId()));
+        assertThat(result.getResults().get(0).getItemId(), is(submissionExerciseEntity.getTasks().get(0).getId()));
     }
 
     private ResultEntity initialResultEntity(UUID userId, List<TaskEntity> tasks) {

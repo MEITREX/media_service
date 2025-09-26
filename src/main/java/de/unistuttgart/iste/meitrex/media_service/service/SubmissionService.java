@@ -121,8 +121,8 @@ public class SubmissionService {
                 new  EntityNotFoundException("Result with id: " + result.getId() + " not found"));
         resultEntity.setStatus(modelMapper.map(result.getStatus(), ResultEntity.Status.class));
         result.getResults().forEach(taskResult -> resultEntity.getResults().stream()
-                .filter(taskResultEntity -> taskResultEntity.getTaskId()
-                .equals(taskResult.getTaskId())).findFirst()
+                .filter(taskResultEntity -> taskResultEntity.getItemId()
+                .equals(taskResult.getItemId())).findFirst()
                 .ifPresent( taskResultEntity -> taskResultEntity.setScore(taskResult.getScore())));
         List<Response> responses = new ArrayList<>();
         AtomicInteger requiredScore = new AtomicInteger();
@@ -130,7 +130,7 @@ public class SubmissionService {
         resultEntity.getResults().forEach(taskResult -> {
             requiredScore.addAndGet(taskResult.getRequiredScore());
             achievedScore.addAndGet(taskResult.getScore());
-            Response response = new Response(taskResult.getTaskId(), (float) taskResult.getRequiredScore() / taskResult.getScore());
+            Response response = new Response(taskResult.getItemId(), (float) taskResult.getRequiredScore() / taskResult.getScore());
             responses.add(response);
         });
 
