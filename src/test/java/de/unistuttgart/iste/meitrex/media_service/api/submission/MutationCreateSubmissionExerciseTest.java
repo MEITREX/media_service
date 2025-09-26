@@ -54,11 +54,13 @@ public class MutationCreateSubmissionExerciseTest {
                         courseId: "%s",
                         assessmentId: "%s",
                         input: {
-                            endDate: "%s"
+                            endDate: "%s",
+                            name: "Test name"
                         }) {
                         assessmentId,
                         courseId,
-                        endDate
+                        endDate,
+                        name
                     }
                 }
         """.formatted(courseId, assessmentId, createdAt);
@@ -66,6 +68,7 @@ public class MutationCreateSubmissionExerciseTest {
                 .execute()
                 .path("_internal_noauth_createSubmissionExercise").entity(SubmissionExercise.class).get();
         assertThat(submissionExercise.getCourseId(), is(courseId));
+        assertThat(submissionExercise.getName(), is("Test name"));
         assertThat(submissionExercise.getAssessmentId(), is(assessmentId));
         assertThat(submissionExercise.getEndDate().toInstant().truncatedTo(ChronoUnit.MILLIS),
                 is(createdAt.toInstant().truncatedTo(ChronoUnit.MILLIS)));

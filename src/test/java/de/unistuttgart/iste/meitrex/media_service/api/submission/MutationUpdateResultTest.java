@@ -76,6 +76,7 @@ public class MutationUpdateResultTest {
         submissionExerciseRepository.save(submissionExerciseEntity);
 
         TaskEntity taskEntity = new TaskEntity();
+        taskEntity.setItemId(UUID.randomUUID());
         taskEntity.setMaxScore(100);
         submissionExerciseEntity.getTasks().add(taskEntity);
         submissionExerciseEntity = submissionExerciseRepository.save(submissionExerciseEntity);
