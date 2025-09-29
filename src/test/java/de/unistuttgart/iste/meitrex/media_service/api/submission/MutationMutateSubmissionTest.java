@@ -78,9 +78,14 @@ public class MutationMutateSubmissionTest {
                             itemId: "%s",
                             maxScore: 100
                         }) {
-                            name,
-                            itemId,
-                            maxScore
+                            assessmentId
+                            courseId
+                            endDate
+                            tasks {
+                                name,
+                                itemId,
+                                maxScore
+                            }
                         }
                     }
                 }
@@ -131,9 +136,14 @@ public class MutationMutateSubmissionTest {
                             itemId: "%s",
                             maxScore: 200
                         }) {
-                            name,
-                            itemId,
-                            maxScore
+                            assessmentId
+                            courseId
+                            endDate
+                            tasks {
+                                name,
+                                itemId,
+                                maxScore
+                            }
                         }
                     }
                 }
