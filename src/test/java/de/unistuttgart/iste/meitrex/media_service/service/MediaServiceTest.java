@@ -91,7 +91,7 @@ class MediaServiceTest {
                 .progressData(List.of())
                 .build();
 
-        doReturn(Optional.of(entity)).when(repository).findWithCoursesById(entity.getId());
+        when(repository.findById(entity.getId())).thenReturn(Optional.of(entity));
         final MediaRecordEntity actual = mapper.map(service.getMediaRecordById(entity.getId()), MediaRecordEntity.class);
 
         assertThat(actual.getId(), is(entity.getId()));
