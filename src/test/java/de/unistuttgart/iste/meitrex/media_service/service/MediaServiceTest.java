@@ -225,4 +225,87 @@ class MediaServiceTest {
         assertThrows(EntityNotFoundException.class, () -> service.publishMaterialPublishedEvent(mediaId));
     }
 
+    @Test
+    void TestGetMediaRecordsForUser() {
+        UUID userId = UUID.randomUUID();
+        MediaRecordEntity e1 = MediaRecordEntity.builder().id(UUID.randomUUID()).name("A")
+                .creatorId(userId).contentIds(List.of()).courseIds(List.of()).progressData(List.of()).build();
+        MediaRecordEntity e2 = MediaRecordEntity.builder().id(UUID.randomUUID()).name("B")
+                .creatorId(userId).contentIds(List.of()).courseIds(List.of()).progressData(List.of()).build();
+        when(repository.findMediaRecordEntitiesByCreatorId(userId)).thenReturn(List.of(e1, e2));
+
+        var list = service.getMediaRecordsForUser(userId);
+        var r1 = mapper.map(list.get(0), MediaRecordEntity.class);
+        var r2 = mapper.map(list.get(1), MediaRecordEntity.class);
+
+        assertThat(r1.getId(), is(e1.getId()));
+        assertThat(r2.getId(), is(e2.getId()));
+        assertThat(list.size(), is(2));
+    }
+
+    @Test
+    void TestGetMediaRecordsForUsers() {
+        UUID u1 = UUID.randomUUID();
+        UUID u2 = UUID.randomUUID();
+        MediaRecordEntity e1 = MediaRecordEntity.builder().id(UUID.randomUUID()).name("A")
+                .creatorId(u1).contentIds(List.of()).courseIds(List.of()).progressData(List.of()).build();
+        MediaRecordEntity e2 = MediaRecordEntity.builder().id(UUID.randomUUID()).name("B")
+                .creatorId(u1).contentIds(List.of()).courseIds(List.of()).progressData(List.of()).build();
+
+        when(repository.findMediaRecordEntitiesByCreatorId(u1)).thenReturn(List.of(e1, e2));
+        when(repository.findMediaRecordEntitiesByCreatorId(u2)).thenReturn(List.of());
+
+        var result = service.getMediaRecordsForUsers(List.of(u1, u2));
+        assertThat(result.size(), is(2));
+
+        var u1List = result.get(0);
+        var a = mapper.map(u1List.get(0), MediaRecordEntity.class);
+        var b = mapper.map(u1List.get(1), MediaRecordEntity.class);
+        assertThat(a.getId(), is(e1.getId()));
+        assertThat(b.getId(), is(e2.getId()));
+
+        var u2List = result.get(1);
+        assertThat(u2List.size(), is(0));
+    }
+
+    @Test
+    void TestGetMediaRecordEntitiesByContentId() {
+        UUID contentId = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder().id(UUID.randomUUID()).name("X")
+                .contentIds(List.of(contentId)).creatorId(UUID.randomUUID()).courseIds(List.of()).progressData(List.of()).build();
+
+        when(repository.findMediaRecordEntitiesByContentIds(List.of(contentId))).thenReturn(List.of(e));
+
+        var list = service.getMediaRecordEntitiesByContentId(contentId);
+        assertThat(list.size(), is(1));
+        assertThat(list.get(0).getId(), is(e.getId()));
+    }
+
+    @Test
+    void TestGetMediaRecordsForCourses() {
+        UUID c1 = UUID.randomUUID();
+        UUID c2 = UUID.randomUUID();
+
+        MediaRecordEntity e1 = MediaRecordEntity.builder().id(UUID.randomUUID()).name("E1")
+                .courseIds(List.of(c1)).contentIds(List.of()).creatorId(UUID.randomUUID()).progressData(List.of()).build();
+        MediaRecordEntity e2 = MediaRecordEntity.builder().id(UUID.randomUUID()).name("E2")
+                .courseIds(List.of(c1, c2)).contentIds(List.of()).creatorId(UUID.randomUUID()).progressData(List.of()).build();
+
+        when(repository.findMediaRecordEntitiesByCourseIds(List.of(c1, c2))).thenReturn(List.of(e1, e2));
+
+        var result = service.getMediaRecordsForCourses(List.of(c1, c2));
+        assertThat(result.size(), is(2));
+
+        var listForC1 = result.get(0);
+        var listForC2 = result.get(1);
+
+        var c1Ids = listForC1.stream().map(x -> mapper.map(x, MediaRecordEntity.class).getId()).toList();
+        var c2Ids = listForC2.stream().map(x -> mapper.map(x, MediaRecordEntity.class).getId()).toList();
+
+        assertThat(c1Ids.contains(e1.getId()), is(true));
+        assertThat(c1Ids.contains(e2.getId()), is(true));
+        assertThat(c2Ids.contains(e2.getId()), is(true));
+        assertThat(c2Ids.contains(e1.getId()), is(false));
+    }
+
 }
