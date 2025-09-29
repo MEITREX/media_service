@@ -12,6 +12,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -306,6 +311,46 @@ class MediaServiceTest {
         assertThat(c1Ids.contains(e2.getId()), is(true));
         assertThat(c2Ids.contains(e2.getId()), is(true));
         assertThat(c2Ids.contains(e1.getId()), is(false));
+    }
+
+    @Test
+    void TestRemoveExpiredUrls_private_expired() throws Exception {
+        var m = service.getClass().getDeclaredMethod("getMediaRecordsForUser", UUID.class).getGenericReturnType();
+        var mediaRecordClass = (Class<?>) ((ParameterizedType) m).getActualTypeArguments()[0];
+        Object record = mediaRecordClass.getDeclaredConstructor().newInstance();
+        var setD = mediaRecordClass.getMethod("setDownloadUrl", String.class);
+        var setU = mediaRecordClass.getMethod("setUploadUrl", String.class);
+        var setS = mediaRecordClass.getMethod("setStandardizedDownloadUrl", String.class);
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss").withZone(ZoneOffset.UTC);
+        String past = f.format(Instant.now().minusSeconds(3600));
+        String expired = "https://x?X-Amz-Date=" + past + "&X-Amz-Expires=60";
+        setD.invoke(record, expired);
+        setU.invoke(record, expired);
+        setS.invoke(record, expired);
+        Method rm = service.getClass().getDeclaredMethod("removeExpiredUrlsFromMediaRecord", mediaRecordClass);
+        rm.setAccessible(true);
+        Object out = rm.invoke(service, record);
+        var getD = mediaRecordClass.getMethod("getDownloadUrl");
+        var getU = mediaRecordClass.getMethod("getUploadUrl");
+        var getS = mediaRecordClass.getMethod("getStandardizedDownloadUrl");
+        assertThat(getD.invoke(out) == null, is(true));
+        assertThat(getU.invoke(out) == null, is(true));
+        assertThat(getS.invoke(out) == null, is(true));
+    }
+
+    @Test
+    void TestIsExpired_private() throws Exception {
+        Method isExp = service.getClass().getDeclaredMethod("isExpired", String.class);
+        isExp.setAccessible(true);
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss").withZone(ZoneOffset.UTC);
+        String past = f.format(Instant.now().minusSeconds(7200));
+        String future = f.format(Instant.now());
+        String expired = "https://x?X-Amz-Date=" + past + "&X-Amz-Expires=60";
+        String notExpired = "https://x?X-Amz-Date=" + future + "&X-Amz-Expires=7200";
+        boolean e1 = (Boolean) isExp.invoke(service, expired);
+        boolean e2 = (Boolean) isExp.invoke(service, notExpired);
+        assertThat(e1, is(true));
+        assertThat(e2, is(false));
     }
 
 }
