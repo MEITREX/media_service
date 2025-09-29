@@ -24,6 +24,12 @@ public interface MediaRecordRepository extends MeitrexRepository<MediaRecordEnti
     @EntityGraph(attributePaths = "courseIds")
     Optional<MediaRecordEntity> findWithCoursesById(UUID id);
 
+    @Query("select m.contentIds from MediaRecord m where m.id = :id")
+    List<UUID> findContentIdsByMediaRecordId(@Param("id") UUID id);
+
+    @Query("select m.courseIds from MediaRecord m where m.id = :id")
+    List<UUID> findCourseIdsByMediaRecordId(@Param("id") UUID id);
+
     @Query("SELECT DISTINCT media FROM MediaRecord media JOIN media.courseIds actualIds WHERE actualIds IN :courseIds")
     List<MediaRecordEntity> findMediaRecordEntitiesByCourseIds(@Param("courseIds") List<UUID> courseIds);
 }

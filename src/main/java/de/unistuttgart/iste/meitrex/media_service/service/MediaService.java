@@ -826,11 +826,7 @@ public class MediaService {
                 .orElseThrow(() -> new IllegalArgumentException("MediaRecord not found: " + mediaRecordId));
 
         List<UUID> courseIds = entity.getCourseIds();
-
-        if (courseIds == null || courseIds.isEmpty()) {
-            log.info("MediaRecord {} has no courseIds, skip notification.", mediaRecordId);
-            return;
-        }
+        List<UUID> contentIds = repository.findContentIdsByMediaRecordId(mediaRecordId);
 
         String filename = (entity.getName() == null || entity.getName().isBlank())
                 ? "Unnamed File"
@@ -838,8 +834,20 @@ public class MediaService {
         String title = "New Material is uploaded!";
         String message = "material: " + filename;
 
+        UUID latestContentId = (contentIds != null && !contentIds.isEmpty())
+                ? contentIds.get(contentIds.size() - 1)
+                : null;
+
+        boolean isVideo = (modelMapper.map(entity.getType(), MediaType.class) == MediaType.VIDEO);
+
         for (UUID courseId : courseIds) {
-            String pageLink = "/courses/" + courseId;
+            String base = "/courses/" + courseId + "/media";
+            if (latestContentId != null) {
+                base += "/" + latestContentId;
+            }
+            String pageLink = base + (isVideo
+                    ? ("?selectedVideo=" + entity.getId())
+                    : ("?selectedDocument=" + entity.getId()));
             topicPublisher.notificationEvent(
                     courseId,
                     null,
