@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 import java.util.Optional;
@@ -165,6 +164,65 @@ class MediaServiceTest {
                 eq("New Material is uploaded!"),
                 eq("material: Video.mp4")
         );
+    }
+
+    @Test
+    void TestPublishMediaRecordFile_withContentId_document() {
+        UUID mediaId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        UUID latestContentId = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder()
+                .id(mediaId).name("Doc.pdf")
+                .courseIds(List.of(courseId))
+                .contentIds(List.of(latestContentId))
+                .creatorId(UUID.randomUUID())
+                .progressData(List.of())
+                .type(MediaRecordEntity.MediaType.DOCUMENT).build();
+
+        doReturn(Optional.of(e)).when(repository).findWithCoursesById(mediaId);
+        when(repository.findContentIdsByMediaRecordId(mediaId)).thenReturn(List.of(latestContentId));
+
+        service.publishMaterialPublishedEvent(mediaId);
+
+        verify(topicPublisher).notificationEvent(
+                eq(courseId), isNull(), eq(ServerSource.MEDIA),
+                eq("/courses/" + courseId + "/media/" + latestContentId + "?selectedDocument=" + mediaId),
+                eq("New Material is uploaded!"),
+                eq("material: Doc.pdf")
+        );
+    }
+
+    @Test
+    void TestPublishMediaRecordFile_withContentId_video() {
+        UUID mediaId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        UUID latestContentId = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder()
+                .id(mediaId).name("Clip.mp4")
+                .courseIds(List.of(courseId))
+                .contentIds(List.of(latestContentId))
+                .creatorId(UUID.randomUUID())
+                .progressData(List.of())
+                .type(MediaRecordEntity.MediaType.VIDEO).build();
+
+        doReturn(Optional.of(e)).when(repository).findWithCoursesById(mediaId);
+        when(repository.findContentIdsByMediaRecordId(mediaId)).thenReturn(List.of(latestContentId));
+
+        service.publishMaterialPublishedEvent(mediaId);
+
+        verify(topicPublisher).notificationEvent(
+                eq(courseId), isNull(), eq(ServerSource.MEDIA),
+                eq("/courses/" + courseId + "/media/" + latestContentId + "?selectedVideo=" + mediaId),
+                eq("New Material is uploaded!"),
+                eq("material: Clip.mp4")
+        );
+    }
+
+    @Test
+    void TestPublishMediaRecordFile_notFound() {
+        UUID mediaId = UUID.randomUUID();
+        doReturn(Optional.empty()).when(repository).findWithCoursesById(mediaId);
+        assertThrows(EntityNotFoundException.class, () -> service.publishMaterialPublishedEvent(mediaId));
     }
 
 }
