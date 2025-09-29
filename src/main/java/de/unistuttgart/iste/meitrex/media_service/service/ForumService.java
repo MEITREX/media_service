@@ -10,8 +10,7 @@ import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
-import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
-import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
+import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +47,9 @@ public class ForumService {
 
     private final ForumMapper forumMapper;
     private final ThreadMapper threadMapper;
+    private final PostMapper postMapper;
+    private final QuestionThreadMapper questionThreadMapper;
+    private final InfoThreadMapper infoThreadMapper;
     private final QuestionThreadRepository questionThreadRepository;
 
     public Forum addUserToForum(UUID forumId, UUID userId) {
@@ -90,6 +92,7 @@ public class ForumService {
         String censored_content = profanityFilter.censor(post.getContent());
         log.info("Censored post content: {}", censored_content);
         PostEntity postEntity = new PostEntity(censored_content, userId, thread);
+        postEntity.setReferenceId(post.getReference());
         postEntity = postRepository.save(postEntity);
         log.info("Added Post to thread: {}", postEntity);
         thread.getPosts().add(postEntity);
@@ -107,7 +110,7 @@ public class ForumService {
         }
 
         topicPublisher.notifyForumActivity(event);
-        return modelMapper.map(postEntity, Post.class);
+        return postMapper.mapToPostWithThread(postEntity, thread);
     }
 
     public Post upvotePost(PostEntity postEntity, UUID userId) {
@@ -117,7 +120,7 @@ public class ForumService {
         } else {
             postEntity.getUpvotedByUsers().remove(userId);
         }
-        return modelMapper.map(postRepository.save(postEntity), Post.class);
+        return postMapper.mapToPost(postRepository.save(postEntity));
     }
 
     public Post downvotePost(PostEntity postEntity, UUID userId) {
@@ -127,7 +130,7 @@ public class ForumService {
         } else {
             postEntity.getDownvotedByUsers().remove(userId);
         }
-        return modelMapper.map(postRepository.save(postEntity), Post.class);
+        return postMapper.mapToPost(postRepository.save(postEntity));
     }
 
     public QuestionThread createQuestionThread(InputQuestionThread thread, ForumEntity forum ,UUID userId) {
@@ -152,7 +155,7 @@ public class ForumService {
                         .courseId(forum.getCourseId())
                         .activity(ForumActivity.QUESTION)
                 .build());
-        return modelMapper.map(threadEntity, QuestionThread.class);
+        return questionThreadMapper.mapQuestionThread(threadEntity);
     }
 
     public InfoThread createInfoThread(InputInfoThread thread, ForumEntity forum, UUID userId) {
@@ -179,7 +182,7 @@ public class ForumService {
                 .activity(ForumActivity.THREAD)
                 .build());
 
-        return modelMapper.map(threadEntity, InfoThread.class);
+        return infoThreadMapper.mapInfoThread(threadEntity);
     }
 
     private void addThreatToContentOnThreadCreation(ThreadEntity thread, UUID contentId, Integer timeStampSeconds, Integer pageNumber) {
@@ -201,7 +204,7 @@ public class ForumService {
         String content_censored = profanityFilter.censor(post.getContent());
         postEntity.setContent(content_censored);
         postEntity.setEdited(true);
-        return modelMapper.map(postRepository.save(postEntity), Post.class);
+        return postMapper.mapToPost(postRepository.save(postEntity));
     }
 
     public Post deletePost(PostEntity post, LoggedInUser user) throws AuthenticationException {
@@ -210,7 +213,7 @@ public class ForumService {
                 || user.getRealmRoles().contains(LoggedInUser.RealmRole.SUPER_USER))) {
             throw new AuthenticationException("User is not authorized to delete this post");
         }
-        Post realPost = modelMapper.map(post, Post.class);
+        Post realPost = postMapper.mapToPost(post);
         ThreadEntity thread = post.getThread();
         thread.getPosts().remove(post);
         thread.setNumberOfPosts(thread.getNumberOfPosts() - 1);
@@ -249,19 +252,21 @@ public class ForumService {
         log.info(answer.getThread().toString());
         QuestionThreadEntity questionThread = questionThreadRepository.findById(answer.getThread().getId()).orElseThrow(
                 () -> new EntityNotFoundException("QuestionThread with the id " + answer.getThread().getId() + NOT_FOUND));
-        questionThread.setSelectedAnswer(answer);
-        ForumActivityEvent forumActivityEvent = ForumActivityEvent.builder()
-                .userId(answer.getAuthorId())
-                .forumId(questionThread.getForum().getId())
-                .courseId(questionThread.getForum().getCourseId())
-                .activity(ForumActivity.ANSWER_ACCEPTED)
-                .build();
-        topicPublisher.notifyForumActivity(forumActivityEvent);
+        if (questionThread.getSelectedAnswer() != null && questionThread.getSelectedAnswer().getId().equals(answer.getId())) {
+            questionThread.setSelectedAnswer(null);
+        } else {
+            questionThread.setSelectedAnswer(answer);
+            ForumActivityEvent forumActivityEvent = ForumActivityEvent.builder()
+                    .userId(answer.getAuthorId())
+                    .forumId(questionThread.getForum().getId())
+                    .courseId(questionThread.getForum().getCourseId())
+                    .activity(ForumActivity.ANSWER_ACCEPTED)
+                    .build();
+            topicPublisher.notifyForumActivity(forumActivityEvent);
+        }
         questionThread = threadRepository.save(questionThread);
 
-
-
-        return modelMapper.map(questionThread, QuestionThread.class);
+        return questionThreadMapper.mapQuestionThread(questionThread);
     }
 
     private ForumEntity createForum(UUID courseId) {
@@ -381,7 +386,7 @@ public class ForumService {
                 .max()
                 .orElse(1);
 
-        List<Thread> openQuestions = questionThreads.stream()
+        return questionThreads.stream()
                 .sorted((qt1, qt2) -> {
                     double score1 = calculatePriorityScore(qt1, maxUpvotes, alpha, beta);
                     double score2 = calculatePriorityScore(qt2, maxUpvotes, alpha, beta);
@@ -389,8 +394,6 @@ public class ForumService {
                 })
                 .limit(4)
                 .collect(Collectors.toList());
-
-        return openQuestions;
     }
 
     /*

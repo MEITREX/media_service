@@ -13,15 +13,16 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ThreadMapper {
-    private final ModelMapper modelMapper;
+    private final InfoThreadMapper infoThreadMapper;
+    private final QuestionThreadMapper questionThreadMapper;
 
     public Thread mapThread(ThreadEntity threadEntity) {
         switch (threadEntity) {
             case QuestionThreadEntity questionThread -> {
-                return modelMapper.map(questionThread, QuestionThread.class);
+                return questionThreadMapper.mapQuestionThread(questionThread);
             }
             case InfoThreadEntity infoThreadEntity -> {
-                return modelMapper.map(infoThreadEntity, InfoThread.class);
+                return infoThreadMapper.mapInfoThread(infoThreadEntity);
             }
             default -> throw new IllegalArgumentException("Unknown thread: " + threadEntity);
         }
