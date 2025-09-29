@@ -129,7 +129,7 @@ public class SubmissionService {
                 .hintsUsed(0)
                 .success(resultEntity.getStatus().equals(ResultEntity.Status.passed))
                 .timeToComplete(null)
-                .contentType(ContentProgressedEvent.ContentType.OTHER)
+                .contentType(ContentProgressedEvent.ContentType.SUBMISSION)
                 .correctness(correctness)
                 .responses(responses)
                 .build();
@@ -200,16 +200,16 @@ public class SubmissionService {
                 .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + id + " not found"));
     }
 
-    public Task addTask(final UUID assessmentId, final InputTask inputTask) {
+    public SubmissionExercise addTask(final UUID assessmentId, final InputTask inputTask) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId)
                 .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
         TaskEntity taskEntity = new TaskEntity(inputTask.getItemId(), inputTask.getName(), inputTask.getNumber() ,inputTask.getMaxScore());
         submissionExercise.getTasks().add(taskEntity);
-        submissionExerciseRepository.save(submissionExercise);
-        return modelMapper.map(taskEntity, Task.class);
+        submissionExercise = submissionExerciseRepository.save(submissionExercise);
+        return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
-    public Task updateTask(final UUID assessmentId, final InputTask inputTask) {
+    public SubmissionExercise updateTask(final UUID assessmentId, final InputTask inputTask) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId)
                 .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
         TaskEntity taskEntity = submissionExercise.getTasks().stream().filter(taskEntity1 -> taskEntity1.getId().equals(inputTask.getItemId())).findFirst().orElseThrow(
@@ -219,7 +219,8 @@ public class SubmissionService {
         taskEntity.setName(inputTask.getName());
         taskEntity.setNumber(inputTask.getNumber());
         taskEntity = taskRepository.save(taskEntity);
-        return modelMapper.map(taskEntity, Task.class);
+        submissionExercise =  submissionExerciseRepository.save(submissionExercise);
+        return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
     public SubmissionExercise deleteTask(final UUID assessmentId, final UUID itemId) {

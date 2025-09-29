@@ -87,14 +87,14 @@ type SubmissionMutation {
     ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
     any permissions check and should not be called without any validation of the caller's permissions. ⚠️
     """
-    _internal_noauth_addTask(input: InputTask!): Task!
+    _internal_noauth_addTask(input: InputTask!): SubmissionExercise!
 
     """
     Updates a task to the Submission.
     ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
     any permissions check and should not be called without any validation of the caller's permissions. ⚠️
     """
-    _internal_noauth_updateTask(input: InputTask!): Task!
+    _internal_noauth_updateTask(input: InputTask!): SubmissionExercise!
 
     """
     removes Task with the given id

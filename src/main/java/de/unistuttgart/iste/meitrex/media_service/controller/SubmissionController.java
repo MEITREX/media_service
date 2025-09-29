@@ -88,12 +88,12 @@ public class SubmissionController {
     }
 
     @SchemaMapping(typeName = SUBMISSION_MUTATION_NAME)
-    public Task _internal_noauth_addTask(@Argument final InputTask input, final SubmissionMutation submissionMutation){
+    public SubmissionExercise _internal_noauth_addTask(@Argument final InputTask input, final SubmissionMutation submissionMutation){
         return submissionService.addTask(submissionMutation.getAssessmentId(), input);
     }
 
     @SchemaMapping(typeName = SUBMISSION_MUTATION_NAME)
-    public Task _internal_noauth_updateTask(@Argument final InputTask input, final SubmissionMutation submissionMutation){
+    public SubmissionExercise _internal_noauth_updateTask(@Argument final InputTask input, final SubmissionMutation submissionMutation){
         return submissionService.updateTask(submissionMutation.getAssessmentId(), input);
     }
 
