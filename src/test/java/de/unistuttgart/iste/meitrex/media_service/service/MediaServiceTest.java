@@ -26,7 +26,8 @@ import static org.mockito.Mockito.*;
 @EnableAsync
 class MediaServiceTest {
 
-    private final MediaRecordRepository repository = mock(MediaRecordRepository.class);
+    private final MediaRecordRepository repository =
+            mock(MediaRecordRepository.class);
 
     private final MinioClient mockMinIoClient = new MockMinIoClientConfiguration().getTestMinIoClient();
 
@@ -73,26 +74,33 @@ class MediaServiceTest {
         when(repository.findById(entity.getId())).thenReturn(Optional.of(entity));
         final MediaRecordEntity actual = mapper.map(service.getMediaRecordById(entity.getId()), MediaRecordEntity.class);
 
-        assertThat(actual, is(entity));
+        assertThat(actual.getId(), is(entity.getId()));
+        assertThat(actual.getCreatorId(), is(entity.getCreatorId()));
+        assertThat(actual.getContentIds(), is(entity.getContentIds()));
+        assertThat(actual.getProgressData(), is(entity.getProgressData()));
     }
 
     @Test
     void testGetMediaRecordByIdWithCourseIds() {
-        final List<UUID> courseIds = List.of(UUID.randomUUID(), UUID.randomUUID());
 
         final MediaRecordEntity entity = MediaRecordEntity.builder()
                 .id(UUID.randomUUID())
-                .courseIds(courseIds)
                 .contentIds(List.of(UUID.randomUUID()))
+                .courseIds(List.of(UUID.randomUUID()))
                 .creatorId(UUID.randomUUID())
                 .progressData(List.of())
                 .build();
 
-        when(repository.findById(entity.getId())).thenReturn(Optional.of(entity));
+        doReturn(Optional.of(entity)).when(repository).findWithCoursesById(entity.getId());
         final MediaRecordEntity actual = mapper.map(service.getMediaRecordById(entity.getId()), MediaRecordEntity.class);
 
-        assertThat(actual, is(entity));
+        assertThat(actual.getId(), is(entity.getId()));
+        assertThat(actual.getCreatorId(), is(entity.getCreatorId()));
+        assertThat(actual.getCourseIds(), is(entity.getCourseIds()));
+        assertThat(actual.getContentIds(), is(entity.getContentIds()));
+        assertThat(actual.getProgressData(), is(entity.getProgressData()));
     }
+
     @Test
     void TestPublishMediaRecordFile() {
         UUID mediaId = UUID.randomUUID();
@@ -101,15 +109,16 @@ class MediaServiceTest {
                 .id(mediaId).name("Lecture.pdf")
                 .courseIds(List.of(courseId))
                 .contentIds(List.of()).creatorId(UUID.randomUUID())
-                .progressData(List.of()).build();
+                .progressData(List.of()).type(MediaRecordEntity.MediaType.DOCUMENT).build();
 
-        when(repository.findWithCoursesById(mediaId)).thenReturn(Optional.of(e));
+        doReturn(Optional.of(e)).when(repository).findWithCoursesById(mediaId);
+        when(repository.findContentIdsByMediaRecordId(mediaId)).thenReturn(List.of());
 
         service.publishMaterialPublishedEvent(mediaId);
 
         verify(topicPublisher).notificationEvent(
                 eq(courseId), isNull(), eq(ServerSource.MEDIA),
-                eq("/courses/" + courseId),
+                eq("/courses/" + courseId + "/media?selectedDocument=" + mediaId),
                 eq("New Material is uploaded!"),
                 eq("material: Lecture.pdf")
         );
@@ -120,17 +129,41 @@ class MediaServiceTest {
         UUID mid = UUID.randomUUID(), cid = UUID.randomUUID();
         MediaRecordEntity e = MediaRecordEntity.builder().id(mid).name(null)
                 .courseIds(List.of(cid)).contentIds(List.of()).creatorId(UUID.randomUUID())
-                .progressData(List.of()).build();
+                .progressData(List.of()).type(MediaRecordEntity.MediaType.DOCUMENT).build();
 
-        when(repository.findWithCoursesById(mid)).thenReturn(Optional.of(e));
+        doReturn(Optional.of(e)).when(repository).findWithCoursesById(mid);
+        when(repository.findContentIdsByMediaRecordId(mid)).thenReturn(List.of());
 
         service.publishMaterialPublishedEvent(mid);
 
         verify(topicPublisher).notificationEvent(
                 eq(cid), isNull(), eq(ServerSource.MEDIA),
-                eq("/courses/" + cid),
+                eq("/courses/" + cid + "/media?selectedDocument=" + mid),
                 eq("New Material is uploaded!"),
                 eq("material: Unnamed File")
+        );
+    }
+
+    @Test
+    void TestPublishMediaRecordFile_video() {
+        UUID mediaId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder()
+                .id(mediaId).name("Video.mp4")
+                .courseIds(List.of(courseId))
+                .contentIds(List.of()).creatorId(UUID.randomUUID())
+                .progressData(List.of()).type(MediaRecordEntity.MediaType.VIDEO).build();
+
+        doReturn(Optional.of(e)).when(repository).findWithCoursesById(mediaId);
+        when(repository.findContentIdsByMediaRecordId(mediaId)).thenReturn(List.of());
+
+        service.publishMaterialPublishedEvent(mediaId);
+
+        verify(topicPublisher).notificationEvent(
+                eq(courseId), isNull(), eq(ServerSource.MEDIA),
+                eq("/courses/" + courseId + "/media?selectedVideo=" + mediaId),
+                eq("New Material is uploaded!"),
+                eq("material: Video.mp4")
         );
     }
 
