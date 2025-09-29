@@ -1,5 +1,4 @@
 type SubmissionExercise {
-    name: String!
     assessmentId: UUID
     courseId: UUID!
     endDate: DateTime!
@@ -10,8 +9,8 @@ type SubmissionExercise {
 
 type File {
     id: UUID!
-    uploadUrl: String!
-    downloadUrl: String!
+    uploadUrl: String
+    downloadUrl: String
     name: String!
 }
 
@@ -24,7 +23,7 @@ type Task {
 type SubmissionSolution {
     id: UUID
     userId: UUID!
-    submissionDate: DateTime!
+    submissionDate: DateTime
     files: [File!]!
     result: Result!
 }
@@ -66,7 +65,6 @@ input InputSubmissionSolution {
 }
 
 input InputSubmissionExercise {
-    name: String!
     endDate: DateTime!
     tasks: [InputTask]
 }

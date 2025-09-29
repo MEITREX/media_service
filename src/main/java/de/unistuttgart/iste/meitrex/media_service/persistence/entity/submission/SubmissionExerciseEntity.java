@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -24,9 +25,6 @@ public class SubmissionExerciseEntity implements IWithId<UUID> {
     @Column
     private OffsetDateTime endDate;
 
-    @Column
-    private String name;
-
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FileEntity> files;
 
@@ -35,6 +33,9 @@ public class SubmissionExerciseEntity implements IWithId<UUID> {
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<TaskEntity> tasks;
+
+    @Column
+    private Instant downloadUrlExpiresAt;
 
     @Override
     public UUID getId() {

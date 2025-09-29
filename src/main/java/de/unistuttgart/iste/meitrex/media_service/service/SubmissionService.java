@@ -13,7 +13,6 @@ import io.minio.StatObjectArgs;
 import io.minio.errors.*;
 import io.minio.http.Method;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -36,8 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class SubmissionService {
     public static final String BUCKET_ID = "submission-bucket";
-    private static final Duration URL_EXPIRY = Duration.ofHours(6);       // how long you issue URLs for
-    private static final Duration REFRESH_THRESHOLD = Duration.ofHours(2); // refresh when < 2h remain
+    private static final Duration URL_EXPIRY = Duration.ofHours(12);       // how long you issue URLs for
+    private static final Duration REFRESH_THRESHOLD = Duration.ofHours(6); // refresh when < 6h remain
     private static final Duration SKEW_BUFFER = Duration.ofMinutes(2);     // small safety margin
 
 
@@ -70,21 +68,11 @@ public class SubmissionService {
     }
 
     private void updateSubmissionDownloadUrls(SubmissionExerciseEntity submissionExercise) {
-        AtomicBoolean changed = new AtomicBoolean(false);
-        submissionExercise.getFiles().forEach(submissionExerciseEntity -> {
-            if(isExpiringSoon(submissionExerciseEntity.getDownloadUrlExpiresAt())) {
-                createDownloadUrl(submissionExerciseEntity);
-                changed.set(true);
-            }
-        });
-        submissionExercise.getSolutions().forEach(exerciseSolutionEntity ->
-                exerciseSolutionEntity.getFiles().forEach(fileEntity -> {
-                    if(isExpiringSoon(fileEntity.getDownloadUrlExpiresAt())) {
-                        createDownloadUrl(fileEntity);
-                        changed.set(true);
-                    }
-                }));
-        if (changed.get()) {
+        if (isExpiringSoon(submissionExercise.getDownloadUrlExpiresAt())) {
+            submissionExercise.getFiles().forEach(this::createDownloadUrl);
+            submissionExercise.getSolutions().forEach(exerciseSolutionEntity ->
+                    exerciseSolutionEntity.getFiles().forEach(this::createDownloadUrl));
+            submissionExercise.setDownloadUrlExpiresAt(Instant.now().plus(URL_EXPIRY));
             submissionExerciseRepository.save(submissionExercise);
         }
     }
@@ -94,7 +82,6 @@ public class SubmissionService {
         submissionExerciseEntity.setAssessmentId(assessmentId);
         submissionExerciseEntity.setCourseId(courseId);
         submissionExerciseEntity.setEndDate(submissionExercise.getEndDate());
-        submissionExerciseEntity.setName(submissionExercise.getName());
         submissionExerciseEntity.setFiles(new ArrayList<>());
         submissionExerciseEntity.setSolutions(new ArrayList<>());
         submissionExerciseEntity.setTasks(new ArrayList<>());
@@ -372,7 +359,6 @@ public class SubmissionService {
                         .expiry(URL_EXPIRY.toHoursPart(), TimeUnit.HOURS)
                         .build());
         fileEntity.setUploadUrl(uploadUrl);
-        fileEntity.setUploadUrlExpiresAt(Instant.now().plus(URL_EXPIRY));
         fileRepository.save(fileEntity);
     }
 
@@ -386,7 +372,6 @@ public class SubmissionService {
                         .expiry(URL_EXPIRY.toHoursPart(), TimeUnit.HOURS)
                         .build());
         fileEntity.setDownloadUrl(downloadUrl);
-        fileEntity.setDownloadUrlExpiresAt(Instant.now().plus(URL_EXPIRY));
         fileRepository.save(fileEntity);
     }
 

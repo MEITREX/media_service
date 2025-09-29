@@ -29,7 +29,4 @@ public class FileEntity implements IWithId<UUID> {
 
     @Column
     private Instant uploadUrlExpiresAt;
-
-    @Column
-    private Instant downloadUrlExpiresAt;
 }
