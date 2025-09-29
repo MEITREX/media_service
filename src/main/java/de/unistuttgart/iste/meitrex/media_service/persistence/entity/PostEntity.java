@@ -25,7 +25,7 @@ public class PostEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     String content;
 
     @CreationTimestamp
