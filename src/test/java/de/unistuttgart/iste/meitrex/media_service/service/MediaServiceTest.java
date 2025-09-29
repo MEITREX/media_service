@@ -353,4 +353,50 @@ class MediaServiceTest {
         assertThat(e2, is(false));
     }
 
+    @Test
+    void TestPublishMediaRecordFile_blankName() {
+        UUID id = UUID.randomUUID();
+        UUID cid = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder()
+                .id(id).name("   ")
+                .courseIds(List.of(cid))
+                .contentIds(List.of()).creatorId(UUID.randomUUID())
+                .progressData(List.of()).type(MediaRecordEntity.MediaType.DOCUMENT).build();
+
+        doReturn(Optional.of(e)).when(repository).findWithCoursesById(id);
+        when(repository.findContentIdsByMediaRecordId(id)).thenReturn(List.of());
+
+        service.publishMaterialPublishedEvent(id);
+
+        verify(topicPublisher).notificationEvent(
+                eq(cid), isNull(), eq(ServerSource.MEDIA),
+                eq("/courses/" + cid + "/media?selectedDocument=" + id),
+                eq("New Material is uploaded!"),
+                eq("material: Unnamed File")
+        );
+    }
+
+    @Test
+    void TestPublishMediaRecordFile_contentIdsNull() {
+        UUID id = UUID.randomUUID();
+        UUID cid = UUID.randomUUID();
+        MediaRecordEntity e = MediaRecordEntity.builder()
+                .id(id).name("N.pdf")
+                .courseIds(List.of(cid))
+                .contentIds(List.of()).creatorId(UUID.randomUUID())
+                .progressData(List.of()).type(MediaRecordEntity.MediaType.DOCUMENT).build();
+
+        doReturn(Optional.of(e)).when(repository).findWithCoursesById(id);
+        when(repository.findContentIdsByMediaRecordId(id)).thenReturn(null);
+
+        service.publishMaterialPublishedEvent(id);
+
+        verify(topicPublisher).notificationEvent(
+                eq(cid), isNull(), eq(ServerSource.MEDIA),
+                eq("/courses/" + cid + "/media?selectedDocument=" + id),
+                eq("New Material is uploaded!"),
+                eq("material: N.pdf")
+        );
+    }
+
 }
