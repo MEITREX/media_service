@@ -222,7 +222,7 @@ class MediaServiceTest {
     void TestPublishMediaRecordFile_notFound() {
         UUID mediaId = UUID.randomUUID();
         doReturn(Optional.empty()).when(repository).findWithCoursesById(mediaId);
-        assertThrows(EntityNotFoundException.class, () -> service.publishMaterialPublishedEvent(mediaId));
+        assertThrows(IllegalArgumentException.class, () -> service.publishMaterialPublishedEvent(mediaId));
     }
 
     @Test
