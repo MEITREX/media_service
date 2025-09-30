@@ -103,7 +103,7 @@ type SubmissionMutation {
     removeTask(itemId: UUID!): SubmissionExercise
 
     """
-    mutates the submission
+    mutates the submission, if there are task in the input they get not changed
     """
     mutateSubmission(assessmentId: UUID!, input: InputSubmissionExercise!): SubmissionExercise
 }
