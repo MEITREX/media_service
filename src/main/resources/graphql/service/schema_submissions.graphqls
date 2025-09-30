@@ -101,4 +101,9 @@ type SubmissionMutation {
     removes Task with the given id
     """
     removeTask(itemId: UUID!): SubmissionExercise
+
+    """
+    mutates the submission
+    """
+    mutateSubmission(assessmentId: UUID!, input: InputSubmissionExercise!): SubmissionExercise
 }

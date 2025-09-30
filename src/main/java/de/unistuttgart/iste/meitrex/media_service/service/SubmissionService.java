@@ -248,6 +248,24 @@ public class SubmissionService {
         return modelMapper.map(submissionExerciseRepository.save(submissionExercise), SubmissionExercise.class);
     }
 
+    public SubmissionExercise mutateSubmissionExercise(final UUID assessmentId, final InputSubmissionExercise inputSubmissionExercise) {
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(()
+                -> new  EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
+        submissionExercise.setEndDate(inputSubmissionExercise.getEndDate());
+        SubmissionExerciseEntity finalSubmissionExercise = submissionExercise;
+        inputSubmissionExercise.getTasks().forEach(taskEntity -> {
+            TaskEntity changedTaskEntity = finalSubmissionExercise.getTasks().stream().filter(taskEntity1 ->
+                    taskEntity1.getId().equals(taskEntity.getItemId())).findFirst().orElseThrow(() ->
+                    new  EntityNotFoundException("Task with id " + taskEntity.getItemId() + " not found"));
+            changedTaskEntity.setNumber(taskEntity.getNumber());
+            changedTaskEntity.setName(taskEntity.getName());
+            changedTaskEntity.setMaxScore(taskEntity.getMaxScore());
+            taskRepository.save(changedTaskEntity);
+        });
+        submissionExercise = submissionExerciseRepository.save(submissionExercise);
+        return modelMapper.map(submissionExercise, SubmissionExercise.class);
+    }
+
     @Scheduled(cron = "0 0 * * * *", zone = "Europe/Berlin") // every hour
     public void expireUploadUrlsAndCleanupPlaceholders() {
         Instant now = Instant.now();

@@ -102,4 +102,9 @@ public class SubmissionController {
     public SubmissionExercise removeTask(@Argument final UUID itemId, final SubmissionMutation submissionMutation){
         return submissionService.deleteTask(submissionMutation.getAssessmentId(), itemId);
     }
+
+    @SchemaMapping(typeName = SUBMISSION_MUTATION_NAME)
+    public SubmissionExercise mutateSubmission(@Argument final UUID assessmentId, @Argument final InputSubmissionExercise input){
+        return submissionService.mutateSubmissionExercise(assessmentId, input);
+    }
 }
