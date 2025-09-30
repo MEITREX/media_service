@@ -4,7 +4,9 @@ import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.Forum
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface ForumRepository extends JpaRepository<ForumEntity, UUID> {

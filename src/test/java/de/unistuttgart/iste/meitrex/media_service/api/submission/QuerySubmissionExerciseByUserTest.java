@@ -3,7 +3,10 @@ package de.unistuttgart.iste.meitrex.media_service.api.submission;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.generated.dto.*;
+import de.unistuttgart.iste.meitrex.generated.dto.Status;
+import de.unistuttgart.iste.meitrex.generated.dto.SubmissionExercise;
+import de.unistuttgart.iste.meitrex.generated.dto.SubmissionSolution;
+import de.unistuttgart.iste.meitrex.generated.dto.Task;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseSolutionRepository;
@@ -24,7 +27,8 @@ import java.util.UUID;
 
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMemberships;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
 @ContextConfiguration(classes = MockMinIoClientConfiguration.class)
 @Transactional

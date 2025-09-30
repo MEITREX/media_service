@@ -1,7 +1,9 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission;
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

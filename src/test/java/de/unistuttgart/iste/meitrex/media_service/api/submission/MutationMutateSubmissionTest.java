@@ -3,10 +3,9 @@ package de.unistuttgart.iste.meitrex.media_service.api.submission;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.generated.dto.Result;
-import de.unistuttgart.iste.meitrex.generated.dto.Status;
 import de.unistuttgart.iste.meitrex.generated.dto.SubmissionMutation;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.SubmissionExerciseEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.TaskEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseRepository;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseSolutionRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
@@ -20,7 +19,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMemberships;
