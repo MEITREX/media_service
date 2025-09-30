@@ -14,7 +14,6 @@ import org.springframework.stereotype.Controller;
 import java.util.UUID;
 
 import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccessValidator.validateUserHasAccessToCourse;
-import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccessValidator.validateUserHasAccessToCourses;
 
 @Slf4j
 @Controller

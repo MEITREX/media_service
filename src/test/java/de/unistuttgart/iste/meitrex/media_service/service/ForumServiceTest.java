@@ -5,8 +5,7 @@ import de.unistuttgart.iste.meitrex.common.profanity_filter.ProfanityFilter;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.*;
-import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ForumMapper;
-import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
+import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -36,13 +35,16 @@ class ForumServiceTest {
     private final QuestionThreadRepository questionThreadRepository = mock(QuestionThreadRepository.class);
 
     private final ModelMapper modelMapper = new ModelMapper();
-    private final ThreadMapper threadMapper = new ThreadMapper(modelMapper);
+    private final PostMapper postMapper = new PostMapper();
+    private final QuestionThreadMapper questionThreadMapper = new QuestionThreadMapper(postMapper, modelMapper);
+    private final InfoThreadMapper  infoThreadMapper = new InfoThreadMapper(postMapper, modelMapper);
+    private final ThreadMapper threadMapper = new ThreadMapper(infoThreadMapper, questionThreadMapper);
     private final ForumMapper forumMapper = new ForumMapper(threadMapper);
     private final ProfanityFilter profanityFilter = mock(ProfanityFilter.class);
 
     private final ForumService forumService = new ForumService(modelMapper, forumRepository, threadRepository,
             postRepository, threadContentReferenceRepository, mediaRecordRepository, topicPublisher, profanityFilter,
-            forumMapper, threadMapper, questionThreadRepository);
+            forumMapper, threadMapper,postMapper, questionThreadMapper, infoThreadMapper, questionThreadRepository);
 
     @Test
     void testGetForumById() {

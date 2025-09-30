@@ -1,11 +1,11 @@
 package de.unistuttgart.iste.meitrex.media_service.mapper;
 
-import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
-import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.InfoThreadEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.PostEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.QuestionThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.InfoThreadMapper;
+import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.PostMapper;
+import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.QuestionThreadMapper;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.ThreadMapper;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -19,11 +19,14 @@ import static org.hamcrest.Matchers.is;
 
 class MapperTest {
     ModelMapper modelMapper = new ModelMapper();
-    ThreadMapper threadMapper = new ThreadMapper(modelMapper);
+    PostMapper postMapper = new PostMapper();
+    QuestionThreadMapper questionThreadMapper = new QuestionThreadMapper(postMapper, modelMapper);
+    InfoThreadMapper infoThreadMapper = new InfoThreadMapper(postMapper, modelMapper);
+    ThreadMapper threadMapper = new ThreadMapper(infoThreadMapper, questionThreadMapper);
 
     @Test
     void testThreadMapper() {
-        ThreadEntity questionThreadEntity = QuestionThreadEntity.builder()
+        QuestionThreadEntity questionThreadEntity = QuestionThreadEntity.builder()
                 .id(UUID.randomUUID())
                 .question(PostEntity.builder()
                         .id(UUID.randomUUID())
@@ -34,8 +37,9 @@ class MapperTest {
                 .title("Question Title")
                 .creatorId(UUID.randomUUID())
                 .creationTime(OffsetDateTime.now())
+                .numberOfPosts(0)
                 .build();
-        ThreadEntity infoThreadEntity = InfoThreadEntity.builder()
+        InfoThreadEntity infoThreadEntity = InfoThreadEntity.builder()
                 .id(UUID.randomUUID())
                 .info(PostEntity.builder()
                         .id(UUID.randomUUID())
@@ -46,11 +50,10 @@ class MapperTest {
                 .title("Info Title")
                 .creatorId(UUID.randomUUID())
                 .creationTime(OffsetDateTime.now())
+                .numberOfPosts(0)
                 .build();
-        assertThat(threadMapper.mapThread(questionThreadEntity), is(modelMapper.map(questionThreadEntity,
-                QuestionThread.class)));
-        assertThat(threadMapper.mapThread(infoThreadEntity), is(modelMapper.map(infoThreadEntity,
-                InfoThread.class)));
+        assertThat(threadMapper.mapThread(questionThreadEntity), is(questionThreadMapper.mapQuestionThread(questionThreadEntity)));
+        assertThat(threadMapper.mapThread(infoThreadEntity), is(infoThreadMapper.mapInfoThread(infoThreadEntity)));
     }
 
 }

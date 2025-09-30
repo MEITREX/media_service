@@ -61,18 +61,39 @@ class MutationUpvotePostTest {
                 .upvotedByUsers(new ArrayList<>())
                 .downvotedByUsers(new ArrayList<>(List.of(currentUser.getId())))
                 .build();
+        questionEntity = postRepository.save(questionEntity);
+        PostEntity postEntity = PostEntity.builder()
+                .content("postContent")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .referenceId(questionEntity.getId())
+                .upvotedByUsers(new ArrayList<>())
+                .downvotedByUsers(new ArrayList<>(List.of(currentUser.getId())))
+                .build();
+        postEntity = postRepository.save(postEntity);
+        PostEntity postEntity2 = PostEntity.builder()
+                .content("postContent2")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .referenceId(postEntity.getId())
+                .upvotedByUsers(new ArrayList<>())
+                .downvotedByUsers(new ArrayList<>(List.of(currentUser.getId())))
+                .build();
         QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
                 .forum(forumEntity)
                 .question(questionEntity)
                 .title("Thread Title")
                 .threadContentReferenceEntity(null)
-                .posts(new ArrayList<>())
+                .posts(new ArrayList<>(List.of(postEntity,  postEntity2)))
                 .creatorId(currentUser.getId())
                 .creationTime(OffsetDateTime.now())
                 .numberOfPosts(0)
                 .build();
+        postEntity.setThread(threadEntity);
+        postEntity = postRepository.save(postEntity);
+        postEntity2.setThread(threadEntity);
+        postEntity2 = postRepository.save(postEntity2);
         questionEntity.setThread(threadEntity);
-        questionEntity = postRepository.save(questionEntity);
         threadRepository.save(threadEntity);
         forumEntity.getThreads().add(threadEntity);
         forumRepository.save(forumEntity);
@@ -86,13 +107,13 @@ class MutationUpvotePostTest {
                         downvotedByUsers
                     }
                 }
-                """.formatted(questionEntity.getId());
+                """.formatted(postEntity2.getId());
         Post post = tester.document(query)
                 .execute()
                 .path("upvotePost").entity(Post.class).get();
         assertThat(post.getUpvotedByUsers(), is(List.of(currentUser.getId())));
         assertThat(post.getDownvotedByUsers(), hasSize(0));
-        assertThat(postRepository.findAll(), hasSize(1));
+        assertThat(postRepository.findAll(), hasSize(3));
     }
 
     @Test

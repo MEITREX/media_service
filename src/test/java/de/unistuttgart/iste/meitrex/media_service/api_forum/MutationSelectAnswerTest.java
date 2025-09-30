@@ -209,4 +209,70 @@ class MutationSelectAnswerTest {
         verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
                 courseId1, ForumActivity.ANSWER_ACCEPTED));
     }
+
+    @Test
+    void testUnselectAnswer(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+        PostEntity questionEntity = PostEntity.builder()
+                .content("question Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
+                .forum(forumEntity)
+                .question(questionEntity)
+                .title("Thread Title")
+                .threadContentReferenceEntity(null)
+                .posts(new ArrayList<>())
+                .creatorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .numberOfPosts(1)
+                .build();
+        PostEntity postEntity = PostEntity.builder()
+                .content("Post Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .thread(threadEntity)
+                .build();
+        postEntity = postRepository.save(postEntity);
+        questionEntity.setThread(threadEntity);
+        postRepository.save(questionEntity);
+        threadEntity.getPosts().add(postEntity);
+        threadRepository.save(threadEntity);
+        forumEntity.getThreads().add(threadEntity);
+        forumRepository.save(forumEntity);
+        final String query = """
+                mutation {
+                    selectAnswer(
+                        postId: "%s"
+                    ) {
+                        id
+                        selectedAnswer {
+                            id
+                            content
+                            creationTime
+                            authorId
+                        }
+                    }
+                }
+                """.formatted(postEntity.getId());
+        QuestionThread questionThread = tester.document(query)
+                .execute()
+                .path("selectAnswer").entity(QuestionThread.class).get();
+        QuestionThread questionThread2 = tester.document(query)
+                .execute()
+                .path("selectAnswer").entity(QuestionThread.class).get();
+        assertThat(questionThread.getSelectedAnswer().getContent(), is(postEntity.getContent()));
+        assertThat(questionThread.getSelectedAnswer().getAuthorId(), is(postEntity.getAuthorId()));
+        assertThat(questionThread.getSelectedAnswer().getId(), is(postEntity.getId()));
+        assertThat(postRepository.findAll(), hasSize(2));
+        assertThat(threadRepository.findAll(), hasSize(1));
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.ANSWER_ACCEPTED));
+        assertThat(questionThread2.getSelectedAnswer(), is(nullValue()));
+    }
 }

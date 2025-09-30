@@ -3,7 +3,6 @@ package de.unistuttgart.iste.meitrex.media_service.api_forum;
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
-import de.unistuttgart.iste.meitrex.common.event.MediaRecordDeletedEvent;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
@@ -25,6 +24,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -163,6 +163,72 @@ class MutationAddPostTest {
         assertThat(post.getContent(), is("<p>Du bist ein *********!</p>"));
         assertThat(post.getEdited(), is(false));
         assertThat(postRepository.findAll(), hasSize(2));
+        assertThat(threadRepository.findAll(), hasSize(1));
+    }
+
+    @Test
+    void testAddPostWithReferenceToThread(final GraphQlTester tester) {
+        ForumEntity forumEntity = ForumEntity.builder()
+                .courseId(courseId1)
+                .threads(new ArrayList<>())
+                .build();
+        forumEntity = forumRepository.save(forumEntity);
+        PostEntity questionEntity = PostEntity.builder()
+                .content("question Content")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        PostEntity postEntity = PostEntity.builder()
+                .content("postContent")
+                .authorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .build();
+        QuestionThreadEntity threadEntity = QuestionThreadEntity.builder()
+                .forum(forumEntity)
+                .question(questionEntity)
+                .title("Thread Title")
+                .threadContentReferenceEntity(null)
+                .posts(new ArrayList<>(List.of(postEntity)))
+                .creatorId(currentUser.getId())
+                .creationTime(OffsetDateTime.now())
+                .numberOfPosts(1)
+                .build();
+        postEntity.setThread(threadEntity);
+        questionEntity.setThread(threadEntity);
+        postRepository.save(questionEntity);
+        threadEntity = threadRepository.save(threadEntity);
+        forumEntity.getThreads().add(threadEntity);
+        forumEntity = forumRepository.save(forumEntity);
+
+        doNothing().when(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.ANSWER));
+
+        final String query = """
+                mutation {
+                    addPost(
+                        post: {content: "Test Content", threadId: "%s", reference: "%s"}
+                    ) {
+                        id
+                        content
+                        edited
+                        reference {
+                            id
+                            content
+                        }
+                    }
+                }
+                """.formatted(threadEntity.getId(), postEntity.getId());
+        Post post = tester.document(query)
+                .execute()
+                .path("addPost").entity(Post.class).get();
+
+        verify(topicPublisher).notifyForumActivity(new ForumActivityEvent(currentUser.getId(), forumEntity.getId(),
+                courseId1, ForumActivity.ANSWER));
+
+        assertThat(post.getContent(), is("Test Content"));
+        assertThat(post.getEdited(), is(false));
+        assertThat(post.getReference().getContent(), is(postEntity.getContent()));
+        assertThat(postRepository.findAll(), hasSize(3));
         assertThat(threadRepository.findAll(), hasSize(1));
     }
 }

@@ -80,6 +80,8 @@ type Post {
 
     edited: Boolean!
 
+    reference: Post
+
     downvotedByUsers: [UUID]!
 
     upvotedByUsers: [UUID]!
@@ -138,6 +140,8 @@ input InputThreadContentReferenceOnCreate {
 
 input InputPost {
     id: UUID
+
+    reference: UUID
 
     threadId: UUID
 
