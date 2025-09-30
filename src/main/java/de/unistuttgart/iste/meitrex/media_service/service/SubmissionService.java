@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -224,7 +225,8 @@ public class SubmissionService {
         TaskEntity taskEntity = submissionExercise.getTasks().stream().filter(taskEntity1 -> taskEntity1.getId().equals(inputTask.getItemId())).findFirst().orElseThrow(
                 () -> new EntityNotFoundException("Task with id " + inputTask.getItemId() + " not found")
         );
-        if (submissionExercise.getTasks().stream().map(TaskEntity::getNumber).anyMatch(number -> number.equals(inputTask.getNumber()))) {
+        Optional<TaskEntity> task = submissionExercise.getTasks().stream().filter(taskEntity1 -> taskEntity1.getNumber().equals(inputTask.getNumber())).findFirst();
+        if (task.isPresent() && !task.get().getId().equals(inputTask.getItemId())) {
             throw new IllegalStateException("Task with number " + inputTask.getNumber() + " already exists");
         }
         taskEntity.setMaxScore(inputTask.getMaxScore());
