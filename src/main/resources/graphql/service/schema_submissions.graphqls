@@ -18,6 +18,7 @@ type Task {
     name: String!
     itemId: UUID!
     maxScore: Int!
+    number: Int!
 }
 
 type SubmissionSolution {

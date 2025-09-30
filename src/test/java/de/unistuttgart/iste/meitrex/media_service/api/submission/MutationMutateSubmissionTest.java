@@ -84,7 +84,8 @@ public class MutationMutateSubmissionTest {
                             tasks {
                                 name,
                                 itemId,
-                                maxScore
+                                maxScore,
+                                number
                             }
                         }
                     }
