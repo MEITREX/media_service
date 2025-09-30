@@ -209,6 +209,9 @@ public class SubmissionService {
     public SubmissionExercise addTask(final UUID assessmentId, final InputTask inputTask) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId)
                 .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
+        if (submissionExercise.getTasks().stream().map(TaskEntity::getNumber).anyMatch(number -> number.equals(inputTask.getNumber()))) {
+            throw new IllegalStateException("Task with number " + inputTask.getNumber() + " already exists");
+        }
         TaskEntity taskEntity = new TaskEntity(inputTask.getItemId(), inputTask.getName(), inputTask.getNumber() ,inputTask.getMaxScore());
         submissionExercise.getTasks().add(taskEntity);
         submissionExercise = submissionExerciseRepository.save(submissionExercise);
@@ -221,10 +224,13 @@ public class SubmissionService {
         TaskEntity taskEntity = submissionExercise.getTasks().stream().filter(taskEntity1 -> taskEntity1.getId().equals(inputTask.getItemId())).findFirst().orElseThrow(
                 () -> new EntityNotFoundException("Task with id " + inputTask.getItemId() + " not found")
         );
+        if (submissionExercise.getTasks().stream().map(TaskEntity::getNumber).anyMatch(number -> number.equals(inputTask.getNumber()))) {
+            throw new IllegalStateException("Task with number " + inputTask.getNumber() + " already exists");
+        }
         taskEntity.setMaxScore(inputTask.getMaxScore());
         taskEntity.setName(inputTask.getName());
         taskEntity.setNumber(inputTask.getNumber());
-        taskEntity = taskRepository.save(taskEntity);
+        taskRepository.save(taskEntity);
         submissionExercise =  submissionExerciseRepository.save(submissionExercise);
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
