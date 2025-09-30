@@ -202,4 +202,50 @@ public class MutationMutateSubmissionTest {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).get();
         assertThat(submissionExercise.getTasks().size(), is(0));
     }
+
+    @Test
+    void testMutateSubmissionMutateSubmission(final HttpGraphQlTester tester) {
+        UUID assessmentId = UUID.randomUUID();
+        UUID itemId = UUID.randomUUID();
+        OffsetDateTime endDate = OffsetDateTime.now();
+        SubmissionExerciseEntity submissionExerciseEntity = new SubmissionExerciseEntity();
+        submissionExerciseEntity.setAssessmentId(assessmentId);
+        submissionExerciseEntity.setCourseId(courseId1);
+        submissionExerciseEntity.setEndDate(endDate);
+        submissionExerciseEntity.setFiles(new ArrayList<>());
+        submissionExerciseEntity.setSolutions(new ArrayList<>());
+        submissionExerciseEntity.setTasks(new ArrayList<>());
+        submissionExerciseEntity = submissionExerciseRepository.save(submissionExerciseEntity);
+
+        TaskEntity task = new TaskEntity();
+        task.setName("TestTaskName");
+        task.setItemId(itemId);
+        task.setMaxScore(100);
+        task.setNumber(1);
+        submissionExerciseEntity.getTasks().add(task);
+        submissionExerciseRepository.save(submissionExerciseEntity);
+
+        OffsetDateTime newEndDate = OffsetDateTime.now().plusDays(2);
+
+        final String query = """
+                mutation {
+                    mutateSubmission(
+                        assessmentId: "%s"
+                        ) {
+                        assessmentId,
+                        mutateSubmission(assessmentId: "%s", input: {
+                            endDate: "%s"
+                        }) {
+                            assessmentId
+                        }
+                    }
+                }
+        """.formatted(submissionExerciseEntity.getAssessmentId(), submissionExerciseEntity.getAssessmentId(), newEndDate);
+        final SubmissionMutation submissionMutation = tester.document(query)
+                .execute()
+                .path("mutateSubmission").entity(SubmissionMutation.class).get();
+        assertThat(submissionMutation.getAssessmentId(), is(assessmentId));
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).get();
+        assertThat(submissionExercise.getEndDate(), is(newEndDate));
+    }
 }

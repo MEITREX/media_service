@@ -215,6 +215,13 @@ public class SubmissionService {
         }
         TaskEntity taskEntity = new TaskEntity(inputTask.getItemId(), inputTask.getName(), inputTask.getNumber() ,inputTask.getMaxScore());
         submissionExercise.getTasks().add(taskEntity);
+        submissionExercise.getSolutions().forEach(exerciseSolutionEntity -> {
+            TaskResultEntity taskResultEntity = new TaskResultEntity();
+            taskResultEntity.setScore(0);
+            taskResultEntity.setItemId(inputTask.getItemId());
+            taskResultEntity.setRequiredScore(taskEntity.getMaxScore());
+            exerciseSolutionEntity.getResult().getResults().add(taskResultEntity);
+        });
         submissionExercise = submissionExerciseRepository.save(submissionExercise);
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
@@ -229,7 +236,13 @@ public class SubmissionService {
         if (task.isPresent() && !task.get().getId().equals(inputTask.getItemId())) {
             throw new IllegalStateException("Task with number " + inputTask.getNumber() + " already exists");
         }
-        taskEntity.setMaxScore(inputTask.getMaxScore());
+        if (taskEntity.getMaxScore() != inputTask.getMaxScore()) {
+            taskEntity.setMaxScore(inputTask.getMaxScore());
+            submissionExercise.getSolutions().forEach(exerciseSolutionEntity ->
+                    exerciseSolutionEntity.getResult().getResults().stream().filter(result ->
+                    result.getItemId().equals(inputTask.getItemId())).findFirst().ifPresent(result ->
+                            result.setRequiredScore(inputTask.getMaxScore())));
+        }
         taskEntity.setName(inputTask.getName());
         taskEntity.setNumber(inputTask.getNumber());
         taskRepository.save(taskEntity);
@@ -244,6 +257,7 @@ public class SubmissionService {
                 () -> new EntityNotFoundException("Task with id " + itemId + " not found")
         );
         submissionExercise.getTasks().remove(taskEntity);
+        submissionExercise.getSolutions().forEach(exerciseSolutionEntity -> exerciseSolutionEntity.getResult().getResults().removeIf(result -> result.getItemId().equals(itemId)));
         taskRepository.delete(taskEntity);
         return modelMapper.map(submissionExerciseRepository.save(submissionExercise), SubmissionExercise.class);
     }
