@@ -94,7 +94,7 @@ public class SubmissionService {
                 -> new  EntityNotFoundException("Solution with id: " + solution.getSubmissionExerciseId() + " not found"));
         ExerciseSolutionEntity exerciseSolutionEntity = new ExerciseSolutionEntity();
         exerciseSolutionEntity.setUserId(userId);
-        exerciseSolutionEntity.setSubmissionDate(OffsetDateTime.now());
+        exerciseSolutionEntity.setSubmissionDate(null);
         exerciseSolutionEntity.setFiles(new ArrayList<>());
         exerciseSolutionEntity.setResult(initialResultEntity(userId, submissionExercise.getTasks()));
         submissionExercise.getSolutions().add(exerciseSolutionEntity);
@@ -158,6 +158,7 @@ public class SubmissionService {
         FileEntity fileEntity = createFile(filename);
         createUploadUrl(fileEntity);
         exerciseSolutionEntity.getFiles().add(fileEntity);
+        exerciseSolutionEntity.setSubmissionDate(OffsetDateTime.now());
         submissionExerciseSolutionRepository.save(exerciseSolutionEntity);
         return modelMapper.map(fileEntity, File.class);
     }
