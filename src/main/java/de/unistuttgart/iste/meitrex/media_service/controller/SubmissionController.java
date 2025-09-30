@@ -74,8 +74,9 @@ public class SubmissionController {
     @MutationMapping
     public File createSolutionFile(@Argument String name,
                                    @Argument UUID solutionId,
+                                   @Argument UUID assessmentId,
                                    @ContextValue final LoggedInUser currentUser) {
-         return submissionService.createSolutionFile(currentUser.getId(), solutionId, name);
+         return submissionService.createSolutionFile(currentUser.getId(), solutionId, assessmentId, name);
     }
 
     @MutationMapping

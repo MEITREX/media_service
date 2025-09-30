@@ -32,9 +32,7 @@ import java.util.concurrent.TimeUnit;
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMemberships;
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.verify;
 
 @ContextConfiguration(classes = MockMinIoClientConfiguration.class)
@@ -94,7 +92,6 @@ public class MutationUploadSolutionTest {
                 .path("uploadSolution").entity(SubmissionSolution.class).get();
         assertThat(submissionSolution.getResult().getStatus(), is(Status.pending));
         assertThat(submissionSolution.getUserId(), is(currentUser.getId()));
-        assertThat((double) submissionSolution.getSubmissionDate().toInstant().toEpochMilli(),
-                closeTo((double) createdAt.toInstant().toEpochMilli(), 100000.0));
+        assertThat(submissionSolution.getSubmissionDate(), nullValue());
     }
 }

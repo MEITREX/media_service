@@ -13,18 +13,19 @@ import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil
 import io.minio.MinioClient;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.HttpGraphQlTester;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.UUID;
 
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMemberships;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 @ContextConfiguration(classes = MockMinIoClientConfiguration.class)
 @Transactional
@@ -53,11 +54,11 @@ public class MutationCreateSolutionFileTest {
     void testCreateExerciseFile(final HttpGraphQlTester tester) {
         UUID assessmentId = UUID.randomUUID();
         String fileName = "TestFilename";
-        OffsetDateTime createdAt = OffsetDateTime.now();
+        OffsetDateTime endDate = OffsetDateTime.now().plusDays(2);
         SubmissionExerciseEntity submissionExerciseEntity = new SubmissionExerciseEntity();
         submissionExerciseEntity.setAssessmentId(assessmentId);
         submissionExerciseEntity.setCourseId(courseId1);
-        submissionExerciseEntity.setEndDate(createdAt);
+        submissionExerciseEntity.setEndDate(endDate);
         submissionExerciseEntity.setFiles(new ArrayList<>());
         submissionExerciseEntity.setSolutions(new ArrayList<>());
         submissionExerciseEntity.setTasks(new ArrayList<>());
@@ -74,8 +75,9 @@ public class MutationCreateSolutionFileTest {
         final String query = """
                 mutation {
                     createSolutionFile(
-                        name: "%s"
-                        solutionId: "%s"
+                        name: "%s",
+                        solutionId: "%s",
+                        assessmentId: "%s"
                         ) {
                         id,
                         uploadUrl,
@@ -83,12 +85,15 @@ public class MutationCreateSolutionFileTest {
                         name
                     }
                 }
-        """.formatted(fileName, solutionEntity.getId());
+        """.formatted(fileName, solutionEntity.getId(), assessmentId);
         final File file = tester.document(query)
                 .execute()
                 .path("createSolutionFile").entity(File.class).get();
         assertThat(file.getName(), is(fileName));
         assertThat(file.getUploadUrl(), is("http://example.com") );
         assertThat(file.getDownloadUrl(), nullValue());
+        ExerciseSolutionEntity exerciseSolution = submissionExerciseSolutionRepository.findById(solutionEntity.getId()).get();
+        assertThat((double) exerciseSolution.getSubmissionDate().toInstant().toEpochMilli(),
+                closeTo((double) OffsetDateTime.now().toInstant().toEpochMilli(), 100000.0));
     }
 }

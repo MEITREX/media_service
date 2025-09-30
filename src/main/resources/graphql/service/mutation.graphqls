@@ -133,5 +133,5 @@ type Mutation {
     """
     create the upload and download links for a file for an solution to an exercise
     """
-    createSolutionFile(name: String!, solutionId: UUID!): File
+    createSolutionFile(name: String!, solutionId: UUID!, assessmentId: UUID!): File
 }

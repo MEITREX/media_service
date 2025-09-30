@@ -149,11 +149,16 @@ public class SubmissionService {
         return modelMapper.map(fileEntity, File.class);
     }
 
-    public File createSolutionFile(UUID userId, UUID solutionId, String filename) {
+    public File createSolutionFile(UUID userId, UUID solutionId, UUID assessmentId, String filename) {
         ExerciseSolutionEntity exerciseSolutionEntity = submissionExerciseSolutionRepository.findById(solutionId).orElseThrow(() ->
                 new  EntityNotFoundException("Solution with id: " + solutionId + " not found"));
         if (!userId.equals(exerciseSolutionEntity.getUserId())) {
             throw new EntityNotFoundException("Solution with id: " + solutionId + " does not belong to the user");
+        }
+        SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(()
+                -> new  EntityNotFoundException("Submission with id: " + solutionId + " not found"));
+        if (submissionExercise.getEndDate().toInstant().isBefore(Instant.now())) {
+            throw new IllegalStateException("Submission is too late. The deadline has passed.");
         }
         FileEntity fileEntity = createFile(filename);
         createUploadUrl(fileEntity);
