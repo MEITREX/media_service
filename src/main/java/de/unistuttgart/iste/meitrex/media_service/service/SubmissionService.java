@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.meitrex.common.event.SubmissionCompletedEvent;
 import de.unistuttgart.iste.meitrex.common.event.CourseChangeEvent;
 import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
 import de.unistuttgart.iste.meitrex.common.event.Response;
@@ -120,7 +121,7 @@ public class SubmissionService {
         resultEntity.getResults().forEach(taskResult -> {
             requiredScore.addAndGet(taskResult.getRequiredScore());
             achievedScore.addAndGet(taskResult.getScore());
-            Response response = new Response(taskResult.getItemId(), (float) taskResult.getRequiredScore() / taskResult.getScore());
+            Response response = new Response(taskResult.getItemId(), (float) taskResult.getScore() / taskResult.getRequiredScore());
             responses.add(response);
         });
 
@@ -139,6 +140,13 @@ public class SubmissionService {
 
         // publish new user progress event message
         topicPublisher.notifyUserWorkedOnContent(userProgressLogEvent);
+
+        final SubmissionCompletedEvent submissionCompletedEvent = SubmissionCompletedEvent.builder()
+                .userId(resultEntity.getUserId())
+                .submissionId(result.getAssessmentId())
+                .build();
+
+        topicPublisher.notifySubmissionCompleted(submissionCompletedEvent);
 
         resultRepository.save(resultEntity);
         return modelMapper.map(resultEntity, Result.class);
