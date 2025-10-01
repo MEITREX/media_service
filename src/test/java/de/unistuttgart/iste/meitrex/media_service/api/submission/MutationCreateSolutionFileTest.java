@@ -89,7 +89,7 @@ public class MutationCreateSolutionFileTest {
                 .path("createSolutionFile").entity(File.class).get();
         assertThat(file.getName(), is(fileName));
         assertThat(file.getUploadUrl(), is("http://example.com") );
-        assertThat(file.getDownloadUrl(), nullValue());
+        assertThat(file.getDownloadUrl(), is("http://example.com"));
         ExerciseSolutionEntity exerciseSolution = submissionExerciseSolutionRepository.findById(solutionEntity.getId()).get();
         assertThat((double) exerciseSolution.getSubmissionDate().toInstant().toEpochMilli(),
                 closeTo((double) OffsetDateTime.now().toInstant().toEpochMilli(), 100000.0));

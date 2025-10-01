@@ -20,16 +20,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,10 +35,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class SubmissionService {
     public static final String BUCKET_ID = "submission-bucket";
-    private static final Duration URL_EXPIRY = Duration.ofHours(12);       // how long you issue URLs for
+    private static final Duration DOWNLOAD_URL_EXPIRY = Duration.ofHours(12);
+    private static final Duration UPLOAD_URL_EXPIRY = Duration.ofMinutes(15);
     private static final Duration REFRESH_THRESHOLD = Duration.ofHours(6); // refresh when < 6h remain
     private static final Duration SKEW_BUFFER = Duration.ofMinutes(2);     // small safety margin
 
+    private final TaskScheduler taskScheduler;
 
     private final SubmissionExerciseRepository submissionExerciseRepository;
     private final SubmissionFileRepository fileRepository;
@@ -76,7 +75,7 @@ public class SubmissionService {
             submissionExercise.getFiles().forEach(this::createDownloadUrl);
             submissionExercise.getSolutions().forEach(exerciseSolutionEntity ->
                     exerciseSolutionEntity.getFiles().forEach(this::createDownloadUrl));
-            submissionExercise.setDownloadUrlExpiresAt(Instant.now().plus(URL_EXPIRY));
+            submissionExercise.setDownloadUrlExpiresAt(Instant.now().plus(DOWNLOAD_URL_EXPIRY));
             submissionExerciseRepository.save(submissionExercise);
         }
     }
@@ -150,6 +149,7 @@ public class SubmissionService {
         createUploadUrl(fileEntity);
         submissionExercise.getFiles().add(fileEntity);
         submissionExerciseRepository.save(submissionExercise);
+        taskScheduler.schedule(() -> expireUploadUrlAndCleanup(fileEntity), Instant.now().plus(UPLOAD_URL_EXPIRY));
         return modelMapper.map(fileEntity, File.class);
     }
 
@@ -166,9 +166,11 @@ public class SubmissionService {
         }
         FileEntity fileEntity = createFile(filename);
         createUploadUrl(fileEntity);
+        createDownloadUrl(fileEntity);
         exerciseSolutionEntity.getFiles().add(fileEntity);
         exerciseSolutionEntity.setSubmissionDate(OffsetDateTime.now());
         submissionExerciseSolutionRepository.save(exerciseSolutionEntity);
+        taskScheduler.schedule(() -> expireUploadUrlAndCleanup(fileEntity), Instant.now().plus(UPLOAD_URL_EXPIRY));
         return modelMapper.map(fileEntity, File.class);
     }
 
@@ -273,43 +275,19 @@ public class SubmissionService {
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
-    @Scheduled(cron = "0 0 * * * *", zone = "Europe/Berlin") // every hour
-    public void expireUploadUrlsAndCleanupPlaceholders() {
-        Instant now = Instant.now();
+    public void expireUploadUrlAndCleanup(FileEntity fileEntity) {
+        String objectName = fileEntity.getId().toString();
 
-        List<FileEntity> files = fileRepository.findCandidates();
-
-        for (FileEntity f : files) {
-            boolean changed = false;
-            String objectName = f.getId().toString();
-            boolean exists = safeDoesObjectExist(objectName);
-
-            // Null expired upload URLs
-            if (f.getUploadUrl() != null && f.getUploadUrlExpiresAt() != null
-                    && now.isAfter(f.getUploadUrlExpiresAt())) {
-                f.setUploadUrl(null);
-                f.setUploadUrlExpiresAt(null);
-                changed = true;
-            }
-
-            if (!exists && f.getUploadUrlExpiresAt() != null
-                    && now.isAfter(f.getUploadUrlExpiresAt())) { // optionally .plus(DELETE_GRACE)
-                removeFileEntityFromParentsAndDelete(f);
-                continue; // entity gone
-            }
-
-            if (changed) {
-                fileRepository.save(f);
-            }
+        if (safeDoesObjectExist(objectName)) {
+            fileEntity.setUploadUrl(null);
+            fileEntity.setUploadUrlExpiresAt(null);
+        } else {
+            removeFileEntityFromParentsAndDelete(fileEntity);
         }
+        fileRepository.save(fileEntity);
     }
 
     private void removeFileEntityFromParentsAndDelete(FileEntity f) {
-        // Option A: If you have orphanRemoval = true on @OneToMany relations to files,
-        // just remove it from the owning collections and save the owners.
-        // submissionExercise.getFiles().remove(f), etc.
-
-        // Example (pseudo—adjust to your mappings):
         submissionExerciseRepository.findAll().forEach(se -> {
             if (se.getFiles().removeIf(x -> x.getId().equals(f.getId()))) {
                 submissionExerciseRepository.save(se);
@@ -321,7 +299,6 @@ public class SubmissionService {
             });
         });
 
-        // Then delete the file row
         fileRepository.delete(f);
     }
 
@@ -396,7 +373,7 @@ public class SubmissionService {
                         .method(Method.PUT)
                         .bucket(BUCKET_ID)
                         .object(fileEntity.getId().toString())
-                        .expiry(URL_EXPIRY.toHoursPart(), TimeUnit.HOURS)
+                        .expiry(UPLOAD_URL_EXPIRY.toMinutesPart(), TimeUnit.MINUTES)
                         .build());
         fileEntity.setUploadUrl(uploadUrl);
         fileRepository.save(fileEntity);
@@ -409,7 +386,7 @@ public class SubmissionService {
                         .method(Method.GET)
                         .bucket(BUCKET_ID)
                         .object(fileEntity.getId().toString())
-                        .expiry(URL_EXPIRY.toHoursPart(), TimeUnit.HOURS)
+                        .expiry(DOWNLOAD_URL_EXPIRY.toHoursPart(), TimeUnit.HOURS)
                         .build());
         fileEntity.setDownloadUrl(downloadUrl);
         fileRepository.save(fileEntity);
