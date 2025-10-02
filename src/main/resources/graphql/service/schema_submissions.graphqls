@@ -24,6 +24,7 @@ type Task {
 type SubmissionSolution {
     id: UUID
     userId: UUID!
+    userName: String!
     submissionDate: DateTime
     files: [File!]!
     result: Result!

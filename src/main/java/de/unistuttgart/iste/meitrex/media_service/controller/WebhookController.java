@@ -46,6 +46,7 @@ public class WebhookController {
 
         if(bucketName.equals(SubmissionService.BUCKET_ID)) {
             //ignore files for submissions
+            log.info("skipped publish topic for submission");
             return;
         }
 

@@ -22,6 +22,8 @@ public class ExerciseSolutionEntity implements IWithId<UUID> {
 
     private UUID userId;
 
+    private String userName;
+
     private OffsetDateTime submissionDate;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

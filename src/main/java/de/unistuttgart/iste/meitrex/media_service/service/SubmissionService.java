@@ -93,11 +93,12 @@ public class SubmissionService {
         return modelMapper.map(submissionExerciseEntity, SubmissionExercise.class);
     }
 
-    public SubmissionSolution createSolution(UUID userId, InputSubmissionSolution solution) {
+    public SubmissionSolution createSolution(UUID userId, String userName, InputSubmissionSolution solution) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(solution.getSubmissionExerciseId()).orElseThrow(()
                 -> new  EntityNotFoundException("Solution with id: " + solution.getSubmissionExerciseId() + " not found"));
         ExerciseSolutionEntity exerciseSolutionEntity = new ExerciseSolutionEntity();
         exerciseSolutionEntity.setUserId(userId);
+        exerciseSolutionEntity.setUserName(userName);
         exerciseSolutionEntity.setSubmissionDate(null);
         exerciseSolutionEntity.setFiles(new ArrayList<>());
         exerciseSolutionEntity.setResult(initialResultEntity(userId, submissionExercise.getTasks()));

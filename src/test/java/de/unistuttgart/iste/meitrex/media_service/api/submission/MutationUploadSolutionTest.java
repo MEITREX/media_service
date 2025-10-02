@@ -69,6 +69,7 @@ public class MutationUploadSolutionTest {
                         }) {
                         id,
                         userId,
+                        userName,
                         submissionDate,
                         result {
                             id,
@@ -83,5 +84,6 @@ public class MutationUploadSolutionTest {
         assertThat(submissionSolution.getResult().getStatus(), is(Status.pending));
         assertThat(submissionSolution.getUserId(), is(currentUser.getId()));
         assertThat(submissionSolution.getSubmissionDate(), nullValue());
+        assertThat(submissionSolution.getUserName(), is(currentUser.getUserName()));
     }
 }
