@@ -155,6 +155,7 @@ public class SubmissionService {
     public File createFileForExercise(String filename, SubmissionExerciseEntity submissionExercise) {
         FileEntity fileEntity = createFile(filename);
         createUploadUrl(fileEntity);
+        createDownloadUrl(fileEntity);
         submissionExercise.getFiles().add(fileEntity);
         submissionExerciseRepository.save(submissionExercise);
         taskScheduler.schedule(() -> expireUploadUrlAndCleanup(fileEntity), Instant.now().plus(UPLOAD_URL_EXPIRY));
