@@ -7,6 +7,7 @@ import de.unistuttgart.iste.meitrex.common.event.CourseChangeEvent;
 import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
 import de.unistuttgart.iste.meitrex.common.event.Response;
 import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
+import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
@@ -93,15 +94,17 @@ public class SubmissionService {
         return modelMapper.map(submissionExerciseEntity, SubmissionExercise.class);
     }
 
-    public SubmissionSolution createSolution(UUID userId, String userName, InputSubmissionSolution solution) {
+    public SubmissionSolution createSolution(LoggedInUser user, InputSubmissionSolution solution) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(solution.getSubmissionExerciseId()).orElseThrow(()
                 -> new  EntityNotFoundException("Solution with id: " + solution.getSubmissionExerciseId() + " not found"));
         ExerciseSolutionEntity exerciseSolutionEntity = new ExerciseSolutionEntity();
-        exerciseSolutionEntity.setUserId(userId);
-        exerciseSolutionEntity.setUserName(userName);
+        exerciseSolutionEntity.setUserId(user.getId());
+        exerciseSolutionEntity.setUserName(user.getUserName());
+        exerciseSolutionEntity.setFirstName(user.getFirstName());
+        exerciseSolutionEntity.setLastName(user.getLastName());
         exerciseSolutionEntity.setSubmissionDate(null);
         exerciseSolutionEntity.setFiles(new ArrayList<>());
-        exerciseSolutionEntity.setResult(initialResultEntity(userId, submissionExercise.getTasks()));
+        exerciseSolutionEntity.setResult(initialResultEntity(user.getId(), submissionExercise.getTasks()));
         submissionExercise.getSolutions().add(exerciseSolutionEntity);
         exerciseSolutionRepository.save(exerciseSolutionEntity);
         submissionExerciseRepository.save(submissionExercise);

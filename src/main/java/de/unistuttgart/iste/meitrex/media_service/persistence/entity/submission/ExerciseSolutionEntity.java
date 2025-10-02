@@ -20,10 +20,19 @@ public class ExerciseSolutionEntity implements IWithId<UUID> {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column
     private UUID userId;
 
+    @Column
     private String userName;
 
+    @Column
+    private String firstName;
+
+    @Column
+    private String lastName;
+
+    @Column
     private OffsetDateTime submissionDate;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

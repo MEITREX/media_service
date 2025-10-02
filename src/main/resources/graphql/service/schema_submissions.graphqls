@@ -25,6 +25,8 @@ type SubmissionSolution {
     id: UUID
     userId: UUID!
     userName: String!
+    firstName: String!
+    lastName: String!
     submissionDate: DateTime
     files: [File!]!
     result: Result!

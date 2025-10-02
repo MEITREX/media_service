@@ -53,7 +53,7 @@ public class SubmissionController {
     public SubmissionSolution uploadSolution(@Argument InputSubmissionSolution solution,
                                              @ContextValue final LoggedInUser currentUser) {
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, solution.getCourseId());
-        return submissionService.createSolution(currentUser.getId(), currentUser.getUserName(), solution);
+        return submissionService.createSolution(currentUser, solution);
     }
 
     @MutationMapping
