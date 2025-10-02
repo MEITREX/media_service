@@ -45,7 +45,7 @@ public class SubmissionService {
 
     private final SubmissionExerciseRepository submissionExerciseRepository;
     private final SubmissionFileRepository fileRepository;
-    private final SubmissionExerciseSolutionRepository submissionExerciseSolutionRepository;
+    private final ExerciseSolutionRepository exerciseSolutionRepository;
     private final SubmissionResultRepository resultRepository;
     private final ModelMapper modelMapper;
 
@@ -102,7 +102,7 @@ public class SubmissionService {
         exerciseSolutionEntity.setFiles(new ArrayList<>());
         exerciseSolutionEntity.setResult(initialResultEntity(userId, submissionExercise.getTasks()));
         submissionExercise.getSolutions().add(exerciseSolutionEntity);
-        submissionExerciseSolutionRepository.save(exerciseSolutionEntity);
+        exerciseSolutionRepository.save(exerciseSolutionEntity);
         submissionExerciseRepository.save(submissionExercise);
         return  modelMapper.map(exerciseSolutionEntity, SubmissionSolution.class);
     }
@@ -161,8 +161,18 @@ public class SubmissionService {
         return modelMapper.map(fileEntity, File.class);
     }
 
+    public File deleteExerciseFile(SubmissionExerciseEntity submissionExercise, UUID fileId) {
+        FileEntity file = submissionExercise.getFiles().stream().filter(fileEntity -> fileEntity.getId().equals(fileId)).findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("File with id: " + fileId + " not found"));
+        deleteFile(file);
+        submissionExercise.getFiles().remove(file);
+        fileRepository.delete(file);
+        submissionExerciseRepository.save(submissionExercise);
+        return modelMapper.map(file, File.class);
+    }
+
     public File createSolutionFile(UUID userId, UUID solutionId, UUID assessmentId, String filename) {
-        ExerciseSolutionEntity exerciseSolutionEntity = submissionExerciseSolutionRepository.findById(solutionId).orElseThrow(() ->
+        ExerciseSolutionEntity exerciseSolutionEntity = exerciseSolutionRepository.findById(solutionId).orElseThrow(() ->
                 new  EntityNotFoundException("Solution with id: " + solutionId + " not found"));
         if (!userId.equals(exerciseSolutionEntity.getUserId())) {
             throw new EntityNotFoundException("Solution with id: " + solutionId + " does not belong to the user");
@@ -177,9 +187,19 @@ public class SubmissionService {
         createDownloadUrl(fileEntity);
         exerciseSolutionEntity.getFiles().add(fileEntity);
         exerciseSolutionEntity.setSubmissionDate(OffsetDateTime.now());
-        submissionExerciseSolutionRepository.save(exerciseSolutionEntity);
+        exerciseSolutionRepository.save(exerciseSolutionEntity);
         taskScheduler.schedule(() -> expireUploadUrlAndCleanup(fileEntity), Instant.now().plus(UPLOAD_URL_EXPIRY));
         return modelMapper.map(fileEntity, File.class);
+    }
+
+    public File deleteSolutionFile(ExerciseSolutionEntity exerciseSolutionEntity, UUID fileId) {
+        FileEntity file = exerciseSolutionEntity.getFiles().stream().filter(fileEntity -> fileEntity.getId().equals(fileId)).findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("File with id: " + fileId + " not found"));
+        deleteFile(file);
+        exerciseSolutionEntity.getFiles().remove(file);
+        fileRepository.delete(file);
+        exerciseSolutionRepository.save(exerciseSolutionEntity);
+        return modelMapper.map(file, File.class);
     }
 
     /**
@@ -302,7 +322,7 @@ public class SubmissionService {
             }
             se.getSolutions().forEach(sol -> {
                 if (sol.getFiles().removeIf(x -> x.getId().equals(f.getId()))) {
-                    submissionExerciseSolutionRepository.save(sol);
+                    exerciseSolutionRepository.save(sol);
                 }
             });
         });
@@ -401,7 +421,7 @@ public class SubmissionService {
     }
 
     private boolean isExpiringSoon(Instant expiresAt) {
-        if (expiresAt == null) return true; // no info → refresh
+        if (expiresAt == null) return true;
         Instant now = Instant.now();
         return now.plus(REFRESH_THRESHOLD).plus(SKEW_BUFFER).isAfter(expiresAt);
     }

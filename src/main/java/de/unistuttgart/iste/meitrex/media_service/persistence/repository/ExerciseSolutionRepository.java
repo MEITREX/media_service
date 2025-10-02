@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface SubmissionExerciseSolutionRepository extends MeitrexRepository<ExerciseSolutionEntity, UUID> {
+public interface ExerciseSolutionRepository extends MeitrexRepository<ExerciseSolutionEntity, UUID> {
 }

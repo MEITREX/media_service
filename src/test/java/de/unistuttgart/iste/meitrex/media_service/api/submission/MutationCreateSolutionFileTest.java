@@ -7,7 +7,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.File;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.ExerciseSolutionEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.SubmissionExerciseEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseSolutionRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ExerciseSolutionRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import io.minio.MinioClient;
@@ -33,7 +33,7 @@ public class MutationCreateSolutionFileTest {
     private SubmissionExerciseRepository submissionExerciseRepository;
 
     @Autowired
-    private SubmissionExerciseSolutionRepository submissionExerciseSolutionRepository;
+    private ExerciseSolutionRepository exerciseSolutionRepository;
 
     @Autowired
     private MinioClient minioClient;
@@ -67,7 +67,7 @@ public class MutationCreateSolutionFileTest {
         solutionEntity.setFiles(new ArrayList<>());
 
         submissionExerciseEntity.getSolutions().add(solutionEntity);
-        solutionEntity = submissionExerciseSolutionRepository.save(solutionEntity);
+        solutionEntity = exerciseSolutionRepository.save(solutionEntity);
         submissionExerciseRepository.save(submissionExerciseEntity);
 
         final String query = """
@@ -90,7 +90,7 @@ public class MutationCreateSolutionFileTest {
         assertThat(file.getName(), is(fileName));
         assertThat(file.getUploadUrl(), is("http://example.com") );
         assertThat(file.getDownloadUrl(), is("http://example.com"));
-        ExerciseSolutionEntity exerciseSolution = submissionExerciseSolutionRepository.findById(solutionEntity.getId()).get();
+        ExerciseSolutionEntity exerciseSolution = exerciseSolutionRepository.findById(solutionEntity.getId()).get();
         assertThat((double) exerciseSolution.getSubmissionDate().toInstant().toEpochMilli(),
                 closeTo((double) OffsetDateTime.now().toInstant().toEpochMilli(), 100000.0));
     }

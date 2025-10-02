@@ -131,7 +131,17 @@ type Mutation {
     createExerciseFile(name: String!, assessmentId: UUID!): File
 
     """
+    deletes exercise file with the given id
+    """
+    deleteExerciseFile(fileId: UUID!, assessmentId: UUID!): File
+
+    """
     create the upload and download links for a file for an solution to an exercise
     """
     createSolutionFile(name: String!, solutionId: UUID!, assessmentId: UUID!): File
+
+    """
+    deletes exercise file with the given id
+    """
+    deleteSolutionFile(fileId: UUID!, solutionId: UUID!): File
 }

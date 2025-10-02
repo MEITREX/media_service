@@ -9,7 +9,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.SubmissionSolution;
 import de.unistuttgart.iste.meitrex.generated.dto.Task;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseSolutionRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ExerciseSolutionRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import io.minio.MinioClient;
@@ -38,7 +38,7 @@ public class QuerySubmissionExerciseForLecturerTest {
     private SubmissionExerciseRepository submissionExerciseRepository;
 
     @Autowired
-    private SubmissionExerciseSolutionRepository submissionExerciseSolutionRepository;
+    private ExerciseSolutionRepository exerciseSolutionRepository;
 
     @Autowired
     private MinioClient minioClient;

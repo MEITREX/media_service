@@ -7,7 +7,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.SubmissionMutation;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.SubmissionExerciseEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.entity.submission.TaskEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.repository.SubmissionExerciseSolutionRepository;
+import de.unistuttgart.iste.meitrex.media_service.persistence.repository.ExerciseSolutionRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import io.minio.MinioClient;
@@ -34,7 +34,7 @@ public class MutationMutateSubmissionTest {
     private SubmissionExerciseRepository submissionExerciseRepository;
 
     @Autowired
-    private SubmissionExerciseSolutionRepository submissionExerciseSolutionRepository;
+    private ExerciseSolutionRepository exerciseSolutionRepository;
 
     @Autowired
     private MinioClient minioClient;
