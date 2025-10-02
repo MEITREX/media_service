@@ -81,6 +81,6 @@ public class MutationCreateExerciseFileTest {
                 .path("createExerciseFile").entity(File.class).get();
         assertThat(file.getName(), is(fileName));
         assertThat(file.getUploadUrl(), is("http://example.com") );
-        assertThat(file.getDownloadUrl(), nullValue());
+        assertThat(file.getDownloadUrl(), is("http://example.com"));
     }
 }
