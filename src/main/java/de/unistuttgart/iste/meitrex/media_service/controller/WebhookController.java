@@ -31,7 +31,6 @@ public class WebhookController {
     @SneakyThrows
     public void receiveOnMinioObjectCreateWebhook(@RequestBody String payload) {
         // the webhook payload is a JSON object with a "Records" array
-        log.info(payload);
         JsonNode root = new ObjectMapper().readTree(payload);
 
         // from the records array, get the file name of the uploaded object. File name matches the media record id
