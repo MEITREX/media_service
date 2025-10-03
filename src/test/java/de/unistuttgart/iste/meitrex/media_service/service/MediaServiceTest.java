@@ -2,7 +2,7 @@ package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ServerSource;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.media.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_config.MockMinIoClientConfiguration;
 import io.minio.MinioClient;
