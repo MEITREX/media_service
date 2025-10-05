@@ -20,9 +20,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -399,4 +402,24 @@ class MediaServiceTest {
         );
     }
 
+    @Test
+    void publishMaterialPublishedEventWithDelay_shouldNotPropagate_whenInnerThrows() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        MediaService spyService = spy(service);
+
+        CountDownLatch invoked = new CountDownLatch(1);
+
+        doAnswer(invocation -> {
+            invoked.countDown();
+            throw new RuntimeException("boom");
+        }).when(spyService).publishMaterialPublishedEvent(id);
+
+        assertDoesNotThrow(() -> spyService.publishMaterialPublishedEventWithDelay(id));
+
+        boolean called = invoked.await(7, TimeUnit.SECONDS);
+        org.junit.jupiter.api.Assertions.assertTrue(called, "timeout waiting for async invocation");
+
+        verify(spyService, times(1)).publishMaterialPublishedEvent(id);
+    }
 }

@@ -864,10 +864,15 @@ public class MediaService {
 
     @Async
     public void publishMaterialPublishedEventWithDelay(UUID mediaRecordId) {
-        CompletableFuture.runAsync(
-                () -> publishMaterialPublishedEvent(mediaRecordId),
-                CompletableFuture.delayedExecutor(5000, TimeUnit.MILLISECONDS)
-        );
+        CompletableFuture
+                .runAsync(
+                        () -> publishMaterialPublishedEvent(mediaRecordId),
+                        CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS)
+                )
+                .exceptionally(ex -> {
+                    log.error("Failed to publish MaterialPublishedEvent for {}", mediaRecordId, ex);
+                    return null;
+                });
     }
 
     public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
