@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
+package de.unistuttgart.iste.meitrex.media_service.persistence.entity.media;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

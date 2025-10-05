@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.media_service.persistence.entity;
+package de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;

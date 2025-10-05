@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service.entity;
 
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadContentReferenceEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.QuestionThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ThreadContentReferenceEntity;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

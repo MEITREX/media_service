@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.repository;
 
 import de.unistuttgart.iste.meitrex.common.persistence.MeitrexRepository;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.media.MediaRecordEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

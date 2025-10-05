@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service;
 
 import de.unistuttgart.iste.meitrex.generated.dto.MediaType;
+import de.unistuttgart.iste.meitrex.media_service.service.SubmissionService;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,8 +48,8 @@ public class MediaServiceApplication {
         @Override
         @SneakyThrows
         public void run(String...args) {
-            List<String> buckets =  Arrays.stream(MediaType.values()).map(type -> type.toString().toLowerCase()).toList();
-
+            List<String> buckets =  new ArrayList<>(Arrays.stream(MediaType.values()).map(type -> type.toString().toLowerCase()).toList());
+            buckets.add(SubmissionService.BUCKET_ID);
             for (String bucket : buckets) {
                 boolean bucket_exists = minioInternalClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
                 if (!bucket_exists) {
