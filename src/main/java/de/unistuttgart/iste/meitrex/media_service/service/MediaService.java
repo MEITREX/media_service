@@ -17,8 +17,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -317,6 +321,7 @@ public class MediaService {
             entity.getCourseIds().add(courseId);
             repository.save(entity);
         }
+
 
         return removeExpiredUrlsFromMediaRecords(mediaRecordsToAddCourse.stream()
                 .map(x -> modelMapper.map(x, MediaRecord.class))
@@ -811,23 +816,38 @@ public class MediaService {
         }
     }
 
-    public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
-        topicPublisher.notifyMediaRecordFileCreated(new MediaRecordFileCreatedEvent(mediaRecordId));
-        // Create Notification Dapr Event
-        final MediaRecordEntity entity = repository.getReferenceById(mediaRecordId);
-        final List<UUID> courseIds = entity.getCourseIds();
-        if (courseIds == null || courseIds.isEmpty()) {
-            return;
-        }
+    /**
+     * Publishes a "new material uploaded" notification for a media record that has been associated with one or more courses.
+     *
+     * @param mediaRecordId ID of the media record
+     */
+    public void publishMaterialPublishedEvent(UUID mediaRecordId) {
+        MediaRecordEntity entity = repository.findWithCoursesById(mediaRecordId)
+                .orElseThrow(() -> new IllegalArgumentException("MediaRecord not found: " + mediaRecordId));
 
-        final String filename = (entity.getName() == null || entity.getName().isBlank())
+        List<UUID> courseIds = entity.getCourseIds();
+        List<UUID> contentIds = repository.findContentIdsByMediaRecordId(mediaRecordId);
+
+        String filename = (entity.getName() == null || entity.getName().isBlank())
                 ? "Unnamed File"
                 : entity.getName();
-        final String title = "New Material is uploaded!";
-        final String message = "material:" + filename;
+        String title = "New Material is uploaded!";
+        String message = "material: " + filename;
 
-        for (final UUID courseId : courseIds) {
-            final String pageLink = "/courses/" + courseId + "/materials/" + mediaRecordId;
+        UUID latestContentId = (contentIds != null && !contentIds.isEmpty())
+                ? contentIds.get(contentIds.size() - 1)
+                : null;
+
+        boolean isVideo = (modelMapper.map(entity.getType(), MediaType.class) == MediaType.VIDEO);
+
+        for (UUID courseId : courseIds) {
+            String base = "/courses/" + courseId + "/media";
+            if (latestContentId != null) {
+                base += "/" + latestContentId;
+            }
+            String pageLink = base + (isVideo
+                    ? ("?selectedVideo=" + entity.getId())
+                    : ("?selectedDocument=" + entity.getId()));
             topicPublisher.notificationEvent(
                     courseId,
                     null,
@@ -836,7 +856,28 @@ public class MediaService {
                     title,
                     message
             );
+            log.info("Published notification for mediaRecord={} to course={}", mediaRecordId, courseId);
         }
+    }
+
+
+
+    @Async
+    public void publishMaterialPublishedEventWithDelay(UUID mediaRecordId) {
+        CompletableFuture
+                .runAsync(
+                        () -> publishMaterialPublishedEvent(mediaRecordId),
+                        CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS)
+                )
+                .exceptionally(ex -> {
+                    log.error("Failed to publish MaterialPublishedEvent for {}", mediaRecordId, ex);
+                    return null;
+                });
+    }
+
+    public void publishMediaRecordFileCreatedEvent(UUID mediaRecordId) {
+        topicPublisher.notifyMediaRecordFileCreated(new MediaRecordFileCreatedEvent(mediaRecordId));
+        publishMaterialPublishedEventWithDelay(mediaRecordId);
     }
 
     /**
