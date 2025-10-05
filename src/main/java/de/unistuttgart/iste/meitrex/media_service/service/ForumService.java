@@ -1,15 +1,14 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
-import java.util.Comparator;
-import java.util.stream.Collectors;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.profanity_filter.ProfanityFilter;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.generated.dto.Thread;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.generated.dto.Thread;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.*;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.media.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.mapper.*;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,11 +20,8 @@ import org.springframework.stereotype.Service;
 import javax.naming.AuthenticationException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.Set;
-import java.util.Collections;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.unistuttgart.iste.meitrex.media_service.controller.ForumController.NOT_FOUND;
 
@@ -245,7 +241,7 @@ public class ForumService {
         return modelMapper.map(threadContentReferenceEntity, ThreadContentReference.class);
     }
 
-    public QuestionThread addAnserToQuestionThread(UUID postId) {
+    public QuestionThread addAnswerToQuestionThread(UUID postId) {
         PostEntity answer = postRepository.findById(postId).orElseThrow(
                 () -> new EntityNotFoundException("Post with the id " + postId + NOT_FOUND)
         );

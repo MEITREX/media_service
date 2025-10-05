@@ -1,0 +1,112 @@
+type SubmissionExercise {
+    assessmentId: UUID
+    courseId: UUID!
+    endDate: DateTime!
+    files: [File!]!
+    solutions: [SubmissionSolution!]!
+    tasks: [Task!]!
+}
+
+type File {
+    id: UUID!
+    uploadUrl: String
+    downloadUrl: String
+    name: String!
+}
+
+type Task {
+    name: String!
+    itemId: UUID!
+    maxScore: Int!
+    number: Int!
+}
+
+type SubmissionSolution {
+    id: UUID
+    userId: UUID!
+    userName: String!
+    firstName: String!
+    lastName: String!
+    submissionDate: DateTime
+    files: [File!]!
+    result: Result!
+}
+
+type Result {
+    id: UUID
+    status: Status!
+    results: [TaskResult!]!
+}
+
+type TaskResult {
+    itemId: UUID!
+    number: Int!
+    score: Int!
+}
+
+enum Status {
+    pending,
+    passed,
+    failed
+}
+
+input InputResult {
+    id: UUID!
+    assessmentId: UUID!
+    courseId: UUID!
+    status: Status!
+    results: [InputTaskResult!]!
+}
+
+input InputTaskResult {
+    itemId: UUID!
+    score: Int!
+}
+
+input InputSubmissionSolution {
+    courseId: UUID!
+    submissionExerciseId: UUID!
+}
+
+input InputSubmissionExercise {
+    endDate: DateTime!
+    tasks: [InputTask]
+}
+
+input InputTask {
+    number: Int!
+    name: String!
+    itemId: UUID!
+    maxScore: Int!
+}
+
+type SubmissionMutation {
+    """
+    Id of the Submission to modify.
+    """
+    assessmentId: UUID!
+
+    """
+    Add a task to the Submission.
+    ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
+    any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+    """
+    _internal_noauth_addTask(input: InputTask!): SubmissionExercise!
+
+    """
+    Updates a task to the Submission.
+    ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
+    any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+    """
+    _internal_noauth_updateTask(input: InputTask!): SubmissionExercise!
+
+    """
+    removes Task with the given id
+    """
+    removeTask(itemId: UUID!): SubmissionExercise
+
+    """
+    mutates the submission, if there are task in the input they get not changed
+    """
+    mutateSubmission(assessmentId: UUID!, input: InputSubmissionExercise!): SubmissionExercise
+}

@@ -102,4 +102,46 @@ type Mutation {
     add Answer to QuestionThread
     """
     selectAnswer(postId: UUID!): QuestionThread!
+
+    """
+    Create a new SubmissionExercise.
+    ⚠️ This query is only accessible internally in the system and allows the caller to create a Quiz without
+    any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+    """
+    _internal_noauth_createSubmissionExercise(courseId: UUID!, assessmentId: UUID!, input: InputSubmissionExercise!): SubmissionExercise!
+
+    """
+    adds a task to an assessment
+    """
+    mutateSubmission(assessmentId: UUID!): SubmissionMutation!
+
+    """
+    creates a solution for an exercise and returns the solution
+    """
+    uploadSolution(solution: InputSubmissionSolution!): SubmissionSolution!
+
+    """
+    updates the result for a solution
+    """
+    updateResult(result: InputResult!): Result!
+
+    """
+    creates the upload an download links for a file for an exercise to upload data
+    """
+    createExerciseFile(name: String!, assessmentId: UUID!): File
+
+    """
+    deletes exercise file with the given id
+    """
+    deleteExerciseFile(fileId: UUID!, assessmentId: UUID!): File
+
+    """
+    create the upload and download links for a file for an solution to an exercise
+    """
+    createSolutionFile(name: String!, solutionId: UUID!, assessmentId: UUID!): File
+
+    """
+    deletes exercise file with the given id
+    """
+    deleteSolutionFile(fileId: UUID!, solutionId: UUID!): File
 }

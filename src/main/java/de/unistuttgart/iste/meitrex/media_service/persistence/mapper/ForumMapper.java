@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.mapper;
 
 import de.unistuttgart.iste.meitrex.generated.dto.Forum;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ForumEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ForumEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -5,7 +5,7 @@ import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.testutil.TablesToDelete;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaRecord;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.MediaRecordEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.media.MediaRecordEntity;
 import de.unistuttgart.iste.meitrex.media_service.persistence.repository.MediaRecordRepository;
 import de.unistuttgart.iste.meitrex.media_service.test_util.CourseMembershipUtil;
 import de.unistuttgart.iste.meitrex.media_service.test_util.MediaRecordRepositoryUtil;

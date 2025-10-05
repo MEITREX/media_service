@@ -1,14 +1,10 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.mapper;
 
-import de.unistuttgart.iste.meitrex.generated.dto.InfoThread;
-import de.unistuttgart.iste.meitrex.generated.dto.Post;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestionThread;
 import de.unistuttgart.iste.meitrex.generated.dto.ThreadContentReference;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.InfoThreadEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.QuestionThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.QuestionThreadEntity;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,8 +1,8 @@
 package de.unistuttgart.iste.meitrex.media_service.persistence.mapper;
 
 import de.unistuttgart.iste.meitrex.generated.dto.Post;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.PostEntity;
-import de.unistuttgart.iste.meitrex.media_service.persistence.entity.ThreadEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.PostEntity;
+import de.unistuttgart.iste.meitrex.media_service.persistence.entity.forum.ThreadEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
