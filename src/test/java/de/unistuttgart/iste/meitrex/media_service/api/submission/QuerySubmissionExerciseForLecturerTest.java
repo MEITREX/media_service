@@ -143,7 +143,6 @@ public class QuerySubmissionExerciseForLecturerTest {
                                 status,
                                 results {
                                     itemId,
-                                    number,
                                     score
                                 }
                             }

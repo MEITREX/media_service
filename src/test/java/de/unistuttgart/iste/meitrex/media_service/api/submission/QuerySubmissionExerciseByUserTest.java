@@ -143,7 +143,6 @@ public class QuerySubmissionExerciseByUserTest {
                                 status,
                                 results {
                                     itemId,
-                                    number,
                                     score
                                 }
                             }
