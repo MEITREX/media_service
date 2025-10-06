@@ -40,7 +40,6 @@ type Result {
 
 type TaskResult {
     itemId: UUID!
-    number: Int!
     score: Int!
 }
 
