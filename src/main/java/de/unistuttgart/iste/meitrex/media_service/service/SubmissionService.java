@@ -1,11 +1,7 @@
 package de.unistuttgart.iste.meitrex.media_service.service;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
-import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
-import de.unistuttgart.iste.meitrex.common.event.SubmissionCompletedEvent;
-import de.unistuttgart.iste.meitrex.common.event.CourseChangeEvent;
-import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
-import de.unistuttgart.iste.meitrex.common.event.Response;
+import de.unistuttgart.iste.meitrex.common.event.*;
 import de.unistuttgart.iste.meitrex.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
@@ -91,6 +87,21 @@ public class SubmissionService {
         submissionExerciseEntity.setSolutions(new ArrayList<>());
         submissionExerciseEntity.setTasks(new ArrayList<>());
         submissionExerciseRepository.save(submissionExerciseEntity);
+
+        String title = "You have a new Submission Exercise!";
+        String message = "New Submission Exercise!";
+
+        String pageLink = "/courses/" + courseId + "/submissions/" + assessmentId;
+        topicPublisher.notificationEvent(
+                courseId,
+                null,
+                ServerSource.MEDIA,
+                pageLink,
+                title,
+                message
+        );
+        log.info("Published notification for Submission Exercise={} to course={}", assessmentId, courseId);
+
         return modelMapper.map(submissionExerciseEntity, SubmissionExercise.class);
     }
 
