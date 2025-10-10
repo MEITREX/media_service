@@ -52,6 +52,12 @@ public class SubmissionService {
     private final MinioClient minioExternalClient;
     private final TaskRepository taskRepository;
 
+    /**
+     * Returns the submissionExercise with the solution for the user
+     * @param assessmentId id of the submission exercise
+     * @param userId id of the user
+     * @return submissionExercise
+     */
     public SubmissionExercise getSubmissionExerciseByUserId(UUID assessmentId, UUID userId) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(() ->
                 new EntityNotFoundException("Exercise with id: " + assessmentId + " not found"));
@@ -61,6 +67,11 @@ public class SubmissionService {
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
+    /**
+     * Returns the submissionExercise with all the solutions
+     * @param assessmentId id of the submission exercise
+     * @return submissionExercise
+     */
     public SubmissionExercise getSubmissionExerciseForLecturer(UUID assessmentId) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(() ->
                 new EntityNotFoundException("Exercise with id: " + assessmentId + " not found"));
@@ -68,6 +79,11 @@ public class SubmissionService {
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
+    /**
+     * updates the download urls for all the files in the SubmissionExercise if the urls expire before
+     * the REFRESH_THRESHOLD
+     * @param submissionExercise submissionExercise where the download urls can be updated
+     */
     private void updateSubmissionDownloadUrls(SubmissionExerciseEntity submissionExercise) {
         if (isExpiringSoon(submissionExercise.getDownloadUrlExpiresAt())) {
             submissionExercise.getFiles().forEach(this::createDownloadUrl);
@@ -78,6 +94,13 @@ public class SubmissionService {
         }
     }
 
+    /**
+     * Creates an submission exercise
+     * @param submissionExercise Input for the submissionExercise
+     * @param assessmentId Id of the submissionExercise
+     * @param courseId courseId of the submissionExercise
+     * @return created SubmissionExercise
+     */
     public SubmissionExercise createSubmissionExercise(InputSubmissionExercise submissionExercise, UUID assessmentId, UUID courseId) {
         SubmissionExerciseEntity submissionExerciseEntity = new SubmissionExerciseEntity();
         submissionExerciseEntity.setAssessmentId(assessmentId);
@@ -105,6 +128,12 @@ public class SubmissionService {
         return modelMapper.map(submissionExerciseEntity, SubmissionExercise.class);
     }
 
+    /**
+     * Creates the solution for a user for the submissionExercise
+     * @param user user that creates the solution
+     * @param solution solution that is created
+     * @return created solution
+     */
     public SubmissionSolution createSolution(LoggedInUser user, InputSubmissionSolution solution) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(solution.getSubmissionExerciseId()).orElseThrow(()
                 -> new  EntityNotFoundException("Solution with id: " + solution.getSubmissionExerciseId() + " not found"));
@@ -122,6 +151,11 @@ public class SubmissionService {
         return  modelMapper.map(exerciseSolutionEntity, SubmissionSolution.class);
     }
 
+    /**
+     * Updates the result of a user and sends a events for the other services
+     * @param result to be updated
+     * @return the updated result
+     */
     public Result updateResult(InputResult result) {
         ResultEntity resultEntity = resultRepository.findById(result.getId()).orElseThrow(() ->
                 new  EntityNotFoundException("Result with id: " + result.getId() + " not found"));
@@ -153,7 +187,6 @@ public class SubmissionService {
                 .responses(responses)
                 .build();
 
-        // publish new user progress event message
         topicPublisher.notifyUserWorkedOnContent(userProgressLogEvent);
 
         final SubmissionCompletedEvent submissionCompletedEvent = SubmissionCompletedEvent.builder()
@@ -167,6 +200,12 @@ public class SubmissionService {
         return modelMapper.map(resultEntity, Result.class);
     }
 
+    /**
+     * Creates a file for the exercise with the upload and download urls
+     * @param filename Name of the file
+     * @param submissionExercise exercise which the file is added to
+     * @return file with upload and download url
+     */
     public File createFileForExercise(String filename, SubmissionExerciseEntity submissionExercise) {
         FileEntity fileEntity = createFile(filename);
         createUploadUrl(fileEntity);
@@ -177,6 +216,12 @@ public class SubmissionService {
         return modelMapper.map(fileEntity, File.class);
     }
 
+    /**
+     * deletes the file with the id
+     * @param submissionExercise submissionExercise that contains the file
+     * @param fileId id of the file
+     * @return file that was deleted
+     */
     public File deleteExerciseFile(SubmissionExerciseEntity submissionExercise, UUID fileId) {
         FileEntity file = submissionExercise.getFiles().stream().filter(fileEntity -> fileEntity.getId().equals(fileId)).findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("File with id: " + fileId + " not found"));
@@ -187,6 +232,14 @@ public class SubmissionService {
         return modelMapper.map(file, File.class);
     }
 
+    /**
+     * Creates a file for a solutione with the upload and download urls
+     * @param userId userId of the user that uploads the file
+     * @param solutionId id of the solution of the user
+     * @param assessmentId id of the submissionExercise of the solution
+     * @param filename name of the file that is uploaded
+     * @return File which upload and download urls
+     */
     public File createSolutionFile(UUID userId, UUID solutionId, UUID assessmentId, String filename) {
         ExerciseSolutionEntity exerciseSolutionEntity = exerciseSolutionRepository.findById(solutionId).orElseThrow(() ->
                 new  EntityNotFoundException("Solution with id: " + solutionId + " not found"));
@@ -208,6 +261,12 @@ public class SubmissionService {
         return modelMapper.map(fileEntity, File.class);
     }
 
+    /**
+     * deletes the file with the id
+     * @param exerciseSolutionEntity submissionExerciseSolution that contains the file
+     * @param fileId id of the file
+     * @return file that was deleted
+     */
     public File deleteSolutionFile(ExerciseSolutionEntity exerciseSolutionEntity, UUID fileId) {
         FileEntity file = exerciseSolutionEntity.getFiles().stream().filter(fileEntity -> fileEntity.getId().equals(fileId)).findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("File with id: " + fileId + " not found"));
@@ -218,6 +277,8 @@ public class SubmissionService {
         return modelMapper.map(file, File.class);
     }
 
+
+
     /**
      * Method that receives Course Change Event and handles DELETE events.
      * All submission exercises are then deleted that are connected to deleted course
@@ -226,11 +287,10 @@ public class SubmissionService {
      * @throws IncompleteEventMessageException if the received message is incomplete
      */
     public void deleteCourse(final CourseChangeEvent changeEvent) throws IncompleteEventMessageException{
-        // evaluate course Update message
         if (changeEvent.getCourseId() == null || changeEvent.getOperation() == null) {
             throw new IncompleteEventMessageException("Incomplete message received: all fields of a message must be non-null");
         }
-        // only consider DELETE events
+
         if (changeEvent.getOperation() != CrudOperation.DELETE) {
             return;
         }
@@ -275,6 +335,12 @@ public class SubmissionService {
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
+    /**
+     * Updates a task of the submissionExercise
+     * @param assessmentId if of the submissionExercise
+     * @param inputTask inputs of the task
+     * @return updated submissionExercise
+     */
     public SubmissionExercise updateTask(final UUID assessmentId, final InputTask inputTask) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId)
                 .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
@@ -299,6 +365,12 @@ public class SubmissionService {
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
+    /**
+     * deletes a task of a submissionExercise
+     * @param assessmentId id of the submissionExercise
+     * @param itemId id of the task
+     * @return updated submissionExercise
+     */
     public SubmissionExercise deleteTask(final UUID assessmentId, final UUID itemId) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId)
                 .orElseThrow(() -> new EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
@@ -311,6 +383,12 @@ public class SubmissionService {
         return modelMapper.map(submissionExerciseRepository.save(submissionExercise), SubmissionExercise.class);
     }
 
+    /**
+     * updates a submissionExercise
+     * @param assessmentId id of the submissionExercise
+     * @param inputSubmissionExercise update submissionExercise
+     * @return updated submissionExercise
+     */
     public SubmissionExercise mutateSubmissionExercise(final UUID assessmentId, final InputSubmissionExercise inputSubmissionExercise) {
         SubmissionExerciseEntity submissionExercise = submissionExerciseRepository.findById(assessmentId).orElseThrow(()
                 -> new  EntityNotFoundException("SubmissionExercise with id " + assessmentId + " not found"));
@@ -319,6 +397,10 @@ public class SubmissionService {
         return modelMapper.map(submissionExercise, SubmissionExercise.class);
     }
 
+    /**
+     * deletes files which have no file uploaded
+     * @param fileEntity file that might get deleted
+     */
     public void expireUploadUrlAndCleanup(FileEntity fileEntity) {
         String objectName = fileEntity.getId().toString();
 
