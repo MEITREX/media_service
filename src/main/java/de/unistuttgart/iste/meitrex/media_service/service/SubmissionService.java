@@ -174,7 +174,7 @@ public class SubmissionService {
             responses.add(response);
         });
 
-        double correctness = (double)requiredScore.get() / (double)achievedScore.get();
+        double correctness = (double)achievedScore.get() / (double) requiredScore.get();
 
         final ContentProgressedEvent userProgressLogEvent = ContentProgressedEvent.builder()
                 .userId(resultEntity.getUserId())
@@ -499,7 +499,7 @@ public class SubmissionService {
                         .method(Method.PUT)
                         .bucket(BUCKET_ID)
                         .object(fileEntity.getId().toString())
-                        .expiry(UPLOAD_URL_EXPIRY.toMinutesPart(), TimeUnit.MINUTES)
+                        .expiry((int) UPLOAD_URL_EXPIRY.toMinutes(), TimeUnit.MINUTES)
                         .build());
         fileEntity.setUploadUrl(uploadUrl);
         fileRepository.save(fileEntity);
@@ -512,7 +512,7 @@ public class SubmissionService {
                         .method(Method.GET)
                         .bucket(BUCKET_ID)
                         .object(fileEntity.getId().toString())
-                        .expiry(DOWNLOAD_URL_EXPIRY.toHoursPart(), TimeUnit.HOURS)
+                        .expiry((int) DOWNLOAD_URL_EXPIRY.toHours(), TimeUnit.HOURS)
                         .build());
         fileEntity.setDownloadUrl(downloadUrl);
         fileRepository.save(fileEntity);
