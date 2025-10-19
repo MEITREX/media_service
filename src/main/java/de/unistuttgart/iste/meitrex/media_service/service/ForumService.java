@@ -81,6 +81,11 @@ public class ForumService {
                 new EntityNotFoundException("Forum with the id " + id + " not found")));
     }
 
+    /**
+     * Returns the forum by the courseId and creates a forum if it does not exists.
+     * @param id of the course
+     * @return forum of the course
+     */
     public Forum getForumByCourseId(UUID id) {
         ForumEntity forum = forumRepository.findByCourseId(id).orElseGet(() -> createForum(id));
         return forumMapper.forumEntityToForum(forum);
